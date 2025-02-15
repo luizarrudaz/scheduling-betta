@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SchedulingBetta.API", "SchedulingBetta.API\SchedulingBetta.API.csproj", "{DF9D1C88-B803-4FD8-9ABC-84A746FFC3EC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{470311C9-5AF4-4702-94D4-F5B89B9CF689}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{81CEB34C-0141-4000-A5E7-453AFA0EAC75}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DF9D1C88-B803-4FD8-9ABC-84A746FFC3EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF9D1C88-B803-4FD8-9ABC-84A746FFC3EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF9D1C88-B803-4FD8-9ABC-84A746FFC3EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF9D1C88-B803-4FD8-9ABC-84A746FFC3EC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{DF9D1C88-B803-4FD8-9ABC-84A746FFC3EC} = {470311C9-5AF4-4702-94D4-F5B89B9CF689}
+	EndGlobalSection
+EndGlobal
