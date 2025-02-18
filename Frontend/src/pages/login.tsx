@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import bgImage from '../assets/bg-login.webp';
 
 const Login = () => {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<null | string>(null);
     const navigate = useNavigate();
 
@@ -13,7 +16,7 @@ const Login = () => {
         setError(null);
 
         // Substituir pela chamada real à API
-        if (username === "admin.admin" && password === "1234") {
+        if (email === "admin@example.com" && password === "1234") {
             navigate("/dashboard");
         } else {
             setError("Credenciais inválidas. Tente novamente.");
@@ -21,7 +24,7 @@ const Login = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen w-screen bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }}>
+      <div className="flex items-center justify-center min-h-screen w-screen bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }}>
           <div className="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition-all duration-300 hover:scale-105">
             <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Login</h2>
             {error && (
@@ -31,31 +34,36 @@ const Login = () => {
             )}
             <form onSubmit={handleLogin}>
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="username">Usuário</label>
+                <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="email">Email</label>
                 <input
-                  type="text"
-                  id="username"
+                  type="email"
+                  id="email"
                   className="w-full border-b border-gray-300 focus:outline-none focus:border-[#FA7014] text-black py-2 bg-transparent"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
-                  placeholder="Digite seu nome de usuário"
-                  aria-label="Digite seu nome de usuário"
-                  autoComplete="off"
+                  placeholder="Digite seu email"
+                  aria-label="Digite seu email"
                 />
               </div>
-              <div className="mb-6">
+              <div className="mb-6 relative">
                 <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="password">Senha</label>
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   id="password"
-                  className="w-full border-b border-gray-300 focus:outline-none focus:border-[#FA7014] text-black py-2 bg-transparent"
+                  className="w-full border-b border-gray-300 focus:outline-none focus:border-[#FA7014] text-black py-2 bg-transparent pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Digite sua senha"
                   aria-label="Digite sua senha"
                 />
+                <span
+                  className="absolute right-0 top-8 text-black cursor-pointer"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+                </span>
               </div>
               <button
                 type="submit"
