@@ -5,7 +5,7 @@ import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import bgImage from '../assets/bg-login.webp';
 
 const Login = () => {
-    const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<null | string>(null);
@@ -16,15 +16,15 @@ const Login = () => {
         setError(null);
 
         // Substituir pela chamada real à API
-        if (email === "admin@example.com" && password === "1234") {
+        if (username === "admin.admin" && password === "1234") {
             navigate("/dashboard");
         } else {
             setError("Credenciais inválidas. Tente novamente.");
         }
     };
 
-    return (
-      <div className="flex items-center justify-center min-h-screen w-screen bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }}>
+      return (
+        <div className="flex items-center justify-center min-h-screen w-screen bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }}>
           <div className="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition-all duration-300 hover:scale-105">
             <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Login</h2>
             {error && (
@@ -34,16 +34,17 @@ const Login = () => {
             )}
             <form onSubmit={handleLogin}>
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="email">Email</label>
+                <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="username">Usuário</label>
                 <input
-                  type="email"
-                  id="email"
+                  type="text"
+                  id="username"
                   className="w-full border-b border-gray-300 focus:outline-none focus:border-[#FA7014] text-black py-2 bg-transparent"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
-                  placeholder="Digite seu email"
-                  aria-label="Digite seu email"
+                  placeholder="Digite seu nome de usuário"
+                  aria-label="Digite seu nome de usuário"
+                  autoComplete="off"
                 />
               </div>
               <div className="mb-6 relative">
