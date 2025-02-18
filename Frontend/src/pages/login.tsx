@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import bgImage from '../assets/bg-login.webp';
 
 const Login = () => {
-    const [email, setEmail] = useState("");
+    const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<null | string>(null);
     const navigate = useNavigate();
@@ -12,7 +13,7 @@ const Login = () => {
         setError(null);
 
         // Substituir pela chamada real à API
-        if (email === "admin@example.com" && password === "1234") {
+        if (username === "admin.admin" && password === "1234") {
             navigate("/dashboard");
         } else {
             setError("Credenciais inválidas. Tente novamente.");
@@ -20,7 +21,7 @@ const Login = () => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen w-screen bg-[#FA7014]">
+        <div className="flex items-center justify-center min-h-screen w-screen bg-cover bg-center" style={{ backgroundImage: `url(${bgImage})` }}>
           <div className="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition-all duration-300 hover:scale-105">
             <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Login</h2>
             {error && (
@@ -30,17 +31,17 @@ const Login = () => {
             )}
             <form onSubmit={handleLogin}>
               <div className="mb-6">
-                <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="email">Email</label>
+                <label className="block text-gray-700 text-sm font-semibold mb-2" htmlFor="username">Usuário</label>
                 <input
-                  type="email"
-                  id="email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#FA7014] focus:border-transparent transition-all"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  id="username"
+                  className="w-full border-b border-gray-300 focus:outline-none focus:border-[#FA7014] text-black py-2 bg-transparent"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
-                  placeholder="Digite seu email"
-                  aria-label="Digite seu email"
-                  style={{ backgroundColor: "whitesmoke" }}
+                  placeholder="Digite seu nome de usuário"
+                  aria-label="Digite seu nome de usuário"
+                  autoComplete="off"
                 />
               </div>
               <div className="mb-6">
@@ -48,25 +49,24 @@ const Login = () => {
                 <input
                   type="password"
                   id="password"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-[#FA7014] focus:border-transparent transition-all"
+                  className="w-full border-b border-gray-300 focus:outline-none focus:border-[#FA7014] text-black py-2 bg-transparent"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="Digite sua senha"
                   aria-label="Digite sua senha"
-                  style={{ backgroundColor: "whitesmoke" }}
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-[#FA7014] text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 active:scale-95"
+                className="w-full bg-black text-white py-3 rounded-lg font-semibold hover:bg-gray-900 transition-all duration-300 transform hover:scale-105 active:scale-95"
               >
                 Entrar
               </button>
             </form>
           </div>
         </div>
-      );
+    );
 }
 
 export default Login;
