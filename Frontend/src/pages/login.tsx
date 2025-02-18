@@ -17,7 +17,7 @@ const Login = () => {
 
         // Substituir pela chamada real à API
         if (username === "admin.admin" && password === "1234") {
-            navigate("/dashboard");
+            navigate("/agendamento");
         } else {
             setError("Credenciais inválidas. Tente novamente.");
         }
