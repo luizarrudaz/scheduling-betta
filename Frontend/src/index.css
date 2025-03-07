@@ -23,6 +23,7 @@ a:hover {
 }
 
 body, html {
+  background-color: #ffffff;
   width: 100vw;
   height: 100vh;
   margin: 0;
