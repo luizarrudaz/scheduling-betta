@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "../pages/login";
-import Agendamento from "../pages/agendamento";
+import Agendamento from "../pages/scheduling";
 
 const AppRoutes = () => {
   return (

@@ -1,0 +1,75 @@
+import { useState } from 'react';
+import { startOfToday, format, parse } from 'date-fns';
+import CalendarNavigation from '../components/Calendar/CalendarNavigation.tsx';
+import CalendarGrid from '../components/Calendar/CalendarGrid.tsx';
+import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
+import { motion } from "framer-motion";
+import { TimeSlot } from '../components/Calendar/types.tsx';
+import { add, isSameDay, parseISO } from 'date-fns';
+
+const occupiedSlots: TimeSlot[] = [
+    { startDatetime: '2025-03-19T09:30', endDatetime: '2025-03-19T10:00' },
+    { startDatetime: '2025-03-19T10:30', endDatetime: '2025-03-19T11:00' },
+    { startDatetime: '2025-03-19T11:30', endDatetime: '2025-03-19T12:00' },
+    { startDatetime: '2025-03-19T14:30', endDatetime: '2025-03-19T15:00' },
+    { startDatetime: '2025-03-19T15:30', endDatetime: '2025-03-19T16:00' },
+];
+
+export default function Calendar() {
+  const today = startOfToday();
+  const [selectedDay, setSelectedDay] = useState<Date>(today);
+  const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM-yyyy'));
+  const [isExpanded, setIsExpanded] = useState(false);
+  const firstDayCurrentMonth = parse(currentMonth, 'MMM-yyyy', new Date());
+
+  const handlePreviousMonth = () => {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
+    setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+  };
+
+  const handleNextMonth = () => {
+    const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
+    setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+  };
+
+  const handleDayClick = (day: Date) => {
+    setSelectedDay(day);
+    const hasEvents = occupiedSlots.some(slot =>
+      isSameDay(parseISO(slot.startDatetime), day)
+    );
+    setIsExpanded(hasEvents);
+  };
+
+  return (
+    <div className="pt-16 flex justify-center">
+      <div className="px-4 sm:px-7 md:px-6 w-full max-w-6xl">
+        <motion.div
+          className="bg-white shadow-lg rounded-lg p-6 flex gap-6 mx-auto"
+          animate={{ width: isExpanded ? "100%" : "fit-content" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <div className="min-w-[280px]">
+            <CalendarNavigation
+              firstDayCurrentMonth={firstDayCurrentMonth}
+              onPrevious={handlePreviousMonth}
+              onNext={handleNextMonth}
+            />
+            
+            <CalendarGrid
+              firstDayCurrentMonth={firstDayCurrentMonth}
+              selectedDay={selectedDay}
+              occupiedSlots={occupiedSlots}
+              onDayClick={handleDayClick}
+            />
+          </div>
+
+          <TimeSlotsPanel
+            isExpanded={isExpanded}
+            selectedDay={selectedDay}
+            occupiedSlots={occupiedSlots}
+          />
+        </motion.div>
+      </div>
+    </div>
+  );
+}
