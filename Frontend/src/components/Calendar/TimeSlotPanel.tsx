@@ -1,4 +1,3 @@
-// components/Calendar/TimeSlotsPanel.tsx
 import { AnimatePresence, motion } from "framer-motion";
 import { getAvailableTimeSlots } from './utils';
 import { TimeSlot } from './types';

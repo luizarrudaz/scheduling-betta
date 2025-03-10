@@ -1,4 +1,3 @@
-// components/Calendar/CalendarGrid.tsx
 import { eachDayOfInterval, endOfMonth, getDay, isEqual, isSameDay, isSameMonth, isToday } from 'date-fns';
 import DayCell from './DayCell';
 import { TimeSlot } from './types';

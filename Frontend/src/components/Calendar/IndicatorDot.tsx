@@ -1,4 +1,3 @@
-// components/Calendar/IndicatorDot.tsx
 interface IndicatorDotProps {
     show: boolean;
   }

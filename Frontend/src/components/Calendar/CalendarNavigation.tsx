@@ -1,4 +1,3 @@
-// components/Calendar/CalendarNavigation.tsx
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale/pt-BR';

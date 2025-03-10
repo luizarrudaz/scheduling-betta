@@ -1,4 +1,3 @@
-// components/Calendar/utils.ts
 import { parseISO, isSameDay } from 'date-fns';
 import { TimeSlot } from './types';
 
