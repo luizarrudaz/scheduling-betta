@@ -53,7 +53,7 @@ export default function Calendar() {
         animate={{ width: isExpanded ? "100%" : "fit-content" }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-          <div className="min-w-[280px]">
+          <div className="min-w-[280px] max-h-[300px]">
             <CalendarNavigation
               firstDayCurrentMonth={firstDayCurrentMonth}
               onPrevious={handlePreviousMonth}

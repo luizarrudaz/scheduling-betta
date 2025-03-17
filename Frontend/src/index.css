@@ -29,7 +29,6 @@ body, html {
   height: 100vh;
   max-height: 100vh;
   margin: 0;
-  overflow-x: hidden;
   padding: 0;
   display: flex;
   align-items: center;
