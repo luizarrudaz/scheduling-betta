@@ -6,6 +6,7 @@ import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
 import { motion } from "framer-motion";
 import { TimeSlot } from '../components/Calendar/types.tsx';
 import { add, isSameDay, parseISO } from 'date-fns';
+import ServiceSelector from '../components/ServiceSelector/ServiceSelector.tsx';
 
 const occupiedSlots: TimeSlot[] = [
     { startDatetime: '2025-03-19T09:30', endDatetime: '2025-03-19T10:00' },
@@ -25,11 +26,13 @@ export default function Calendar() {
   const handlePreviousMonth = () => {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
     setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+    setIsExpanded(false);
   };
 
   const handleNextMonth = () => {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: 1 });
     setCurrentMonth(format(firstDayNextMonth, 'MMM-yyyy'));
+    setIsExpanded(false);
   };
 
   const handleDayClick = (day: Date) => {
@@ -41,13 +44,15 @@ export default function Calendar() {
   };
 
   return (
-    <div className="pt-16 flex justify-center">
-      <div className="px-4 sm:px-7 md:px-6 w-full max-w-6xl">
-        <motion.div
-          className="bg-white shadow-lg rounded-lg p-6 flex gap-6 mx-auto"
-          animate={{ width: isExpanded ? "100%" : "fit-content" }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
+    <div className="pt-4 sm:pt-8 flex justify-center">
+    <div className="px-2 sm:px-4 md:px-4 w-full max-w-4xl">
+      <ServiceSelector />
+
+      <motion.div
+        className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
+        animate={{ width: isExpanded ? "100%" : "fit-content" }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
           <div className="min-w-[280px]">
             <CalendarNavigation
               firstDayCurrentMonth={firstDayCurrentMonth}

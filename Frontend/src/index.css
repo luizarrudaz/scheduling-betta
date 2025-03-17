@@ -25,12 +25,19 @@ a:hover {
 body, html {
   background-color: #ffffff;
   width: 100vw;
+  max-width: 100vw;
   height: 100vh;
+  max-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.flex-col, .flex-row {
+  min-width: 0;
 }
 
 h1 {
@@ -52,6 +59,7 @@ button {
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
