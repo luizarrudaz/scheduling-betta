@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { startOfToday, format, parse } from 'date-fns';
+import { startOfToday, format, parse, add, isSameDay, parseISO } from 'date-fns';
+import { motion } from "framer-motion";
+
 import CalendarNavigation from '../components/Calendar/CalendarNavigation.tsx';
 import CalendarGrid from '../components/Calendar/CalendarGrid.tsx';
 import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
-import { motion } from "framer-motion";
-import { TimeSlot } from '../components/Calendar/types.tsx';
-import { add, isSameDay, parseISO } from 'date-fns';
 import ServiceSelector from '../components/ServiceSelector/ServiceSelector.tsx';
+import LogoutButton from '../components/LogoutButton/LogoutButton.tsx';
+import { TimeSlot } from '../components/Calendar/types.tsx';
 
 const occupiedSlots: TimeSlot[] = [
     { startDatetime: '2025-03-19T09:30', endDatetime: '2025-03-19T10:00' },
@@ -45,14 +46,16 @@ export default function Calendar() {
 
   return (
     <div className="pt-4 sm:pt-8 flex justify-center">
-    <div className="px-2 sm:px-4 md:px-4 w-full max-w-4xl">
-      <ServiceSelector />
+      <LogoutButton />
 
-      <motion.div
-        className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
-        animate={{ width: isExpanded ? "100%" : "fit-content" }}
-        transition={{ duration: 0.3, ease: "easeInOut" }}
-      >
+      <div className="px-2 sm:px-4 md:px-4 w-full max-w-4xl">
+        <ServiceSelector />
+
+        <motion.div
+          className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
+          animate={{ width: isExpanded ? "100%" : "fit-content" }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
           <div className="min-w-[280px] max-h-[300px]">
             <CalendarNavigation
               firstDayCurrentMonth={firstDayCurrentMonth}
