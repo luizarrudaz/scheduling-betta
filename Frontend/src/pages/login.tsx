@@ -11,18 +11,33 @@ const Login = () => {
     const [error, setError] = useState<null | string>(null);
     const navigate = useNavigate();
 
-    const handleLogin = (e: React.FormEvent) => {
-        e.preventDefault();
-        setError(null);
-
-        // Substituir pela chamada real à API
-        if (username === "admin.admin" && password === "1234") {
-            navigate("/dashboard");
-        } else if (username === "luiz.arruda" && password === "1234"){
-            navigate("/agendamento");
-        } else {
-            setError("Credenciais inválidas. Tente novamente.");
+    const handleLogin = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setError(null);
+    
+      try {
+        const response = await fetch('https://localhost:44378/swagger', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, password }),
+        });
+    
+        if (!response.ok) {
+          throw new Error('Invalid credentials');
         }
+    
+        const data = await response.json();
+        
+        // Armazenar token
+        localStorage.setItem('jwtToken', data.token);
+        
+        // Redirection
+        navigate("/agendamento"); 
+      } catch (err) {
+        setError("Authentication failed. Please check your credentials");
+      }
     };
 
       return (
