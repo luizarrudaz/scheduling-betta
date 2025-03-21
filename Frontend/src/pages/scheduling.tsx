@@ -9,19 +9,19 @@ import ServiceSelector from '../components/ServiceSelector/ServiceSelector.tsx';
 import LogoutButton from '../components/LogoutButton/LogoutButton.tsx';
 import { TimeSlot } from '../components/Calendar/types.tsx';
 
-const occupiedSlots: TimeSlot[] = [
-    { startDatetime: '2025-03-19T09:30', endDatetime: '2025-03-19T10:00' },
-    { startDatetime: '2025-03-19T10:30', endDatetime: '2025-03-19T11:00' },
-    { startDatetime: '2025-03-19T11:30', endDatetime: '2025-03-19T12:00' },
-    { startDatetime: '2025-03-19T14:30', endDatetime: '2025-03-19T15:00' },
-    { startDatetime: '2025-03-19T15:30', endDatetime: '2025-03-19T16:00' },
-];
-
 export default function Calendar() {
   const today = startOfToday();
   const [selectedDay, setSelectedDay] = useState<Date>(today);
   const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM-yyyy'));
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  const [occupiedSlots, setOccupiedSlots] = useState<TimeSlot[]>([
+    { startDatetime: '2025-03-24T09:30', endDatetime: '2025-03-24T10:00' },
+    { startDatetime: '2025-03-26T10:30', endDatetime: '2025-03-26T11:00' },
+    { startDatetime: '2025-03-26T11:00', endDatetime: '2025-03-26T11:30' },
+    { startDatetime: '2025-03-26T13:30', endDatetime: '2025-03-26T14:00' }
+  ]);
+
   const firstDayCurrentMonth = parse(currentMonth, 'MMM-yyyy', new Date());
 
   const handlePreviousMonth = () => {
@@ -37,11 +37,12 @@ export default function Calendar() {
   };
 
   const handleDayClick = (day: Date) => {
-    setSelectedDay(day);
-    const hasEvents = occupiedSlots.some(slot =>
+    const hasOccupied = occupiedSlots.some(slot => 
       isSameDay(parseISO(slot.startDatetime), day)
     );
-    setIsExpanded(hasEvents);
+    
+    setSelectedDay(day);
+    setIsExpanded(hasOccupied);
   };
 
   return (
