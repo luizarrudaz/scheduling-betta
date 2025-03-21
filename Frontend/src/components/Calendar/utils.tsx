@@ -1,4 +1,4 @@
-import { parseISO, isSameDay } from 'date-fns';
+import { format, parseISO, isSameDay } from 'date-fns';
 import { TimeSlot } from './types';
 
 export function classNames(...classes: (string | boolean)[]) {
@@ -15,20 +15,34 @@ export const colStartClasses = [
   'col-start-7',
 ];
 
-export function getAvailableTimeSlots(day: Date, occupiedSlots: TimeSlot[]) {
-  const slots: { startTime: string; endTime: string }[] = [];
-  const times = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00',
-    '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00'];
+export function generateAllSlots(day: Date, startHour = 8, endHour = 18, intervalMinutes = 30) {
+  const slots = [];
+  
+  for (let hour = startHour; hour <= endHour; hour++) {
+    for (let minute = 0; minute < 60; minute += intervalMinutes) {
+      let endHourCalc = hour;
+      let endMinute = minute + intervalMinutes;
 
-  times.forEach((startTime, index) => {
-    const endTime = times[index + 1] || '16:30';
-    const isOccupied = occupiedSlots.some(slot =>
-      isSameDay(parseISO(slot.startDatetime), day) &&
-      (slot.startDatetime.includes(startTime) || slot.endDatetime.includes(endTime))
-    );
+      if (endMinute >= 60) {
+        endMinute %= 60;
+        endHourCalc++;
+      }
 
-    if (!isOccupied) slots.push({ startTime, endTime });
-  });
+      const startTime = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+      const endTime = `${String(endHourCalc).padStart(2, '0')}:${String(endMinute).padStart(2, '0')}`;
+
+      if (hour < endHour || (hour === endHour && minute === 0)) {
+        slots.push({ startTime, endTime });
+      }
+    }
+  }
 
   return slots;
+}
+
+export function isSlotOccupied(slot: string, occupiedSlots: TimeSlot[], day: Date) {
+  return occupiedSlots.some(os => 
+    isSameDay(parseISO(os.startDatetime), day) &&
+    format(parseISO(os.startDatetime), 'HH:mm') === slot
+  );
 }
