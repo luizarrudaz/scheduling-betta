@@ -31,19 +31,23 @@ export default function DayCell({
   };
 
   return (
-    <>
+    <div className="flex flex-col items-center h-full justify-between pb-1">
       <button
         onClick={() => onDayClick(day)}
         className={`
           mx-auto flex h-8 w-8 items-center justify-center rounded-full transition-colors
           ${textColorClasses()} ${bgColorClasses()}
+          relative
         `}
       >
         <time dateTime={format(day, 'yyyy-MM-dd')}>
           {format(day, 'd')}
         </time>
+
+        <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2">
+          <IndicatorDot show={hasEvents && !isSelected} />
+        </div>
       </button>
-      <IndicatorDot show={hasEvents} />
-    </>
+    </div>
   );
 }

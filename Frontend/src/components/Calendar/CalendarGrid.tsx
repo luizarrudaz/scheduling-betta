@@ -31,25 +31,28 @@ export default function CalendarGrid({
       </div>
 
       <div className="grid grid-cols-7 mt-2 text-xs max-h-[250px] overflow-hidden">
-  {days.map((day, dayIdx) => (
-    <div
-      key={day.toString()}
-      className={classNames(
-        dayIdx === 0 && colStartClasses[getDay(day)],
-        'py-0 max-w-[30px] mx-auto'
-      )}
-    >
-      <DayCell
-        day={day}
-        isSelected={isEqual(day, selectedDay)}
-        isToday={isToday(day)}
-        isSameMonth={isSameMonth(day, firstDayCurrentMonth)}
-        hasEvents={occupiedSlots.some(slot => isSameDay(parseISO(slot.startDatetime), day))}
-        onDayClick={onDayClick}
-      />
-    </div>
-  ))}
-</div>
+        {days.map((day, dayIdx) => (
+          <div
+            key={day.toString()}
+            className={classNames(
+              dayIdx === 0 && colStartClasses[getDay(day)],
+              'py-0 max-w-[30px] mx-auto'
+            )}
+          >
+            <DayCell
+              day={day}
+              isSelected={isEqual(day, selectedDay)}
+              isToday={isToday(day)}
+              isSameMonth={isSameMonth(day, firstDayCurrentMonth)}
+              hasEvents={occupiedSlots?.some(slot => 
+                slot?.startDatetime && 
+                isSameDay(parseISO(slot.startDatetime), day)
+              )}
+              onDayClick={onDayClick}
+            />
+          </div>
+        ))}
+      </div>
     </>
   );
 }
