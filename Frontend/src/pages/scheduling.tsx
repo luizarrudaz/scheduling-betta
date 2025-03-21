@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import CalendarNavigation from '../components/Calendar/CalendarNavigation.tsx';
 import CalendarGrid from '../components/Calendar/CalendarGrid.tsx';
 import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
-import ServiceSelector from '../components/ServiceSelector/ServiceSelector.tsx';
+import ServiceSelector from '../components/Calendar/ServiceSelector.tsx';
 import LogoutButton from '../components/LogoutButton/LogoutButton.tsx';
 import { TimeSlot } from '../components/Calendar/types.tsx';
 
