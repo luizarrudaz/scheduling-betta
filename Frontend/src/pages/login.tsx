@@ -13,30 +13,50 @@ const Login = () => {
 
     const handleLogin = async (e: React.FormEvent) => {
       e.preventDefault();
-      setError(null);
-    
+      setError(null); // Reset error on each login attempt
+  
       try {
-        const response = await fetch('https://localhost:44378/swagger', {
+        const response = await fetch('https://localhost:44378/Auth/Login', { 
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
+          // credentials: 'include'
         });
-    
+  
         if (!response.ok) {
-          throw new Error('Invalid credentials');
+          let errorMessage = 'Falha na autenticação';
+          
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (parseError) {
+            errorMessage = `Erro ${response.status}: ${response.statusText}`;
+          }
+          
+          throw new Error(errorMessage);
         }
-    
+  
         const data = await response.json();
-        
-        // Armazenar token
-        localStorage.setItem('jwtToken', data.token);
-        
-        // Redirection
-        navigate("/agendamento"); 
+  
+        if (!data?.token) {
+          throw new Error('Resposta de autenticação inválida');
+        }
+
+        // Secure storage (consider alternatives for production)
+        sessionStorage.setItem('jwtToken', data.token);
+  
+        navigate("/agendamento");
+  
       } catch (err) {
-        setError("Authentication failed. Please check your credentials");
+    // Type-safe error handling
+    if (err instanceof Error) {
+      setError(err.name === 'TypeError' 
+        ? "Erro de conexão. Verifique sua rede."
+        : err.message
+      );
+    } else {
+      setError("Erro desconhecido durante a autenticação");
+    }
       }
     };
 
