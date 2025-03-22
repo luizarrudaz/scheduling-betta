@@ -46,11 +46,8 @@ O **Scheduling-Betta** é um sistema corporativo de agendamento de serviços int
   - Captura de:  
     - Serviço desejado (dropdown)  
     - Detalhes complementares (textarea)  
-  - Confirmação via modal  
-
-**Integrações**:  
-- Notificações por email (confirmação/lembrete)  
-
+  - Confirmação via modal
+  
 ---
 
 ## **Implementações Futuras**
