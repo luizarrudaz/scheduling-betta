@@ -1,21 +1,23 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity.Data;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Authentication;
-using LoginRequest = SchedulingBetta.API.Authentication.LoginRequest;
+using System.Security.Authentication;
 
-namespace SchedulingBetta.API.Controllers;
-[Route("[controller]")]
 [ApiController]
+[Route("[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly LdapAuthService _ldapAuth;
     private readonly JwtService _jwtService;
+    private readonly ILogger<AuthController> _logger;
 
-    public AuthController()
+    public AuthController(
+        LdapAuthService ldapAuth,
+        JwtService jwtService,
+        ILogger<AuthController> logger)
     {
-        _ldapAuth = new LdapAuthService();
-        _jwtService = new JwtService();
+        _ldapAuth = ldapAuth;
+        _jwtService = jwtService;
+        _logger = logger;
     }
 
     [HttpPost("Login")]
@@ -23,21 +25,32 @@ public class AuthController : ControllerBase
     {
         try
         {
-            // AD Authentication
-            if(!_ldapAuth.AuthenticateUser(request.Username, request.Password))
+            if (string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
             {
-                return Unauthorized("Invalid Credentials");
+                return BadRequest(new { Message = "Username and Password are required." });
+            }
+
+            if (!_ldapAuth.AuthenticateUser(request.Username, request.Password))
+            {
+                _logger.LogWarning("Failed login attempt for {Username}", request.Username);
+                return Unauthorized(new { Message = "Credenciais inválidas" });
             }
 
             var groups = _ldapAuth.GetUserGroups(request.Username);
+            var token = _jwtService.GenerateToken(request.Username, groups);
 
-            var token = _jwtService.GenerateJwtToken(request.Username, groups);
-
+            _logger.LogInformation("Successful login for {Username}", request.Username);
             return Ok(new { Token = token });
-        } 
+        }
+        catch (AuthenticationException ex)
+        {
+            _logger.LogError(ex, "LDAP Authentication error");
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { ex.Message });
+        }
         catch (Exception ex)
         {
-            return StatusCode(500, $"Internal error: {ex.Message}");
+            _logger.LogError(ex, "General authentication error");
+            return StatusCode(500, new { Message = "Erro interno no servidor" });
         }
     }
 }

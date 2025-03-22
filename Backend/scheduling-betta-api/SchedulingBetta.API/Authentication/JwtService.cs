@@ -2,46 +2,48 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using DotNetEnv;
 
-namespace SchedulingBetta.API.Authentication
+public class JwtService
 {
-    public class JwtService
+    private readonly SymmetricSecurityKey _key;
+    private readonly string _issuer;
+    private readonly string _audience;
+    private readonly double _expireHours;
+
+    public JwtService(IConfiguration config)
     {
-        private readonly string _secretKey;
-        private readonly string _issuer;
+        var secret = config["JWT_SECRET"] ?? throw new ArgumentNullException("JWT_SECRET");
+        _issuer = config["JWT_ISSUER"] ?? throw new ArgumentNullException("JWT_ISSUER");
+        _audience = config["JWT_AUDIENCE"] ?? throw new ArgumentNullException("JWT_AUDIENCE");
+        _expireHours = double.Parse(config["JWT_EXPIRE_HOURS"] ?? "1");
 
-        public JwtService()
+        if (secret.Length < 32)
+            throw new ArgumentException("JWT_SECRET must be at least 32 characters");
+
+        _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+    }
+
+    public string GenerateToken(string username, IEnumerable<string> roles)
+    {
+        var claims = new List<Claim>
         {
-            Env.Load();
+            new(JwtRegisteredClaimNames.Sub, username),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(ClaimTypes.NameIdentifier, username)
+        };
 
-            _secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") ?? 
-                throw new ArgumentNullException(nameof(_secretKey));
+        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-            _issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? 
-                throw new ArgumentNullException(nameof(_issuer));
-        }
+        var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
 
-        public string GenerateJwtToken(string username, List<string> groups)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, username),
-                new Claim("role", groups.Contains("Admins") ? "Admin" : "User")
-            };
+        var token = new JwtSecurityToken(
+            issuer: _issuer,
+            audience: _audience,
+            claims: claims,
+            expires: DateTime.UtcNow.AddHours(_expireHours),
+            signingCredentials: creds
+        );
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _issuer,
-                audience: _issuer,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(10),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
