@@ -14,7 +14,7 @@ export default function Calendar() {
   const [selectedDay, setSelectedDay] = useState<Date>(today);
   const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM-yyyy'));
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   const [occupiedSlots, setOccupiedSlots] = useState<TimeSlot[]>([
     { startDatetime: '2025-03-24T09:30', endDatetime: '2025-03-24T10:00' },
     { startDatetime: '2025-03-26T10:30', endDatetime: '2025-03-26T11:00' },
@@ -37,47 +37,55 @@ export default function Calendar() {
   };
 
   const handleDayClick = (day: Date) => {
-    const hasOccupied = occupiedSlots.some(slot => 
+    const hasOccupied = occupiedSlots.some(slot =>
       isSameDay(parseISO(slot.startDatetime), day)
     );
-    
+
     setSelectedDay(day);
     setIsExpanded(hasOccupied);
   };
 
   return (
     <div className="pt-4 sm:pt-8 flex justify-center">
-      <LogoutButton />
+      <div className="flex justify-end">
+        <LogoutButton />
+      </div>
 
-      <div className="px-2 sm:px-4 md:px-4 w-full max-w-4xl">
-        <ServiceSelector />
+      <div className="w-full max-w-4xl relative">
+      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 max-w-max whitespace-nowrap text-center">
+          <h1 className="text-3xl text-gray-800 font-bold">Agendamentos Betta</h1>
+        </div>
 
-        <motion.div
-          className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
-          animate={{ width: isExpanded ? "100%" : "fit-content" }}
-          transition={{ duration: 0.3, ease: "easeInOut" }}
-        >
-          <div className="min-w-[280px] max-h-[300px]">
-            <CalendarNavigation
-              firstDayCurrentMonth={firstDayCurrentMonth}
-              onPrevious={handlePreviousMonth}
-              onNext={handleNextMonth}
-            />
-            
-            <CalendarGrid
-              firstDayCurrentMonth={firstDayCurrentMonth}
+        <div className="mt-14 sm:mt-16">
+          <ServiceSelector />
+
+          <motion.div
+            className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
+            animate={{ width: isExpanded ? "100%" : "fit-content" }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            <div className="min-w-[280px] max-h-[300px]">
+              <CalendarNavigation
+                firstDayCurrentMonth={firstDayCurrentMonth}
+                onPrevious={handlePreviousMonth}
+                onNext={handleNextMonth}
+              />
+
+              <CalendarGrid
+                firstDayCurrentMonth={firstDayCurrentMonth}
+                selectedDay={selectedDay}
+                occupiedSlots={occupiedSlots}
+                onDayClick={handleDayClick}
+              />
+            </div>
+
+            <TimeSlotsPanel
+              isExpanded={isExpanded}
               selectedDay={selectedDay}
               occupiedSlots={occupiedSlots}
-              onDayClick={handleDayClick}
             />
-          </div>
-
-          <TimeSlotsPanel
-            isExpanded={isExpanded}
-            selectedDay={selectedDay}
-            occupiedSlots={occupiedSlots}
-          />
-        </motion.div>
+          </motion.div>
+        </div>
       </div>
     </div>
   );
