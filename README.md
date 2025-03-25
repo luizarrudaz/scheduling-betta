@@ -27,7 +27,7 @@ O **Scheduling-Betta** é um sistema corporativo de agendamento de serviços int
 
 #### Proteções:
 - **Validação de força de senha**: Conforme políticas do AD.
-- **Tokens JWT** com expiração de 8 horas.
+- **Tokens JWT** com expiração de 10 horas.
 
 ---
 
