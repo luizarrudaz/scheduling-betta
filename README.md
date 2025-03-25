@@ -40,12 +40,12 @@ O **Scheduling-Betta** é um sistema corporativo de agendamento de serviços int
   - Atualização em tempo real via **WebSocket**.
 
 - **Seletor de Horários**:
-  - **Slots** de 30 minutos (das 08:00 às 18:00).
+  - **Slots** de xx minutos (das xx:xx às xx:xx).
   - **Cores Dinâmicas**:
     - **Cinza**: Disponível.
-    - **Amarelo**: Em processo de reserva.
-    - **Azul**: Agendado (com opção de entrar na fila de interessados).
-    - **Vermelho**: Ocupado (4 ou mais na fila).
+    - **Amarelo**: Em processo de reserva. (futuro)
+    - **Azul**: Agendado (com opção de entrar na fila de interessados). (futuro)
+    - **Vermelho**: Ocupado (4 ou mais na fila). (futuro)
 
 - **Formulário de Reserva**:
   - Captura de:
@@ -101,7 +101,7 @@ O **Scheduling-Betta** é um sistema corporativo de agendamento de serviços int
 
 ## Tecnologias Utilizadas
 
-- **Frontend**: React, React Router, WebSocket
+- **Frontend**: React, React Router, WebSocket (futuro)
 - **Backend**: .NET, LDAP, JWT
 - **Banco de Dados**: PostgreSQL (futuro)
 - **ORM**: Prisma (futuro)
