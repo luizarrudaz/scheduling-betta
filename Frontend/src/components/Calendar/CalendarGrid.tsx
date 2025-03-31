@@ -1,6 +1,6 @@
 import { eachDayOfInterval, endOfMonth, getDay, isEqual, isSameDay, isSameMonth, isToday } from 'date-fns';
 import DayCell from './DayCell';
-import { TimeSlot } from './types';
+import { TimeSlot } from '../Types/TimeSlot';
 import { classNames, colStartClasses } from './utils';
 import { parseISO } from 'date-fns';
 
