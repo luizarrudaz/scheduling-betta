@@ -2,24 +2,12 @@ import { Dialog } from '@headlessui/react'
 import { motion } from 'framer-motion'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useForm } from 'react-hook-form'
+import { Event } from "../Types/Event" 
 
 interface EventFormModalProps {
   isOpen: boolean
   onClose: () => void
   event?: Event | null
-}
-
-interface Event {
-  id: number
-  nome: string
-  tamanhoSessao: number
-  pausa: boolean
-  pausaInicio?: string
-  pausaVolta?: string
-  localidade: string
-  dataInicio: string
-  dataFim: string
-  vagasDisponiveis: number
 }
 
 export default function EventFormModal({ isOpen, onClose, event }: EventFormModalProps) {
@@ -31,19 +19,17 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
     formState: { errors } 
   } = useForm<Event>({
     defaultValues: event || {
+      id: 0,
       nome: '',
       tamanhoSessao: 30,
+      pausa: false,
       localidade: '',
       dataInicio: '',
       dataFim: '',
-      pausa: false,
-      pausaInicio: '',
-      pausaVolta: '',
       vagasDisponiveis: 0,
-      id: 0
     }
   })
-
+  
   const hasPause = watch('pausa')
 
   const handleClose = () => {
