@@ -1,9 +1,21 @@
 using DotNetEnv;
-using SchedulingBetta.API.Authentication;
+using Microsoft.EntityFrameworkCore;
+using SchedulingBetta.API.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+
+builder.Services.AddDbContext<SchedulingDbContext>(options =>
+{
+    options.UseNpgsql(Env.GetString("DB_CONNECTION_STRING"));
+
+    if (builder.Environment.IsDevelopment())
+    {
+        options.EnableSensitiveDataLogging()
+               .LogTo(Console.WriteLine, LogLevel.Information);
+    }
+});
 
 builder.Services.AddCors(options =>
 {
@@ -20,7 +32,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 builder.Configuration.AddEnvironmentVariables();
 
