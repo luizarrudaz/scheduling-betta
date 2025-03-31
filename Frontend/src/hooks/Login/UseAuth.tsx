@@ -20,7 +20,7 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
         // Mock authentication
         if (!isProd) {
           if (username === "luiz.arruda" && password === "1234") {
-            navigate("/agendamento");
+            navigate("/agendamentos");
             return true;
           }
           else if (username === "admin" && password === "1234") {
