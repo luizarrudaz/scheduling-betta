@@ -1,4 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
+using SchedulingBetta.API.Authentication;
+using System.DirectoryServices.AccountManagement;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -15,24 +17,27 @@ public class JwtService
         var secret = config["JWT_SECRET"] ?? throw new ArgumentNullException("JWT_SECRET");
         _issuer = config["JWT_ISSUER"] ?? throw new ArgumentNullException("JWT_ISSUER");
         _audience = config["JWT_AUDIENCE"] ?? throw new ArgumentNullException("JWT_AUDIENCE");
-        _expireHours = double.Parse(config["JWT_EXPIRE_HOURS"] ?? "1");
+        _expireHours = double.Parse(config["JWT_EXPIRE_HOURS"] ?? "10");
 
         if (secret.Length < 32)
-            throw new ArgumentException("JWT_SECRET must be at least 32 characters");
+            throw new ArgumentException("JWT_SECRET deve ter pelo menos 32 caracteres");
 
         _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
     }
 
-    public string GenerateToken(string username, IEnumerable<string> roles)
+    public string GenerateToken(LdapUserInfo user, IEnumerable<string> groups)
     {
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, username),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(ClaimTypes.NameIdentifier, username)
+            new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Sid.ToString()),
+            new Claim(ClaimTypes.Name, user.DisplayName),
+            new Claim(ClaimTypes.WindowsAccountName, user.Username),
+            new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
         };
 
-        claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+        claims.AddRange(groups.Select(group => new Claim(ClaimTypes.Role, group)));
 
         var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256);
 

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Authentication;
 using System.Security.Authentication;
+using System.Text.RegularExpressions;
 
 [ApiController]
 [Route("[controller]")]
@@ -36,8 +37,8 @@ public class AuthController : ControllerBase
                 return Unauthorized(new { Message = "Credenciais inválidas" });
             }
 
-            var groups = _ldapAuth.GetUserGroups(request.Username);
-            var token = _jwtService.GenerateToken(request.Username, groups);
+            var userInfo = _ldapAuth.GetUserInfo(request.Username);
+            var token = _jwtService.GenerateToken(userInfo, userInfo.Groups);
 
             _logger.LogInformation("Successful login for {Username}", request.Username);
             return Ok(new { Token = token });

@@ -1,5 +1,10 @@
-﻿using System.DirectoryServices.AccountManagement;
+﻿using System.DirectoryServices;
+using System.DirectoryServices.AccountManagement;
+using System.Reflection.PortableExecutable;
 using System.Security.Authentication;
+using SchedulingBetta.API.Authentication;
+using DirectoryEntry = System.DirectoryServices.DirectoryEntry;
+
 #pragma warning disable CA1416
 
 public class LdapAuthService
@@ -8,6 +13,7 @@ public class LdapAuthService
     private readonly string _domainDn;
     private readonly int _port;
     private readonly bool _useSsl;
+    private readonly PrincipalContext _context;
 
     public LdapAuthService(IConfiguration config)
     {
@@ -19,26 +25,22 @@ public class LdapAuthService
 
         if (!bool.TryParse(config["LDAP_USE_SSL"], out _useSsl))
             _useSsl = false;
+
+        _context = new PrincipalContext(
+            ContextType.Domain,
+            _server,
+            _domainDn,
+            _useSsl ? ContextOptions.SecureSocketLayer | ContextOptions.Negotiate : ContextOptions.Negotiate,
+            config["LDAP_ADMIN_USER"],
+            config["LDAP_ADMIN_PASSWORD"]
+        );
     }
 
     public bool AuthenticateUser(string username, string password)
     {
         try
         {
-            var contextOptions = _useSsl
-                ? ContextOptions.SecureSocketLayer | ContextOptions.Negotiate
-                : ContextOptions.Negotiate;
-
-            using var context = new PrincipalContext(
-                ContextType.Domain,
-                $"{_server}:{_port}",
-                _domainDn,
-                contextOptions,
-                username,
-                password
-            );
-
-            return context.ValidateCredentials(username, password);
+            return _context.ValidateCredentials(username, password);
         }
         catch (Exception ex)
         {
@@ -52,33 +54,49 @@ public class LdapAuthService
 
         try
         {
-            var contextOptions = _useSsl
-                ? ContextOptions.SecureSocketLayer | ContextOptions.Negotiate
-                : ContextOptions.Negotiate;
-
-            using var context = new PrincipalContext(
-                ContextType.Domain,
-                $"{_server}:{_port}",
-                _domainDn,
-                contextOptions
-            );
-
-            var user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, username);
-
+            var user = UserPrincipal.FindByIdentity(_context, IdentityType.SamAccountName, username);
             if (user != null)
             {
-                foreach (var principal in user.GetAuthorizationGroups())
-                {
-                    if (principal is GroupPrincipal group && !string.IsNullOrEmpty(group.Name))
-                        groups.Add(group.Name);
-                }
+                groups = user.GetAuthorizationGroups()
+                    .OfType<GroupPrincipal>()
+                    .Select(g => g.Name)
+                    .Where(name => !string.IsNullOrEmpty(name))
+                    .Distinct()
+                    .ToList();
             }
-
-            return groups.Distinct().ToList();
         }
         catch (Exception ex)
         {
             throw new AuthenticationException("Falha ao buscar grupos", ex);
         }
+
+        return groups;
+    }
+
+    public LdapUserInfo GetUserInfo(string username)
+    {
+        var user = UserPrincipal.FindByIdentity(_context, IdentityType.SamAccountName, username);
+        if (user == null) { throw new AuthenticationException("Usuário não encontrado no diretório"); }
+
+        if (user.IsAccountLockedOut()) { throw new AuthenticationException("Conta bloqueada"); }
+
+        if (user.Enabled.HasValue && !user.Enabled.Value) { throw new AuthenticationException("Conta desabilitada"); }
+
+        string email = user.EmailAddress;
+        var directoryEntry = user.GetUnderlyingObject() as DirectoryEntry;
+
+        if (directoryEntry != null && directoryEntry.Properties["mail"]?.Value != null)
+        {
+            email = directoryEntry.Properties["mail"].Value.ToString();
+        }
+
+        return new LdapUserInfo
+        {
+            Sid = user.Sid.ToString(),
+            Username = user.SamAccountName,
+            DisplayName = user.DisplayName,
+            Email = email,
+            Groups = GetUserGroups(username)
+        };
     }
 }
