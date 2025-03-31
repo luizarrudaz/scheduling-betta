@@ -7,7 +7,7 @@ import CalendarGrid from '../components/Calendar/CalendarGrid.tsx';
 import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
 import ServiceSelector from '../components/Calendar/ServiceSelector.tsx';
 import LogoutButton from '../components/LogoutButton/LogoutButton.tsx';
-import { TimeSlot } from '../components/Calendar/types.tsx';
+import { TimeSlot } from '../components/Types/TimeSlot.tsx';
 
 export default function Calendar() {
   const today = startOfToday();
