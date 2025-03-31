@@ -1,5 +1,5 @@
 import { format, parseISO, isSameDay } from 'date-fns';
-import { TimeSlot } from './types';
+import { TimeSlot } from '../Types/TimeSlot';
 
 export function classNames(...classes: (string | boolean)[]) {
   return classes.filter(Boolean).join(' ');
