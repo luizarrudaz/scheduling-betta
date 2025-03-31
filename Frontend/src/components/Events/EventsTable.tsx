@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { Event } from '../../pages/admin-events';
+import { Event } from '../../components/Types/Event';
 
 const rowVariants = {
   hidden: { opacity: 0, x: -20 },
