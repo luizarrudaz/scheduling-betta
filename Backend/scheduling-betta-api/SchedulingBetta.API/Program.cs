@@ -1,6 +1,5 @@
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-using SchedulingBetta.API.Database;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +26,6 @@ builder.Services.AddCors(options =>
               .AllowCredentials();
     });
 });
-
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

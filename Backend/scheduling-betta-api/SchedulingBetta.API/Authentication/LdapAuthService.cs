@@ -1,8 +1,6 @@
-﻿using System.DirectoryServices;
+﻿using SchedulingBetta.API.Authentication;
 using System.DirectoryServices.AccountManagement;
-using System.Reflection.PortableExecutable;
 using System.Security.Authentication;
-using SchedulingBetta.API.Authentication;
 using DirectoryEntry = System.DirectoryServices.DirectoryEntry;
 
 #pragma warning disable CA1416
@@ -30,9 +28,7 @@ public class LdapAuthService
             ContextType.Domain,
             _server,
             _domainDn,
-            _useSsl ? ContextOptions.SecureSocketLayer | ContextOptions.Negotiate : ContextOptions.Negotiate,
-            config["LDAP_ADMIN_USER"],
-            config["LDAP_ADMIN_PASSWORD"]
+            _useSsl ? ContextOptions.SecureSocketLayer : ContextOptions.Negotiate
         );
     }
 
@@ -40,7 +36,20 @@ public class LdapAuthService
     {
         try
         {
-            return _context.ValidateCredentials(username, password);
+            var contextOptions = _useSsl
+                ? ContextOptions.SecureSocketLayer | ContextOptions.Negotiate
+                : ContextOptions.Negotiate;
+
+            using var userContext = new PrincipalContext(
+                ContextType.Domain,
+                _server,
+                _domainDn,
+                _useSsl ? ContextOptions.SecureSocketLayer : ContextOptions.Negotiate,
+                username,
+                password
+            );
+
+            return userContext.ValidateCredentials(username, password);
         }
         catch (Exception ex)
         {
@@ -50,32 +59,31 @@ public class LdapAuthService
 
     public List<string> GetUserGroups(string username)
     {
-        var groups = new List<string>();
-
         try
         {
-            var user = UserPrincipal.FindByIdentity(_context, IdentityType.SamAccountName, username);
-            if (user != null)
-            {
-                groups = user.GetAuthorizationGroups()
-                    .OfType<GroupPrincipal>()
-                    .Select(g => g.Name)
-                    .Where(name => !string.IsNullOrEmpty(name))
-                    .Distinct()
-                    .ToList();
-            }
+            using var userContext = new PrincipalContext(
+                ContextType.Domain,
+                _server,
+                _domainDn
+            );
+
+            var user = UserPrincipal.FindByIdentity(userContext, IdentityType.SamAccountName, username);
+
+            return user?.GetAuthorizationGroups()
+                .OfType<GroupPrincipal>()
+                .Select(g => g.Name)
+                .ToList() ?? [];
         }
         catch (Exception ex)
         {
             throw new AuthenticationException("Falha ao buscar grupos", ex);
         }
-
-        return groups;
     }
 
     public LdapUserInfo GetUserInfo(string username)
     {
         var user = UserPrincipal.FindByIdentity(_context, IdentityType.SamAccountName, username);
+
         if (user == null) { throw new AuthenticationException("Usuário não encontrado no diretório"); }
 
         if (user.IsAccountLockedOut()) { throw new AuthenticationException("Conta bloqueada"); }
