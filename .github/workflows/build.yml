@@ -22,7 +22,10 @@ jobs:
           dotnet-version: '6.0.x'
 
       - name: Restore .NET dependencies
-        run: dotnet restore
+        run: dotnet restore ./scheduling-betta-api.sln
+
+      - name: Build .NET project
+        run: dotnet build ./scheduling-betta-api.sln --configuration Release
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -36,4 +39,3 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
