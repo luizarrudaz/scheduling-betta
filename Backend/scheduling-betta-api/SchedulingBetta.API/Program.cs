@@ -1,13 +1,14 @@
-using DotNetEnv;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
+Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddDbContext<SchedulingDbContext>(options =>
     options.UseNpgsql(Env.GetString("DB_CONNECTION_STRING")));
@@ -15,9 +16,9 @@ builder.Services.AddDbContext<SchedulingDbContext>(options =>
 builder.Services.AddCors(options =>
     options.AddPolicy("AllowFrontend", policy =>
         policy.WithOrigins("http://localhost:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials()));
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials()));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -53,10 +54,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidateAudience = true,
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
-        ValidIssuer = Env.GetString("JWT_ISSUER"),
-        ValidAudience = Env.GetString("JWT_AUDIENCE"),
+        ValidIssuer = builder.Configuration["JWT_ISSUER"],
+        ValidAudience = builder.Configuration["JWT_AUDIENCE"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET")))
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT_SECRET"]))
     };
 });
 
