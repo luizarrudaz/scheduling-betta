@@ -50,7 +50,7 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
         if (!token) throw new Error('Token não recebido');
 
         sessionStorage.setItem('jwtToken', token);
-        navigate("/agendamento");
+        navigate("/agendamentos");
         return true;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Erro desconhecido";

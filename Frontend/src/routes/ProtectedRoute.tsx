@@ -16,7 +16,7 @@ const ProtectedRoute = ({
   if (!isAuthenticated) return <Navigate to="/" />;
 
   if (requiredGroup && !groups.includes(requiredGroup)) {
-    return <Navigate to="/acesso-negado" />;
+    return <Navigate to="/access-denied" />;
   }
 
   return children;

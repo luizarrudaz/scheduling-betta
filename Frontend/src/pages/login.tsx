@@ -10,7 +10,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   
   const { login, error, isLoading } = useAuth({
-    isProd: false,
+    isProd: true,
     apiEndpoint: 'https://localhost:44378/Auth/Login'
   });
 

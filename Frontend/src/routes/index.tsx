@@ -25,13 +25,13 @@ const AppRoutes = () => {
         <Route
           path="/eventos"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requiredGroup="RH">
               <AdminEvent />
             </ProtectedRoute>
           }
         />
 
-      <Route path="/access-denied" element={<AccessDenied />} />
+        <Route path="/access-denied" element={<AccessDenied />} />
       </Routes>
     </Router>
   );
