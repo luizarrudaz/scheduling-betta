@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../context/AuthContext";
 
 type AuthConfig = {
   isProd: boolean;
@@ -10,6 +11,7 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { refreshAuth } = useAuthContext();
 
   const login = useCallback(
     async (username: string, password: string) => {
@@ -17,20 +19,17 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
       setIsLoading(true);
 
       try {
-        // Mock authentication
         if (!isProd) {
           if (username === "luiz.arruda" && password === "1234") {
             navigate("/agendamentos");
             return true;
-          }
-          else if (username === "admin" && password === "1234") {
+          } else if (username === "admin" && password === "1234") {
             navigate("/eventos");
             return true;
           }
           throw new Error("Credenciais inválidas");
         }
 
-        // Production authentication
         if (!apiEndpoint) {
           throw new Error("Endpoint de API não configurado");
         }
@@ -47,10 +46,11 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
         }
 
         const { token } = await response.json();
-        if (!token) throw new Error('Token não recebido');
-
         sessionStorage.setItem('jwtToken', token);
+
+        await refreshAuth();
         navigate("/agendamentos");
+
         return true;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Erro desconhecido";
@@ -60,7 +60,8 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
         setIsLoading(false);
       }
     },
-    [isProd, apiEndpoint, navigate]
+    [isProd, apiEndpoint, navigate, refreshAuth]
+
   );
 
   return { login, error, isLoading };
