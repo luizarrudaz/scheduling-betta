@@ -1,12 +1,14 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket } from '@fortawesome/free-solid-svg-icons';
-
 import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from '../../context/AuthContext';
 
 export default function LogoutButton() {
   const navigate = useNavigate();
+  const { logout } = useAuthContext();
 
   const handleLogout = () => {
+    logout();
     navigate('/');
   };
 
