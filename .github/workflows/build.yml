@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          path: . 
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
@@ -37,7 +38,5 @@ jobs:
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
-        with:
-          projectBaseDir: ./Backend/scheduling-betta-api
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
