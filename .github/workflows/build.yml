@@ -42,7 +42,10 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
           args: >
             -Dsonar.ci.autoconfig.disabled=true
             -Dsonar.analysis.ci=true
+            -Dsonar.scm.disabled=true
+            -Dsonar.scm.provider=git
