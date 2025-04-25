@@ -1,40 +1,68 @@
-using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
+using DotNetEnv;
 
 var builder = WebApplication.CreateBuilder(args);
 
 Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddDbContext<SchedulingDbContext>(options =>
-{
-    options.UseNpgsql(Env.GetString("DB_CONNECTION_STRING"));
-
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging()
-               .LogTo(Console.WriteLine, LogLevel.Information);
-    }
-});
+    options.UseNpgsql(Env.GetString("DB_CONNECTION_STRING")));
 
 builder.Services.AddCors(options =>
-{
     options.AddPolicy("AllowFrontend", policy =>
-    {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
-    });
-});
+              .AllowCredentials()));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c => {
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using Bearer scheme",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
-builder.Configuration.AddEnvironmentVariables();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options => {
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JWT_ISSUER"],
+        ValidAudience = builder.Configuration["JWT_AUDIENCE"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["JWT_SECRET"]))
+    };
+});
 
-builder.Services.AddScoped<LdapAuthService>();
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<LdapAuthService>();
 
 var app = builder.Build();
 
@@ -47,6 +75,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Authentication;
-using System.DirectoryServices.AccountManagement;
-using System.DirectoryServices.ActiveDirectory;
 using System.Security.Authentication;
+using System.Security.Claims;
 
 [ApiController]
 [Route("[controller]")]
@@ -55,5 +54,30 @@ public class AuthController : ControllerBase
             _logger.LogError(ex, "General authentication error");
             return StatusCode(500, new { Message = "Erro interno no servidor" });
         }
+    }
+
+    [Authorize]
+    [HttpGet("CheckAuth")]
+    public IActionResult CheckAuth()
+    {
+        var identity = HttpContext.User.Identity as ClaimsIdentity;
+
+        if (identity == null || !identity.IsAuthenticated)
+        {
+            return Unauthorized(new { Message = "Usuário não autenticado" });
+        }
+
+        var username = identity.Name;
+        var groups = identity.Claims
+            .Where(c => c.Type == ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+
+        return Ok(new
+        {
+            Authenticated = true,
+            Username = username,
+            Groups = groups
+        });
     }
 }
