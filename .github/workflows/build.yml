@@ -22,10 +22,10 @@ jobs:
           dotnet-version: '6.0.x'
 
       - name: Restore .NET dependencies
-        run: dotnet restore ./scheduling-betta-api.sln
+        run: dotnet restore ./Backend/scheduling-betta-api/scheduling-betta-api.sln
 
       - name: Build .NET project
-        run: dotnet build ./scheduling-betta-api.sln --configuration Release
+        run: dotnet build ./Backend/scheduling-betta-api/scheduling-betta-api.sln --configuration Release
 
       - name: Setup Node.js
         uses: actions/setup-node@v3
@@ -33,9 +33,11 @@ jobs:
           node-version: '18.x'
 
       - name: Install frontend dependencies
-        run: npm install --prefix ./frontend
+        run: npm install --prefix ./Frontend
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v5
+        with:
+          projectBaseDir: ./Backend/scheduling-betta-api
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
