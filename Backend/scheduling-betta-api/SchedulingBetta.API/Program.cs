@@ -88,6 +88,7 @@ builder.Services.AddScoped<IGetAllEventsUseCase, GetAllEventsUseCase>();
 builder.Services.AddScoped<IGetEventByIdUseCase, GetEventByIdUseCase>();
 builder.Services.AddScoped<IGetEventByNameUseCase, GetEventByNameUseCase>();
 builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>();
+builder.Services.AddScoped<IDeleteEventUseCase, DeleteEventUseCase>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEventCommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<BreakWindowValidator>();
