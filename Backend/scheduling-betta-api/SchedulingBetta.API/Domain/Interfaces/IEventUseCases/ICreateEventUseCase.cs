@@ -1,0 +1,8 @@
+﻿using SchedulingBetta.API.Application.DTOs.Event;
+
+namespace SchedulingBetta.API.Domain.Interfaces.EventUseCase;
+
+public interface ICreateEventUseCase
+{
+    Task<Guid> Execute(EventDto command);
+}
