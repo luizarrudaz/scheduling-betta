@@ -2,7 +2,7 @@
 using SchedulingBetta.API.Application.DTOs.Event;
 
 namespace SchedulingBetta.API.Application.FluentValidation;
-public class CreateEventCommandValidator : AbstractValidator<CreateEventCommandDto>
+public class CreateEventCommandValidator : AbstractValidator<EventDto>
 {
     public CreateEventCommandValidator()
     {
