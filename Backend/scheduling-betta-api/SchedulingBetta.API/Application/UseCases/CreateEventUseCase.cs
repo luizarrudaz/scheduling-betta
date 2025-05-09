@@ -8,7 +8,7 @@ public class CreateEventUseCase : ICreateEventUseCase
 {
     private readonly IEventRepository _eventRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IValidator<CreateEventCommandDto> _eventValidator;
+    private readonly IValidator<EventDto> _eventValidator;
     private readonly IValidator<BreakWindowDto> _breakWindowValidator;
     private readonly ISlotCalculator _slotCalculator;
     private readonly ILogger<CreateEventUseCase> _logger;
@@ -16,7 +16,7 @@ public class CreateEventUseCase : ICreateEventUseCase
     public CreateEventUseCase(
         IEventRepository eventRepository,
         IUnitOfWork unitOfWork,
-        IValidator<CreateEventCommandDto> eventValidator,
+        IValidator<EventDto> eventValidator,
         IValidator<BreakWindowDto> breakWindowValidator,
         ISlotCalculator slotCalculator,
         ILogger<CreateEventUseCase> logger)
@@ -29,7 +29,7 @@ public class CreateEventUseCase : ICreateEventUseCase
         _logger = logger;
     }
 
-    public async Task<Guid> Execute(CreateEventCommandDto command)
+    public async Task<Guid> Execute(EventDto command)
     {
         await _eventValidator.ValidateAndThrowAsync(command);
 
