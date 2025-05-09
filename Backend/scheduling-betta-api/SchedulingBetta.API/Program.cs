@@ -10,6 +10,7 @@ using SchedulingBetta.API.Application.FluentValidation;
 using SchedulingBetta.API.Application.UseCases;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
+using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
 using SchedulingBetta.API.Infraestructure.Repositories;
 using SchedulingBetta.API.Infraestructure.UnitOfWork;
 using System.Text;
@@ -86,6 +87,7 @@ builder.Services.AddScoped<ICreateEventUseCase, CreateEventUseCase>();
 builder.Services.AddScoped<IGetAllEventsUseCase, GetAllEventsUseCase>();
 builder.Services.AddScoped<IGetEventByIdUseCase, GetEventByIdUseCase>();
 builder.Services.AddScoped<IGetEventByNameUseCase, GetEventByNameUseCase>();
+builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEventCommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<BreakWindowValidator>();
