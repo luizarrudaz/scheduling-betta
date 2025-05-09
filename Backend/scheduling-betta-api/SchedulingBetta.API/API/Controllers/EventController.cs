@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Update.Internal;
 using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
+using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
 using System.Net;
 
 
@@ -12,6 +14,7 @@ public class EventController : ControllerBase
     private readonly IGetAllEventsUseCase _getAllEventsUseCase;
     private readonly IGetEventByIdUseCase _getEventByIdUseCase;
     private readonly IGetEventByNameUseCase _getEventByNameUseCase;
+    private readonly IUpdateEventUseCase _updateEventUseCase;
     private readonly ILogger<EventController> _logger;
 
     public EventController(
@@ -19,12 +22,14 @@ public class EventController : ControllerBase
         IGetAllEventsUseCase getAllEventsUseCase,
         IGetEventByIdUseCase getEventByIdUseCase,
         IGetEventByNameUseCase getEventByNameUseCase,
+        IUpdateEventUseCase updateEventUseCase,
         ILogger<EventController> logger)
     {
         _createEventUseCase = createEventUseCase;
         _getAllEventsUseCase = getAllEventsUseCase;
         _getEventByIdUseCase = getEventByIdUseCase;
         _getEventByNameUseCase = getEventByNameUseCase;
+        _updateEventUseCase = updateEventUseCase;
         _logger = logger;
     }
 
@@ -32,7 +37,7 @@ public class EventController : ControllerBase
     [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.Created)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError)]
-    public async Task<IActionResult> CreateEvent([FromBody] CreateEventCommandDto command)
+    public async Task<IActionResult> CreateEvent([FromBody] EventDto command)
     {
         try
         {
@@ -105,5 +110,41 @@ public class EventController : ControllerBase
         }
 
         return Ok(@event);
+    }
+
+    [HttpPut("UpdateEvent/{id}")]
+    [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+    public async Task<IActionResult> UpdateEvent(int id, [FromBody] EventDto command)
+    {
+        try
+        {
+            _logger.LogInformation("Updating event with ID {EventId}", id);
+            var existingEvent = await _getEventByIdUseCase.Execute(id);
+            if (existingEvent == null)
+            {
+                return NotFound();
+            }
+
+            var updateEvent = await _updateEventUseCase.Execute(id, command);
+            return Ok(updateEvent);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning(ex, "Invalid event update request for ID {EventId}", id);
+            return Problem(
+                title: "Invalid request",
+                detail: ex.Message,
+                statusCode: (int)HttpStatusCode.BadRequest);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating event with ID {EventId}", id);
+            return Problem(
+                title: "Internal server error",
+                detail: ex.Message,
+                statusCode: (int)HttpStatusCode.InternalServerError);
+        }
     }
 }
