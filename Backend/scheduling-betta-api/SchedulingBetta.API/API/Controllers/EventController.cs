@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Update.Internal;
 using SchedulingBetta.API.Application.DTOs.Event;
+using SchedulingBetta.API.Application.UseCases;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
 using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
 using System.Net;
@@ -15,6 +16,7 @@ public class EventController : ControllerBase
     private readonly IGetEventByIdUseCase _getEventByIdUseCase;
     private readonly IGetEventByNameUseCase _getEventByNameUseCase;
     private readonly IUpdateEventUseCase _updateEventUseCase;
+    private readonly IDeleteEventUseCase _deleteEventUseCase;
     private readonly ILogger<EventController> _logger;
 
     public EventController(
@@ -23,6 +25,7 @@ public class EventController : ControllerBase
         IGetEventByIdUseCase getEventByIdUseCase,
         IGetEventByNameUseCase getEventByNameUseCase,
         IUpdateEventUseCase updateEventUseCase,
+        IDeleteEventUseCase deleteEventUseCase,
         ILogger<EventController> logger)
     {
         _createEventUseCase = createEventUseCase;
@@ -30,6 +33,7 @@ public class EventController : ControllerBase
         _getEventByIdUseCase = getEventByIdUseCase;
         _getEventByNameUseCase = getEventByNameUseCase;
         _updateEventUseCase = updateEventUseCase;
+        _deleteEventUseCase = deleteEventUseCase;
         _logger = logger;
     }
 
@@ -141,6 +145,34 @@ public class EventController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error updating event with ID {EventId}", id);
+            return Problem(
+                title: "Internal server error",
+                detail: ex.Message,
+                statusCode: (int)HttpStatusCode.InternalServerError);
+        }
+    }
+
+    [HttpDelete("DeleteEvent/{id}")]
+    [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError)]
+    public async Task<IActionResult> DeleteEvent(int id)
+    {
+        try
+        {
+            _logger.LogInformation("Deleting event with ID {EventId}", id);
+
+            var deleted = await _deleteEventUseCase.Execute(id);
+            if (!deleted)
+            {
+                return NotFound(new { Message = $"Event with ID {id} not found." });
+            }
+
+            return Ok(new { Message = $"Event with ID {id} was successfully deleted." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting event with ID {EventId}", id);
             return Problem(
                 title: "Internal server error",
                 detail: ex.Message,
