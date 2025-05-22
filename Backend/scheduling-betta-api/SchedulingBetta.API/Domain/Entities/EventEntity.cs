@@ -48,6 +48,16 @@ public class EventEntity
     [Range(0, int.MaxValue)]
     public int AvailableSlots { get; set; }
 
+    public List<DateTime> GetValidSlots()
+    {
+        var slots = new List<DateTime>();
+        for (int i = 0; i < AvailableSlots; i++)
+        {
+            slots.Add(StartTime.AddMinutes(i * SessionDuration));
+        }
+        return slots;
+    }
+
     [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

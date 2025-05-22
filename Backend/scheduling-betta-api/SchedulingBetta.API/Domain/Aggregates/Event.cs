@@ -76,6 +76,18 @@ public class Event
         PublicId = publicId;
     }
 
+    internal void SetCreatedAt(DateTime createdAt)
+    {
+        CreatedAt = createdAt;
+    }
+
+    public void SetBreakWindow(BreakWindow breakWindow)
+    {
+        if (HasBreak)
+            throw new DomainException("Break window already exists.");
+        BreakWindow = breakWindow;
+    }
+
     public void AddInterestedUser(InterestedUser user)
     {
         if (_interestedUsers.Count >= MaxWaitlistCapacity)

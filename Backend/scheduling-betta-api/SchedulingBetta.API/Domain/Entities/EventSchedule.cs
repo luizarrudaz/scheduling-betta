@@ -19,7 +19,7 @@ public class EventSchedule
     public string? UserId { get; set; } // AD user identifier
 
     [Required]
-    [Column(TypeName = "timestamp")]
+    [Column(TypeName = "timestamp with time zone")]
     public DateTime ScheduleTime { get; set; }
 
     [Required]
