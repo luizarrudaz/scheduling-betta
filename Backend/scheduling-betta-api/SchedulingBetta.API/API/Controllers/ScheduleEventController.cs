@@ -59,7 +59,7 @@ public class ScheduleEventController : ControllerBase
     }
 
     [HttpGet("GetAllSchedules")]
-    [ProducesResponseType(typeof(List<ScheduleEventDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllSchedules()
     {
@@ -69,7 +69,7 @@ public class ScheduleEventController : ControllerBase
 
             var entities = await _getAllSchedulesEventUseCase.Execute();
 
-            var scheduleDtos = entities.Select(s => new ScheduleEventDto
+            var scheduleDtos = entities.Select(s => new GetScheduledEventDto
             {
                 Id = s.Id,
                 EventId = s.EventId,
@@ -104,7 +104,7 @@ public class ScheduleEventController : ControllerBase
     }
 
     [HttpGet("GetAllSchedulesById/{userId}")]
-    [ProducesResponseType(typeof(List<ScheduleEventDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetSchedulesByUser(string userId)
     {
@@ -114,7 +114,7 @@ public class ScheduleEventController : ControllerBase
 
             var entities = await _getAllSchedulesByUserUseCase.Execute(userId);
 
-            var scheduleDtos = entities.Select(s => new ScheduleEventDto
+            var scheduleDtos = entities.Select(s => new GetScheduledEventDto
             {
                 Id = s.Id,
                 EventId = s.EventId,

@@ -46,9 +46,14 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
                 throw new InvalidOperationException("Slot is out of allowed event time range.");
             }
 
-            if (!validSlots.Contains(selectedSlotNormalized))
+            if (!validSlots.Any(slot =>
+                slot.Year == selectedSlotNormalized.Year &&
+                slot.Month == selectedSlotNormalized.Month &&
+                slot.Day == selectedSlotNormalized.Day &&
+                slot.Hour == selectedSlotNormalized.Hour &&
+                slot.Minute == selectedSlotNormalized.Minute
+            ))
             {
-                _logger.LogWarning("Invalid slot submitted: {Slot}", selectedSlotNormalized);
                 throw new InvalidOperationException("Invalid slot selected.");
             }
 
