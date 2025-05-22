@@ -106,7 +106,7 @@ namespace SchedulingBetta.API.Migrations
                         .HasColumnName("event_id");
 
                     b.Property<DateTime>("ScheduleTime")
-                        .HasColumnType("timestamp")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("schedule_time");
 
                     b.Property<string>("Status")
