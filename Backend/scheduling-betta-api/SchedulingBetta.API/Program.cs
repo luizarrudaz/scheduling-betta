@@ -7,10 +7,12 @@ using Microsoft.OpenApi.Models;
 using NLog.Extensions.Logging;
 using NLog.Web;
 using SchedulingBetta.API.Application.FluentValidation;
-using SchedulingBetta.API.Application.UseCases;
+using SchedulingBetta.API.Application.UseCases.Event;
+using SchedulingBetta.API.Application.UseCases.ScheduleEvent;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
 using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
+using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 using SchedulingBetta.API.Infraestructure.Repositories;
 using SchedulingBetta.API.Infraestructure.UnitOfWork;
 using System.Text;
@@ -80,15 +82,22 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<LdapAuthService>();
 
-builder.Services.AddScoped<ISlotCalculator, SlotCalculator>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddScoped<ICreateEventUseCase, CreateEventUseCase>();
 builder.Services.AddScoped<IGetAllEventsUseCase, GetAllEventsUseCase>();
 builder.Services.AddScoped<IGetEventByIdUseCase, GetEventByIdUseCase>();
 builder.Services.AddScoped<IGetEventByNameUseCase, GetEventByNameUseCase>();
-builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>();
+builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>(); 
 builder.Services.AddScoped<IDeleteEventUseCase, DeleteEventUseCase>();
+
+builder.Services.AddScoped<ISlotCalculator, SlotCalculator>();
+
+builder.Services.AddScoped<IScheduleEventUseCase, ScheduleEventUseCase>();
+builder.Services.AddScoped<IGetAllSchedulesEventUseCase, GetAllSchedulesEventUseCase>();
+builder.Services.AddScoped<IGetAllSchedulesByUserUseCase, GetAllSchedulesByUserUseCase>();
+builder.Services.AddScoped<IUnscheduleEventUseCase, UnscheduleEventUseCase>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEventCommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<BreakWindowValidator>();
