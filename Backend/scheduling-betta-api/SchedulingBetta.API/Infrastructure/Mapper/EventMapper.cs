@@ -1,7 +1,8 @@
 ﻿using SchedulingBetta.API.Domain.Aggregates;
 using SchedulingBetta.API.Domain.Entities;
+using SchedulingBetta.API.Domain.ValueObjects;
 
-namespace SchedulingBetta.API.Infraestructure.Mapper;
+namespace SchedulingBetta.API.Infrastructure.Mapper;
 
 public static class EventMapper
 {
@@ -11,12 +12,12 @@ public static class EventMapper
         {
             Id = domain.Id,
             PublicId = domain.PublicId,
-            Title = domain.Title!,
+            Title = domain.Title,
             SessionDuration = domain.SessionDuration,
             HasBreak = domain.HasBreak,
             BreakStart = domain.BreakWindow?.Start,
             BreakEnd = domain.BreakWindow?.End,
-            Location = domain.Location!,
+            Location = domain.Location,
             StartTime = domain.StartTime,
             EndTime = domain.EndTime,
             AvailableSlots = domain.AvailableSlots,
@@ -31,10 +32,16 @@ public static class EventMapper
 
     public static Event ToDomain(EventEntity entity)
     {
+        if (string.IsNullOrEmpty(entity.Title))
+            throw new ArgumentNullException(nameof(entity.Title), "Event title cannot be null");
+
+        if (string.IsNullOrEmpty(entity.Location))
+            throw new ArgumentNullException(nameof(entity.Location), "Event location cannot be null");
+
         var domain = Event.Create(
-            entity.Title!,
+            entity.Title,
             TimeSpan.FromMinutes(entity.SessionDuration),
-            entity.Location!,
+            entity.Location,
             entity.StartTime,
             entity.EndTime,
             entity.AvailableSlots
@@ -42,15 +49,24 @@ public static class EventMapper
 
         domain.SetId(entity.Id);
         domain.SetPublicId(entity.PublicId);
+        domain.SetCreatedAt(entity.CreatedAt);
+
+        if (entity.HasBreak && entity.BreakStart.HasValue && entity.BreakEnd.HasValue)
+        {
+            var breakStart = entity.BreakStart.Value;
+            var breakEnd = entity.BreakEnd.Value;
+
+            if (breakStart >= breakEnd)
+                throw new InvalidDataException("Invalid break window in database");
+
+            domain.SetBreakWindow(new BreakWindow(breakStart, breakEnd));
+        }
 
         if (entity.InterestedUsers != null)
         {
             foreach (var user in entity.InterestedUsers)
             {
-                if (!string.IsNullOrEmpty(user.UserId))
-                {
-                    domain.AddInterestedUser(new InterestedUser(int.Parse(user.UserId), user.CreatedAt));
-                }
+                domain.AddInterestedUser(new InterestedUser(user.Id, user.CreatedAt));
             }
         }
 
