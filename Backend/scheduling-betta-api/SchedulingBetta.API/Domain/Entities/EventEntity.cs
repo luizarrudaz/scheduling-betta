@@ -12,9 +12,6 @@ public class EventEntity
     public int Id { get; set; }
 
     [Required]
-    public Guid PublicId { get; set; } = Guid.NewGuid();
-
-    [Required]
     [StringLength(100)]
     public string? Title { get; set; }
 

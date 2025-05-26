@@ -25,7 +25,6 @@ public class SchedulingDbContext : DbContext
             });
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Ignore(e => e.PublicId); // Testse
             entity.Property(e => e.Title)
                 .HasColumnName("title")
                 .HasMaxLength(100);

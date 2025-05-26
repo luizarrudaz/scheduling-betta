@@ -2,14 +2,19 @@
 
 public record SlotTimeHelper
 {
-    public static DateTime Normalize(DateTime inputTime, int slotSizeInMinutes)
+    public static DateTime Normalize(DateTime inputTime, int slotSizeInMinutes, TimeSpan referenceStart)
     {
-        var totalMinutes = inputTime.Hour * 60 + inputTime.Minute;
-        var roundedMinutes = (int)Math.Round(totalMinutes / (double)slotSizeInMinutes) * slotSizeInMinutes;
+        var reference = new DateTime(inputTime.Year, inputTime.Month, inputTime.Day,
+                                     referenceStart.Hours, referenceStart.Minutes, 0, DateTimeKind.Unspecified);
 
-        var normalized = new DateTime(inputTime.Year, inputTime.Month, inputTime.Day,
-                                      roundedMinutes / 60, roundedMinutes % 60, 0);
+        var diff = inputTime - reference;
+        var diffMinutes = diff.TotalMinutes;
 
-        return DateTime.SpecifyKind(normalized, inputTime.Kind);
+        var roundedSlots = (int)Math.Round(diffMinutes / slotSizeInMinutes);
+        var normalizedLocal = reference.AddMinutes(roundedSlots * slotSizeInMinutes);
+
+        var normalizedUtc = DateTimeHelper.ConvertToUtc(normalizedLocal);
+
+        return normalizedUtc;
     }
 }

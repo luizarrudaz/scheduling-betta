@@ -20,7 +20,7 @@ public class EventSchedule
 
     [Required]
     [Column(TypeName = "timestamp with time zone")]
-    public DateTime ScheduleTime { get; set; }
+    public DateTime  ScheduleTime { get; set; }
 
     [Required]
     [StringLength(20)]

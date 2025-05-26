@@ -11,7 +11,6 @@ public static class EventMapper
         return new EventEntity
         {
             Id = domain.Id,
-            PublicId = domain.PublicId,
             Title = domain.Title,
             SessionDuration = domain.SessionDuration,
             HasBreak = domain.HasBreak,
@@ -48,7 +47,6 @@ public static class EventMapper
         );
 
         domain.SetId(entity.Id);
-        domain.SetPublicId(entity.PublicId);
         domain.SetCreatedAt(entity.CreatedAt);
 
         if (entity.HasBreak && entity.BreakStart.HasValue && entity.BreakEnd.HasValue)
