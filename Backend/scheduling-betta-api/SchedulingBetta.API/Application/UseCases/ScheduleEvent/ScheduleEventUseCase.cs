@@ -25,10 +25,13 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
 
     public async Task<ScheduleResponseDto> Execute(ScheduleEventDto scheduleEventDto)
     {
+        _logger.LogInformation("Starting scheduling process for User {UserId} on Event {EventId}", scheduleEventDto.UserId, scheduleEventDto.EventId);
+
         await _unitOfWork.BeginTransaction();
 
         try
         {
+            _logger.LogInformation("Fetching event details for EventId {EventId}", scheduleEventDto.EventId);
             var eventDetails = await _eventRepository.GetEventById(scheduleEventDto.EventId);
 
             if (eventDetails is null)
@@ -37,12 +40,22 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
                 throw new InvalidOperationException("Event does not exist.");
             }
 
+            _logger.LogInformation("Event found: {Title} with duration {Duration} minutes", eventDetails.Title, eventDetails.SessionDuration);
+
             var validSlots = eventDetails.GetValidSlots();
-            var selectedSlotNormalized = SlotTimeHelper.Normalize(scheduleEventDto.SelectedSlot, eventDetails.SessionDuration);
+            var referenceStart = validSlots.Min().TimeOfDay;
+
+            _logger.LogInformation("Normalizing selected slot {SelectedSlot} based on reference start {ReferenceStart} and session duration {SessionDuration}",
+                scheduleEventDto.SelectedSlot, referenceStart, eventDetails.SessionDuration);
+
+            var selectedSlotNormalized = SlotTimeHelper.Normalize(
+                scheduleEventDto.SelectedSlot,
+                eventDetails.SessionDuration,
+                referenceStart);
 
             if (selectedSlotNormalized < eventDetails.StartTime || selectedSlotNormalized >= eventDetails.EndTime)
             {
-                _logger.LogWarning("Slot {Slot} is out of event time bounds", selectedSlotNormalized);
+                _logger.LogWarning("Slot {Slot} is out of event time bounds (Start: {StartTime}, End: {EndTime})", selectedSlotNormalized, eventDetails.StartTime, eventDetails.EndTime);
                 throw new InvalidOperationException("Slot is out of allowed event time range.");
             }
 
@@ -54,9 +67,11 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
                 slot.Minute == selectedSlotNormalized.Minute
             ))
             {
+                _logger.LogWarning("Selected slot {Slot} is invalid for event {EventId}", selectedSlotNormalized, scheduleEventDto.EventId);
                 throw new InvalidOperationException("Invalid slot selected.");
             }
 
+            _logger.LogInformation("Checking if slot {Slot} is already in use for Event {EventId}", selectedSlotNormalized, scheduleEventDto.EventId);
             var slotInUse = await _eventRepository.IsSlotInUse(scheduleEventDto.EventId, selectedSlotNormalized);
 
             if (slotInUse)
@@ -65,6 +80,7 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
                 throw new InvalidOperationException("Slot is already in use.");
             }
 
+            _logger.LogInformation("Checking if User {UserId} has already scheduled this event {EventId}", scheduleEventDto.UserId, scheduleEventDto.EventId);
             var alreadyScheduledInThisEvent = await _eventRepository.HasUserScheduledEvent(scheduleEventDto.EventId, scheduleEventDto.UserId);
 
             if (alreadyScheduledInThisEvent)
@@ -73,6 +89,7 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
                 throw new InvalidOperationException("User has already scheduled this event.");
             }
 
+            _logger.LogInformation("Checking if User {UserId} has already scheduled another event on the same day as Event {EventId}", scheduleEventDto.UserId, scheduleEventDto.EventId);
             var alreadyScheduledInAnyEvent = await _eventRepository.HasUserScheduledAnyEventOnSameDay(scheduleEventDto.EventId, scheduleEventDto.UserId);
 
             if (alreadyScheduledInAnyEvent)
@@ -89,19 +106,28 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
                 Status = ScheduleStatus.Active,
             };
 
+            _logger.LogInformation("Adding new schedule for User {UserId} on Event {EventId} at {ScheduleTime}", schedule.UserId, schedule.EventId, schedule.ScheduleTime);
             await _eventRepository.AddInterestedUser(schedule);
+
             await _unitOfWork.Commit();
+            _logger.LogInformation("Transaction committed successfully for scheduling User {UserId} on Event {EventId}", schedule.UserId, schedule.EventId);
 
             return new ScheduleResponseDto
             {
                 ScheduleId = schedule.Id,
-                Message = $"User {scheduleEventDto.UserId} successfully scheduled for event {scheduleEventDto.EventId} at {selectedSlotNormalized}."
+                Message = $"User {scheduleEventDto.UserId} successfully scheduled for event {scheduleEventDto.EventId} at {scheduleEventDto.SelectedSlot:dd/MM/yyyy HH:mm}."
             };
+
         }
         catch (Exception ex)
         {
             await _unitOfWork.Rollback();
-            _logger.LogError(ex, "Error scheduling event {EventId} for user {UserId}", scheduleEventDto.EventId, scheduleEventDto.UserId);
+            _logger.LogError(ex,
+                "Error scheduling event. EventId: {EventId}, UserId: {UserId}, SelectedSlot: {SelectedSlot:O}, ErrorMessage: {ErrorMessage}",
+                scheduleEventDto.EventId,
+                scheduleEventDto.UserId ?? "NULL",
+                scheduleEventDto.SelectedSlot,
+                ex.Message);
             throw;
         }
     }

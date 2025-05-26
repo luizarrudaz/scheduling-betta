@@ -79,13 +79,16 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
 
     public async Task<bool> HasUserScheduledAnyEventOnSameDay(int eventId, string userId, CancellationToken cancellationToken = default)
     {
-        var targetDate = await _dbContext.Events
+        var targetDateTime = await _dbContext.Events
             .Where(e => e.Id == eventId)
-            .Select(e => e.StartTime.Date)
+            .Select(e => e.StartTime)
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (targetDate == default)
+        if (targetDateTime == default)
             return false;
+
+        var startOfDay = targetDateTime.Date;
+        var endOfDay = startOfDay.AddDays(1);
 
         return await _dbContext.EventSchedules
             .Where(es => es.UserId == userId)
@@ -93,8 +96,9 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
                   es => es.EventId,
                   e => e.Id,
                   (es, e) => e)
-            .AnyAsync(e => e.StartTime.Date == targetDate, cancellationToken);
+            .AnyAsync(e => e.StartTime >= startOfDay && e.StartTime < endOfDay, cancellationToken);
     }
+
 
     //public async Task<InterestedUserEntity?> GetNextInterestedUser(int eventId, CancellationToken cancellationToken = default)
     //{
@@ -117,14 +121,13 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
     //}
 
     // Command methods
-    public async Task AddEvent(Event eventAggregate, CancellationToken cancellationToken = default)
+    public async Task<EventEntity> AddEvent(Event eventAggregate, CancellationToken cancellationToken = default)
     {
         var eventEntity = EventMapper.ToEntity(eventAggregate);
 
         await _dbContext.Events.AddAsync(eventEntity, cancellationToken);
 
-        eventAggregate.SetId(eventEntity.Id);
-        eventAggregate.SetPublicId(eventEntity.PublicId);
+        return eventEntity;
     }
 
     public async Task AddEventRange(IEnumerable<EventEntity> events, CancellationToken cancellationToken = default)

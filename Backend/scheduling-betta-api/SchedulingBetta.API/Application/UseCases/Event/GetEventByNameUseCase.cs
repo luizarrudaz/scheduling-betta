@@ -1,6 +1,7 @@
 ﻿using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
+using SchedulingBetta.API.Domain.ValueObjects;
 
 namespace SchedulingBetta.API.Application.UseCases.Event;
 
@@ -25,13 +26,13 @@ public class GetEventByNameUseCase : IGetEventByNameUseCase
             Title = eventEntity.Title,
             SessionDuration = eventEntity.SessionDuration,
             Location = eventEntity.Location,
-            StartTime = eventEntity.StartTime,
-            EndTime = eventEntity.EndTime,
+            StartTime = DateTimeHelper.ConvertFromUtc(eventEntity.StartTime),
+            EndTime = DateTimeHelper.ConvertFromUtc(eventEntity.EndTime),
             BreakWindow = eventEntity.BreakStart.HasValue && eventEntity.BreakEnd.HasValue
                 ? new BreakWindowDto
                 {
-                    BreakStart = eventEntity.BreakStart.Value,
-                    BreakEnd = eventEntity.BreakEnd.Value
+                    BreakStart = DateTimeHelper.ConvertFromUtc(eventEntity.BreakStart.Value),
+                    BreakEnd = DateTimeHelper.ConvertFromUtc(eventEntity.BreakEnd.Value)
                 }
                 : null,
             AvailableSlots = eventEntity.AvailableSlots

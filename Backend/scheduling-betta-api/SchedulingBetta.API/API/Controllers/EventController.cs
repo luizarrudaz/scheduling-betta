@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Update.Internal;
 using SchedulingBetta.API.Application.DTOs.Event;
-using SchedulingBetta.API.Application.UseCases;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
 using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
 using System.Net;
 
-
 [ApiController]
-[Route("[controller]")]
+[Route("event")]
 public class EventController : ControllerBase
 {
     private readonly ICreateEventUseCase _createEventUseCase;
@@ -37,12 +34,17 @@ public class EventController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("CreateEvent")]
-    [ProducesResponseType(typeof(Guid), (int)HttpStatusCode.Created)]
+    [HttpPost]
+    [ProducesResponseType(typeof(int), (int)HttpStatusCode.Created)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError)]
     public async Task<IActionResult> CreateEvent([FromBody] EventDto command)
     {
+        if (command == null)
+        {
+            return BadRequest(new { Message = "Event data is required." });
+        }
+
         try
         {
             _logger.LogInformation("Creating new event with title {Title}", command.Title);
@@ -58,7 +60,12 @@ public class EventController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Invalid event creation request");
+            _logger.LogWarning(ex,
+                "Invalid event creation request. Title: {Title}, StartTime: {StartTime:O}, ErrorMessage: {ErrorMessage}",
+                command.Title ?? "NULL",
+                command.StartTime,
+                ex.Message);
+
             return Problem(
                 title: "Invalid request",
                 detail: ex.Message,
@@ -66,7 +73,13 @@ public class EventController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating event");
+            _logger.LogError(ex,
+                "Error creating event. Title: {Title}, StartTime: {StartTime:O}, EndTime: {EndTime:O}, ErrorMessage: {ErrorMessage}",
+                command.Title ?? "NULL",
+                command.StartTime,
+                command.EndTime,
+                ex.Message);
+
             return Problem(
                 title: "Internal server error",
                 detail: ex.Message,
@@ -74,21 +87,15 @@ public class EventController : ControllerBase
         }
     }
 
-    [HttpGet("GetAllEvents")]
-    [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
-    [ProducesResponseType((int)HttpStatusCode.NotFound)]
+    [HttpGet]
+    [ProducesResponseType(typeof(IEnumerable<GetEventDto>), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> GetAllEvents()
     {
         var events = await _getAllEventsUseCase.Execute();
-        if (events == null)
-        {
-            return NotFound();
-        }
-
-        return Ok(events);
+        return Ok(events ?? []);
     }
 
-    [HttpGet("GetEventById/{id}")]
+    [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     public async Task<IActionResult> GetEventById(int id)
@@ -102,10 +109,10 @@ public class EventController : ControllerBase
         return Ok(@event);
     }
 
-    [HttpGet("GetEventByName/{name}")]
+    [HttpGet("by-name")]
     [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
-    public async Task<IActionResult> GetEventByName(string name)
+    public async Task<IActionResult> GetEventByName([FromQuery] string name)
     {
         var @event = await _getEventByNameUseCase.Execute(name);
         if (@event == null)
@@ -116,7 +123,7 @@ public class EventController : ControllerBase
         return Ok(@event);
     }
 
-    [HttpPut("UpdateEvent/{id}")]
+    [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -124,7 +131,6 @@ public class EventController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Updating event with ID {EventId}", id);
             var existingEvent = await _getEventByIdUseCase.Execute(id);
             if (existingEvent == null)
             {
@@ -136,7 +142,13 @@ public class EventController : ControllerBase
         }
         catch (ArgumentException ex)
         {
-            _logger.LogWarning(ex, "Invalid event update request for ID {EventId}", id);
+            _logger.LogWarning(ex,
+                "Invalid event update request. EventId: {EventId}, Title: {Title}, StartTime: {StartTime:O}, ErrorMessage: {ErrorMessage}",
+                id,
+                command.Title ?? "NULL",
+                command.StartTime,
+                ex.Message);
+
             return Problem(
                 title: "Invalid request",
                 detail: ex.Message,
@@ -144,7 +156,14 @@ public class EventController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error updating event with ID {EventId}", id);
+            _logger.LogError(ex,
+                "Error updating event. EventId: {EventId}, Title: {Title}, StartTime: {StartTime:O}, EndTime: {EndTime:O}, ErrorMessage: {ErrorMessage}",
+                id,
+                command.Title ?? "NULL",
+                command.StartTime,
+                command.EndTime,
+                ex.Message);
+
             return Problem(
                 title: "Internal server error",
                 detail: ex.Message,
@@ -152,7 +171,7 @@ public class EventController : ControllerBase
         }
     }
 
-    [HttpDelete("DeleteEvent/{id}")]
+    [HttpDelete("{id:int}")]
     [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.InternalServerError)]
@@ -160,8 +179,6 @@ public class EventController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Deleting event with ID {EventId}", id);
-
             var deleted = await _deleteEventUseCase.Execute(id);
             if (!deleted)
             {
@@ -172,7 +189,11 @@ public class EventController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting event with ID {EventId}", id);
+            _logger.LogError(ex,
+                "Error deleting event. EventId: {EventId}, ErrorMessage: {ErrorMessage}",
+                id,
+                ex.Message);
+
             return Problem(
                 title: "Internal server error",
                 detail: ex.Message,

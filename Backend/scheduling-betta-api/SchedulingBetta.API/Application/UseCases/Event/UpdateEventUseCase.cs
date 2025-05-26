@@ -2,7 +2,7 @@
 using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
-using Microsoft.Extensions.Logging;
+using SchedulingBetta.API.Domain.ValueObjects;
 
 namespace SchedulingBetta.API.Application.UseCases.Event;
 
@@ -31,7 +31,7 @@ public class UpdateEventUseCase : IUpdateEventUseCase
         _logger = logger;
     }
 
-    public async Task<GetEventDto?> Execute(int id, EventDto command)
+    public async Task<UpdateEventDto?> Execute(int id, EventDto command)
     {
         _logger.LogInformation("Attempting to update event with ID: {EventId}", id);
 
@@ -57,14 +57,14 @@ public class UpdateEventUseCase : IUpdateEventUseCase
             eventToUpdate.Title = command.Title;
             eventToUpdate.SessionDuration = command.SessionDuration;
             eventToUpdate.Location = command.Location;
-            eventToUpdate.StartTime = command.StartTime;
-            eventToUpdate.EndTime = command.EndTime;
+            eventToUpdate.StartTime = DateTimeHelper.ConvertToUtc(command.StartTime);
+            eventToUpdate.EndTime = DateTimeHelper.ConvertToUtc(command.EndTime);
 
             if (command.BreakWindow != null)
             {
                 eventToUpdate.HasBreak = true;
-                eventToUpdate.BreakStart = command.BreakWindow.BreakStart;
-                eventToUpdate.BreakEnd = command.BreakWindow.BreakEnd;
+                eventToUpdate.BreakStart = DateTimeHelper.ConvertToUtc(command.BreakWindow.BreakStart);
+                eventToUpdate.BreakEnd = DateTimeHelper.ConvertToUtc(command.BreakWindow.BreakEnd);
             }
             else
             {
@@ -84,22 +84,20 @@ public class UpdateEventUseCase : IUpdateEventUseCase
 
             _logger.LogInformation("Successfully updated event with ID: {EventId}", id);
 
-            return new GetEventDto
+            return new UpdateEventDto
             {
-                Id = eventToUpdate.Id,
                 Title = eventToUpdate.Title,
                 SessionDuration = eventToUpdate.SessionDuration,
                 Location = eventToUpdate.Location,
-                StartTime = eventToUpdate.StartTime,
-                EndTime = eventToUpdate.EndTime,
-                BreakWindow = eventToUpdate.BreakStart != null && eventToUpdate.BreakEnd != null
-                    ? new BreakWindowDto
-                    {
-                        BreakStart = eventToUpdate.BreakStart.Value,
-                        BreakEnd = eventToUpdate.BreakEnd.Value
-                    }
-                    : null,
-                AvailableSlots = eventToUpdate.AvailableSlots
+                StartTime = DateTimeHelper.ConvertFromUtc(eventToUpdate.StartTime),
+                EndTime = DateTimeHelper.ConvertFromUtc(eventToUpdate.EndTime),
+                BreakWindow = eventToUpdate.BreakStart.HasValue && eventToUpdate.BreakEnd.HasValue
+                ? new BreakWindowDto
+                {
+                    BreakStart = DateTimeHelper.ConvertFromUtc(eventToUpdate.BreakStart.Value),
+                    BreakEnd = DateTimeHelper.ConvertFromUtc(eventToUpdate.BreakEnd.Value)
+                }
+                : null,
             };
         }
         catch (Exception ex)
