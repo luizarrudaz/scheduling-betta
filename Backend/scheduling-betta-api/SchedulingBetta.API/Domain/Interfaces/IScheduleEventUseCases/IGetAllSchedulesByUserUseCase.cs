@@ -1,8 +1,9 @@
-﻿using SchedulingBetta.API.Domain.Entities;
+﻿using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
+using SchedulingBetta.API.Domain.Entities;
 
 namespace SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 
 public interface IGetAllSchedulesByUserUseCase
 {
-    Task<List<EventSchedule>> Execute(string userId);
+    Task<List<GetScheduledEventDto>> Execute(string userId);
 }

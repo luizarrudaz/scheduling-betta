@@ -4,5 +4,5 @@ namespace SchedulingBetta.API.Domain.Interfaces.EventUseCase;
 
 public interface ICreateEventUseCase
 {
-    Task<Guid> Execute(EventDto command);
+    Task<int> Execute(EventDto command);
 }

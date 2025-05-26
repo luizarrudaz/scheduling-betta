@@ -12,7 +12,6 @@ public class Event
         int.TryParse(Environment.GetEnvironmentVariable("MAX_WAITLIST_CAPACITY"), out var val) ? val : 4;
 
     public int Id { get; private set; } = 0;
-    public Guid PublicId { get; private set; } = Guid.NewGuid();
     public string? Title { get; private set; }
     public int SessionDuration { get; private set; }
     public BreakWindow? BreakWindow { get; private set; }
@@ -37,7 +36,7 @@ public class Event
         StartTime = startTime;
         EndTime = endTime;
         AvailableSlots = availableSlots;
-        CreatedAt = DateTime.UtcNow;
+        CreatedAt = DateTimeHelper.ConvertToUtc(DateTime.UtcNow);
 
         ValidateEventAggregate.Validate(
             title,
@@ -69,11 +68,6 @@ public class Event
     public void SetId(int id)
     {
         Id = id;
-    }
-
-    internal void SetPublicId(Guid publicId)
-    {
-        PublicId = publicId;
     }
 
     internal void SetCreatedAt(DateTime createdAt)

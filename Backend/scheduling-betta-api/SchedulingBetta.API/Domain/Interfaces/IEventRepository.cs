@@ -17,7 +17,7 @@ public interface IEventRepository
     //Task<InterestedUserEntity?> GetNextInterestedUser(int eventId, CancellationToken cancellationToken = default);
     //Task<int> GetWaitlistCount(int eventId, CancellationToken cancellationToken = default);
     //Task<bool> IsUserInWaitlist(int eventId, string userId, CancellationToken cancellationToken = default);
-    Task AddEvent(Event @event, CancellationToken cancellationToken = default);
+    Task<EventEntity> AddEvent(Event @event, CancellationToken cancellationToken = default);
     Task AddEventRange(IEnumerable<EventEntity> events, CancellationToken cancellationToken = default);
     Task UpdateEvent(EventEntity @event, CancellationToken cancellationToken = default);
     Task DeleteEvent(EventEntity @event, CancellationToken cancellationToken = default);
