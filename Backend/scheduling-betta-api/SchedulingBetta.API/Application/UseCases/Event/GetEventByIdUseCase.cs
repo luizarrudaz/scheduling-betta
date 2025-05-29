@@ -28,13 +28,13 @@ public class GetEventByIdUseCase : IGetEventByIdUseCase
             Location = eventEntity.Location,
             StartTime = DateTimeHelper.ConvertFromUtc(eventEntity.StartTime),
             EndTime = DateTimeHelper.ConvertFromUtc(eventEntity.EndTime),
-            BreakWindow = eventEntity.BreakStart.HasValue && eventEntity.BreakEnd.HasValue
-                ? new BreakWindowDto
-                {
-                    BreakStart = DateTimeHelper.ConvertFromUtc(eventEntity.BreakStart.Value),
-                    BreakEnd = DateTimeHelper.ConvertFromUtc(eventEntity.BreakEnd.Value)
-                }
-                : null,
+            BreakWindow = eventEntity.HasBreak
+                    ? new BreakWindowDto
+                    {
+                        BreakStart = DateTimeHelper.ConvertFromUtc(eventEntity.BreakWindow!.Start),
+                        BreakEnd = DateTimeHelper.ConvertFromUtc(eventEntity.BreakWindow!.End)
+                    }
+                    : null,
             AvailableSlots = eventEntity.AvailableSlots
         };
     }
