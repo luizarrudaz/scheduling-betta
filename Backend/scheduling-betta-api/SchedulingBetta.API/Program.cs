@@ -13,8 +13,10 @@ using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
 using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
+using SchedulingBetta.API.Domain.Interfaces.ISmtp;
 using SchedulingBetta.API.Infraestructure.Repositories;
 using SchedulingBetta.API.Infraestructure.UnitOfWork;
+using SchedulingBetta.API.Infrastructure.Services;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,6 +103,11 @@ builder.Services.AddScoped<IUnscheduleEventUseCase, UnscheduleEventUseCase>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEventCommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<BreakWindowValidator>();
+
+builder.Services.AddSingleton<IEmailSender, SmtpEmailService>();
+builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
+builder.Services.AddScoped<IEventNotificationService, EventNotificationService>();
+
 
 // 6. CORS
 builder.Services.AddCors(options => options.AddPolicy("AllowFrontend", policy =>
