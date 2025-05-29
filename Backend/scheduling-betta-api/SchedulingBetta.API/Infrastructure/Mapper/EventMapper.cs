@@ -57,7 +57,7 @@ public static class EventMapper
             if (breakStart >= breakEnd)
                 throw new InvalidDataException("Invalid break window in database");
 
-            domain.SetBreakWindow(new BreakWindow(breakStart, breakEnd));
+            domain.AddBreakWindow(breakStart, breakEnd);
         }
 
         if (entity.InterestedUsers != null)
