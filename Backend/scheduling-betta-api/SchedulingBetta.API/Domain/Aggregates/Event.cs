@@ -58,11 +58,38 @@ public class Event
         return new Event(title, sessionDuration, location, startTime, endTime, availableSlots);
     }
 
+    public void Update(string title, TimeSpan sessionDuration, string location, DateTime startTime, DateTime endTime, int availableSlots)
+    {
+        Title = title;
+        SessionDuration = (int)sessionDuration.TotalMinutes;
+        Location = location;
+        StartTime = startTime;
+        EndTime = endTime;
+        AvailableSlots = availableSlots;
+    }
+
     public void AddBreakWindow(DateTime start, DateTime end)
     {
         if (HasBreak)
             throw new DomainException("Break window already exists.");
         BreakWindow = BreakWindow.Create(start, end);
+    }
+
+    public void RemoveBreakWindow()
+    {
+        if (!HasBreak)
+            throw new DomainException("No break window to remove.");
+        BreakWindow = null;
+    }
+
+    public List<DateTime> GetValidSlots()
+    {
+        var slots = new List<DateTime>();
+        for (int i = 0; i < AvailableSlots; i++)
+        {
+            slots.Add(StartTime.AddMinutes(i * SessionDuration));
+        }
+        return slots;
     }
 
     public void SetId(int id)
@@ -73,13 +100,6 @@ public class Event
     internal void SetCreatedAt(DateTime createdAt)
     {
         CreatedAt = createdAt;
-    }
-
-    public void SetBreakWindow(BreakWindow breakWindow)
-    {
-        if (HasBreak)
-            throw new DomainException("Break window already exists.");
-        BreakWindow = breakWindow;
     }
 
     public void AddInterestedUser(InterestedUser user)
