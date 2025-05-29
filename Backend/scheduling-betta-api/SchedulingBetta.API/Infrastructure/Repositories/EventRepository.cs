@@ -35,11 +35,16 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
             .ToListAsync();
     }
 
-    public async Task<EventEntity?> GetEventById(int id, CancellationToken cancellationToken = default)
+    public async Task<Event?> GetEventById(int id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Events
+        var entity = await _dbContext.Events
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+
+        if (entity == null)
+            return null;
+
+        return EventMapper.ToDomain(entity);
     }
 
     public async Task<EventEntity?> GetEventByName(string name, CancellationToken cancellationToken = default)
@@ -135,15 +140,19 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
         await _dbContext.Events.AddRangeAsync(events, cancellationToken);
     }
 
-    public Task UpdateEvent(EventEntity eventToUpdate, CancellationToken cancellationToken = default)
+    public Task UpdateEvent(Event eventToUpdate, CancellationToken cancellationToken = default)
     {
-        _dbContext.Events.Update(eventToUpdate);
+        var eventEntity = EventMapper.ToEntity(eventToUpdate);
+
+        _dbContext.Events.Update(eventEntity);
         return Task.CompletedTask;
     }
 
-    public Task DeleteEvent(EventEntity eventToDelete, CancellationToken cancellationToken = default)
+    public Task DeleteEvent(Event eventToDelete, CancellationToken cancellationToken = default)
     {
-        _dbContext.Events.Remove(eventToDelete);
+        var eventEntity = EventMapper.ToEntity(eventToDelete);
+
+        _dbContext.Events.Remove(eventEntity);
         return Task.CompletedTask;
     }
 
