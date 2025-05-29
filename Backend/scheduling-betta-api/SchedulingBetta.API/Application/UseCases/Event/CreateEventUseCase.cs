@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using Microsoft.Extensions.Logging;
 using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Domain.Aggregates;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
+using SchedulingBetta.API.Domain.Interfaces.ISmtp;
 using SchedulingBetta.API.Domain.ValueObjects;
 
 public class CreateEventUseCase : ICreateEventUseCase
@@ -13,6 +13,7 @@ public class CreateEventUseCase : ICreateEventUseCase
     private readonly IValidator<EventDto> _eventValidator;
     private readonly IValidator<BreakWindowDto> _breakWindowValidator;
     private readonly ISlotCalculator _slotCalculator;
+    private readonly IEventNotificationService _eventNotificationService;
     private readonly ILogger<CreateEventUseCase> _logger;
 
     public CreateEventUseCase(
@@ -21,6 +22,7 @@ public class CreateEventUseCase : ICreateEventUseCase
         IValidator<EventDto> eventValidator,
         IValidator<BreakWindowDto> breakWindowValidator,
         ISlotCalculator slotCalculator,
+        IEventNotificationService eventNotificationService,
         ILogger<CreateEventUseCase> logger)
     {
         _eventRepository = eventRepository;
@@ -28,6 +30,7 @@ public class CreateEventUseCase : ICreateEventUseCase
         _eventValidator = eventValidator;
         _breakWindowValidator = breakWindowValidator;
         _slotCalculator = slotCalculator;
+        _eventNotificationService = eventNotificationService;
         _logger = logger;
     }
 
@@ -85,6 +88,8 @@ public class CreateEventUseCase : ICreateEventUseCase
 
             _logger.LogInformation("Event creation completed successfully for Id {EventId}, Title = {Title}", eventAggregate.Id, command.Title ?? "NULL");
 
+            await _eventNotificationService.NotifyEventCreated(eventAggregate);
+
             return eventAggregate.Id;
         }
         catch (Exception ex)
@@ -93,5 +98,4 @@ public class CreateEventUseCase : ICreateEventUseCase
             throw new Exception("Invalid event timing configuration", ex);
         }
     }
-
 }
