@@ -18,26 +18,33 @@ public class EventNotificationService : IEventNotificationService
             ?? throw new InvalidOperationException("GroupEmail não configurado");
     }
 
-    private async Task SendNotification(string templateName, string subject, Event @event, string to, string? selectedSlot = null)
+    private async Task SendNotification(string templateName, string subject, Event @event, string to, DateTime? selectedSlot = null)
     {
         var localStart = DateTimeHelper.ConvertFromUtc(@event.StartTime);
         var localEnd = DateTimeHelper.ConvertFromUtc(@event.EndTime);
 
-        var placeholders = new Dictionary<string, string>
+        string? slot = null;
+        if (selectedSlot.HasValue)
         {
-            { "Title", @event.Title ?? "Sem título" },
-            { "Start_Time", localStart.ToString("g") },
-            { "End_Time", localEnd.ToString("g") }
-        };
+            slot = DateTimeHelper.ConvertFromUtc(selectedSlot.Value).ToString("HH:mm");
+        }
 
-        if (!string.IsNullOrEmpty(selectedSlot))
+        var placeholders = new Dictionary<string, string>
+    {
+        { "Title", @event.Title ?? "Sem título" },
+        { "Start_Time", localStart.ToString("dd/MM/yyyy HH:mm") },
+        { "End_Time", localEnd.ToString("dd/MM/yyyy HH:mm") }
+    };
+
+        if (!string.IsNullOrEmpty(slot))
         {
-            placeholders.Add("SelectedSlot", selectedSlot);
+            placeholders.Add("Selected_Slot", slot);
         }
 
         var body = _templateService.GetTemplateContent(templateName, placeholders);
         await _emailSender.SendEmail(to, subject, body);
     }
+
 
     public Task NotifyEventCreated(Event @event) =>
         SendNotification("EventCreated.html", $"Novo Evento: {@event.Title}", @event, _groupEmail);
@@ -48,7 +55,7 @@ public class EventNotificationService : IEventNotificationService
     public Task NotifyEventCancelled(Event @event) =>
         SendNotification("EventDeleted.html", $"Evento Cancelado: {@event.Title}", @event, _groupEmail);
 
-    public Task NotifyUserScheduled(Event @event, string userEmail, string selectedSlot) =>
+    public Task NotifyUserScheduled(Event @event, string userEmail, DateTime selectedSlot) =>
         SendNotification("UserScheduled.html", $"Agendamento Confirmado: {@event.Title}", @event, userEmail, selectedSlot);
 
     public Task NotifyUserCancelled(Event @event, string userEmail) =>
