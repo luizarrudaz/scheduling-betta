@@ -8,12 +8,12 @@ using System.Security.Claims;
 [Route("auth")]
 public class AuthController : ControllerBase
 {
-    private readonly LdapAuthService _ldapAuth;
+    private readonly ILdapAuthService _ldapAuth;
     private readonly JwtService _jwtService;
     private readonly ILogger<AuthController> _logger;
 
     public AuthController(
-        LdapAuthService ldapAuth,
+        ILdapAuthService ldapAuth,
         JwtService jwtService,
         ILogger<AuthController> logger)
     {
