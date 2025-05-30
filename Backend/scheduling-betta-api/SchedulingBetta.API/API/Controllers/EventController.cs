@@ -98,6 +98,7 @@ public class EventController : ControllerBase
         return Ok(events ?? []);
     }
 
+    [Authorize]
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -127,6 +128,7 @@ public class EventController : ControllerBase
         return Ok(@event);
     }
 
+    [Authorize]
     [HttpPut("{id:int}")]
     [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]

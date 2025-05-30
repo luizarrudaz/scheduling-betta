@@ -113,6 +113,7 @@ public class ScheduleEventController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet("{userId}")]
     [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -150,11 +151,12 @@ public class ScheduleEventController : ControllerBase
         }
     }
 
-    [HttpPost("unschedule")]
+    [Authorize]
+    [HttpDelete("{id:int}")]
     [ProducesResponseType(typeof(UnscheduleResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UnscheduleEvent([FromBody] UnscheduleEventDto unscheduleEventDto)
+    public async Task<IActionResult> UnscheduleEvent(int id)
     {
         try
         {
@@ -163,13 +165,13 @@ public class ScheduleEventController : ControllerBase
 
             var unscheduleEventDtoWithUserId = new UnscheduleEventDtoWithUserIdDto
             {
-                EventId = unscheduleEventDto.EventId,
+                EventId = id,
                 UserId = SamAccountName
             };
 
-            _logger.LogInformation("Unscheduling event for user {UserId} from event {EventId}", SamAccountName, unscheduleEventDto.EventId);
+            _logger.LogInformation("Unscheduling event for user {UserId} from event {EventId}", SamAccountName, id);
             var result = await _unscheduleEventUseCase.Execute(unscheduleEventDtoWithUserId);
-            _logger.LogInformation("User {UserId} unscheduled from event {EventId}", SamAccountName, unscheduleEventDto.EventId);
+            _logger.LogInformation("User {UserId} unscheduled from event {EventId}", SamAccountName, id);
 
             return Ok(result);
         }
