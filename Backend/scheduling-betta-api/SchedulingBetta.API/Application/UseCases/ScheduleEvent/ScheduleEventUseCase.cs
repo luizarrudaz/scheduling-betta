@@ -3,6 +3,7 @@ using SchedulingBetta.API.Domain.Entities;
 using SchedulingBetta.API.Domain.Enum;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
+using SchedulingBetta.API.Domain.Interfaces.ISmtp;
 using SchedulingBetta.API.Domain.ValueObjects;
 
 namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent;
@@ -11,19 +12,25 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
 {
     private readonly IEventRepository _eventRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEventNotificationService _eventNotificationService;
+    private readonly ILdapAuthService _ldapAuthService;
     private readonly ILogger<ScheduleEventUseCase> _logger;
 
     public ScheduleEventUseCase(
         IEventRepository eventRepository,
         IUnitOfWork unitOfWork,
+        IEventNotificationService eventNotificationService,
+        ILdapAuthService ldapAuthService,
         ILogger<ScheduleEventUseCase> logger)
     {
         _eventRepository = eventRepository;
         _unitOfWork = unitOfWork;
+        _eventNotificationService = eventNotificationService;
+        _ldapAuthService = ldapAuthService;
         _logger = logger;
     }
 
-    public async Task<ScheduleResponseDto> Execute(ScheduleEventDto scheduleEventDto)
+    public async Task<ScheduleResponseDto> Execute(ScheduleEventDtoWithUserIdDto scheduleEventDto)
     {
         _logger.LogInformation("Starting scheduling process for User {UserId} on Event {EventId}", scheduleEventDto.UserId, scheduleEventDto.EventId);
 
@@ -31,6 +38,9 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
 
         try
         {
+            var userInfo = _ldapAuthService.GetUserInfo(scheduleEventDto.UserId ?? string.Empty);
+            var userId = userInfo.Sid;
+
             _logger.LogInformation("Fetching event details for EventId {EventId}", scheduleEventDto.EventId);
             var eventDetails = await _eventRepository.GetEventById(scheduleEventDto.EventId);
 
@@ -85,7 +95,7 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
 
             if (alreadyScheduledInThisEvent)
             {
-                _logger.LogWarning("User {UserId} has already scheduled event {EventId}", scheduleEventDto.UserId, scheduleEventDto.EventId);
+                _logger.LogWarning("User {UserId} has already scheduled event {EventId}", userId, scheduleEventDto.EventId);
                 throw new InvalidOperationException("User has already scheduled this event.");
             }
 
@@ -94,14 +104,14 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
 
             if (alreadyScheduledInAnyEvent)
             {
-                _logger.LogWarning("User {UserId} has already scheduled another event on the same day", scheduleEventDto.UserId);
+                _logger.LogWarning("User {UserId} has already scheduled another event on the same day", userId);
                 throw new InvalidOperationException("User has already scheduled another event on the same day.");
             }
 
             var schedule = new EventSchedule
             {
                 EventId = scheduleEventDto.EventId,
-                UserId = scheduleEventDto.UserId,
+                UserId = userId,
                 ScheduleTime = selectedSlotNormalized,
                 Status = ScheduleStatus.Active,
             };
@@ -111,6 +121,12 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
 
             await _unitOfWork.Commit();
             _logger.LogInformation("Transaction committed successfully for scheduling User {UserId} on Event {EventId}", schedule.UserId, schedule.EventId);
+
+            await _eventNotificationService.NotifyUserScheduled(
+                 eventDetails,
+                 userInfo.Email,
+                 schedule.ScheduleTime);
+
 
             return new ScheduleResponseDto
             {

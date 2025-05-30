@@ -1,6 +1,7 @@
 ﻿using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
+using SchedulingBetta.API.Domain.Interfaces.ISmtp;
 
 namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent;
 
@@ -8,28 +9,37 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
 {
     private readonly IEventRepository _eventRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEventNotificationService _eventNotificationService;
+    private readonly ILdapAuthService _ldapAuthService;
     private readonly ILogger<UnscheduleEventUseCase> _logger;
 
     public UnscheduleEventUseCase(
         IEventRepository eventRepository,
         IUnitOfWork unitOfWork,
+        IEventNotificationService eventNotificationService,
+        ILdapAuthService ldapAuthService,
         ILogger<UnscheduleEventUseCase> logger)
     {
         _eventRepository = eventRepository;
         _unitOfWork = unitOfWork;
+        _eventNotificationService = eventNotificationService;
+        _ldapAuthService = ldapAuthService;
         _logger = logger;
     }
 
-    public async Task<UnscheduleResponseDto> Execute(UnscheduleEventDto unscheduleEventDto)
+    public async Task<UnscheduleResponseDto> Execute(UnscheduleEventDtoWithUserIdDto unscheduleEventDto)
     {
         await _unitOfWork.BeginTransaction();
 
         try
         {
+            var userInfo = _ldapAuthService.GetUserInfo(unscheduleEventDto.UserId ?? string.Empty);
+            var userId = userInfo.Sid;
+
             var schedule = await _eventRepository.GetInterestedUser(
-            unscheduleEventDto.EventId,
-            unscheduleEventDto.UserId
-        );
+                unscheduleEventDto.EventId,
+                userId
+            );
 
             if (schedule is null)
             {
@@ -39,12 +49,18 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
 
             await _eventRepository.RemoveUserSchedule(schedule);
 
-            // Comment for future implementation:
-            // If you want to allow the cancellation of users who are only interested (in the queue),
-            // you will need to find the InterestedUserEntity and call the RemoveInterestedUser method.
-            // This is not yet implemented because currently the flow only considers scheduled users.
-
             await _unitOfWork.Commit();
+
+            _logger.LogInformation("User {UserId} successfully unscheduled from event {EventId}", unscheduleEventDto.UserId, unscheduleEventDto.EventId);
+
+            var eventDetails = await _eventRepository.GetEventById(unscheduleEventDto.EventId);
+            if (eventDetails != null)
+            {
+                await _eventNotificationService.NotifyUserCancelled(
+                    eventDetails,
+                    userInfo.Email
+                );
+            }
 
             return new UnscheduleResponseDto
             {
