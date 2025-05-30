@@ -1,41 +1,39 @@
 ﻿using SchedulingBetta.API.Application.DTOs.Auth;
 using System.DirectoryServices.AccountManagement;
 using System.Security.Authentication;
-using System.Text.RegularExpressions;
 using DirectoryEntry = System.DirectoryServices.DirectoryEntry;
 
 #pragma warning disable CA1416
 
-public class LdapAuthService
+public class LdapAuthService : ILdapAuthService
 {
     private readonly string _server;
     private readonly string _domainDn;
     private readonly int _port;
     private readonly bool _useSsl;
-    private readonly PrincipalContext _context;
     private readonly ILogger<LdapAuthService> _logger;
 
-    public LdapAuthService(IConfiguration config, ILogger<LdapAuthService> logger)
+    public LdapAuthService(ILogger<LdapAuthService> logger)
     {
         _logger = logger;
 
-        _server = config["LDAP_SERVER"] ?? throw new ArgumentNullException(nameof(config), "LDAP_SERVER é obrigatório");
-        _domainDn = config["LDAP_DOMAIN_DN"] ?? throw new ArgumentNullException(nameof(config), "LDAP_DOMAIN_DN é obrigatório");
+        _server = Environment.GetEnvironmentVariable("LDAP_SERVER")
+                  ?? throw new InvalidOperationException("LDAP_SERVER is not configured");
 
-        if (!int.TryParse(config["LDAP_PORT"], out _port))
+        _domainDn = Environment.GetEnvironmentVariable("LDAP_DOMAIN_DN")
+                    ?? throw new InvalidOperationException("LDAP_DOMAIN_DN is not configured");
+
+        if (!int.TryParse(Environment.GetEnvironmentVariable("LDAP_PORT"), out _port))
+        {
             _port = 389;
-        _logger.LogWarning("Invalid or missing LDAP_PORT. Using default port: 389");
+            _logger.LogWarning("LDAP_PORT is invalid or missing. Using default port: 389");
+        }
 
-        if (!bool.TryParse(config["LDAP_USE_SSL"], out _useSsl))
+        if (!bool.TryParse(Environment.GetEnvironmentVariable("LDAP_USE_SSL"), out _useSsl))
+        {
             _useSsl = false;
-        _logger.LogWarning("Invalid or missing LDAP_USE_SSL. Using default: false");
-
-        _context = new PrincipalContext(
-            ContextType.Domain,
-            _server,
-            _domainDn,
-            _useSsl ? ContextOptions.SecureSocketLayer : ContextOptions.Negotiate
-        );
+            _logger.LogWarning("LDAP_USE_SSL is invalid or missing. Using default: false");
+        }
 
         _logger.LogInformation("LdapAuthService initialized with server: {Server}, domain: {Domain}, port: {Port}, SSL: {SSL}",
             _server, _domainDn, _port, _useSsl);
@@ -47,10 +45,6 @@ public class LdapAuthService
 
         try
         {
-            var contextOptions = _useSsl
-                ? ContextOptions.SecureSocketLayer | ContextOptions.Negotiate
-                : ContextOptions.Negotiate;
-
             using var userContext = new PrincipalContext(
                 ContextType.Domain,
                 _server,
@@ -61,6 +55,7 @@ public class LdapAuthService
             );
 
             bool isValid = userContext.ValidateCredentials(username, password);
+
             _logger.LogInformation("Authentication {Status} for user: {Username}", isValid ? "succeeded" : "failed", username);
 
             return isValid;
@@ -68,7 +63,7 @@ public class LdapAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error authenticating user: {Username}", username);
-            throw new AuthenticationException("Falha na autenticação LDAP", ex);
+            throw new AuthenticationException("LDAP authentication failure", ex);
         }
     }
 
@@ -78,18 +73,14 @@ public class LdapAuthService
 
         try
         {
-            using var userContext = new PrincipalContext(
-                ContextType.Domain,
-                _server,
-                _domainDn
-            );
+            using var userContext = new PrincipalContext(ContextType.Domain, _server, _domainDn);
 
             var user = UserPrincipal.FindByIdentity(userContext, IdentityType.SamAccountName, username);
 
             var groups = user?.GetAuthorizationGroups()
                 .OfType<GroupPrincipal>()
                 .Select(g => g.Name)
-                .ToList() ?? [];
+                .ToList() ?? new List<string>();
 
             _logger.LogInformation("User: {Username} belongs to {GroupCount} groups", username, groups.Count);
 
@@ -98,7 +89,7 @@ public class LdapAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving groups for user: {Username}", username);
-            throw new AuthenticationException("Falha ao buscar grupos", ex);
+            throw new AuthenticationException("Failed to retrieve groups", ex);
         }
     }
 
@@ -108,24 +99,26 @@ public class LdapAuthService
 
         try
         {
-            var user = UserPrincipal.FindByIdentity(_context, IdentityType.SamAccountName, username);
+            using var context = new PrincipalContext(ContextType.Domain, _server, _domainDn);
+
+            var user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, username);
 
             if (user == null)
             {
                 _logger.LogWarning("User: {Username} not found in directory", username);
-                throw new AuthenticationException("Usuário não encontrado no diretório");
+                throw new AuthenticationException("User not found in directory");
             }
 
-            if (user.IsAccountLockedOut()) 
+            if (user.IsAccountLockedOut())
             {
                 _logger.LogWarning("Account is locked for user: {Username}", username);
-                throw new AuthenticationException("Conta bloqueada"); 
+                throw new AuthenticationException("Account is locked");
             }
 
-            if (user.Enabled.HasValue && !user.Enabled.Value) 
+            if (user.Enabled.HasValue && !user.Enabled.Value)
             {
                 _logger.LogWarning("Account is disabled for user: {Username}", username);
-                throw new AuthenticationException("Conta desabilitada"); 
+                throw new AuthenticationException("Account is disabled");
             }
 
             string email = user.EmailAddress;
@@ -156,8 +149,7 @@ public class LdapAuthService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving user info for: {Username}", username);
-            throw new AuthenticationException("Falha ao buscar informações do usuário", ex);
-
+            throw new AuthenticationException("Failed to retrieve user information", ex);
         }
     }
 }
