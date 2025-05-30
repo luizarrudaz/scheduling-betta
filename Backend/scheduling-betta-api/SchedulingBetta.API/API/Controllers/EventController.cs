@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Domain.Interfaces.EventUseCase;
 using SchedulingBetta.API.Domain.Interfaces.IEventUseCases;
@@ -34,6 +35,7 @@ public class EventController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(int), (int)HttpStatusCode.Created)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
@@ -87,6 +89,7 @@ public class EventController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GetEventDto>), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> GetAllEvents()
@@ -109,6 +112,7 @@ public class EventController : ControllerBase
         return Ok(@event);
     }
 
+    [Authorize]
     [HttpGet("by-name")]
     [ProducesResponseType(typeof(GetEventDto), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]
@@ -171,6 +175,7 @@ public class EventController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.NotFound)]

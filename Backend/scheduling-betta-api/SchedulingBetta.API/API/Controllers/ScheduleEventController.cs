@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 
@@ -27,6 +29,7 @@ public class ScheduleEventController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpPost]
     [ProducesResponseType(typeof(int), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -35,8 +38,18 @@ public class ScheduleEventController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Scheduling event for user {UserId} at slot {Slot}", scheduleEventDto.UserId, scheduleEventDto.SelectedSlot);
-            var eventId = await _scheduleEventUseCase.Execute(scheduleEventDto);
+            var SamAccountName = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.WindowsAccountName)?.Value;
+
+            var scheduleEventDtoWithUserId = new ScheduleEventDtoWithUserIdDto
+            {
+                EventId = scheduleEventDto.EventId,
+                SelectedSlot = scheduleEventDto.SelectedSlot,
+                UserId = SamAccountName
+            };
+
+            _logger.LogInformation("Scheduling event for user {UserId} at slot {Slot}", SamAccountName, scheduleEventDto.SelectedSlot);
+            var eventId = await _scheduleEventUseCase.Execute(scheduleEventDtoWithUserId);
             _logger.LogInformation("Event scheduled with ID {EventId}", scheduleEventDto.EventId);
             return CreatedAtAction(
                 nameof(ScheduleEvent),
@@ -63,6 +76,7 @@ public class ScheduleEventController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -144,9 +158,18 @@ public class ScheduleEventController : ControllerBase
     {
         try
         {
-            _logger.LogInformation("Unscheduling event for user {UserId} from event {EventId}", unscheduleEventDto.UserId, unscheduleEventDto.EventId);
-            var result = await _unscheduleEventUseCase.Execute(unscheduleEventDto);
-            _logger.LogInformation("User {UserId} unscheduled from event {EventId}", unscheduleEventDto.UserId, unscheduleEventDto.EventId);
+            var SamAccountName = User.Claims
+                .FirstOrDefault(c => c.Type == ClaimTypes.WindowsAccountName)?.Value;
+
+            var unscheduleEventDtoWithUserId = new UnscheduleEventDtoWithUserIdDto
+            {
+                EventId = unscheduleEventDto.EventId,
+                UserId = SamAccountName
+            };
+
+            _logger.LogInformation("Unscheduling event for user {UserId} from event {EventId}", SamAccountName, unscheduleEventDto.EventId);
+            var result = await _unscheduleEventUseCase.Execute(unscheduleEventDtoWithUserId);
+            _logger.LogInformation("User {UserId} unscheduled from event {EventId}", SamAccountName, unscheduleEventDto.EventId);
 
             return Ok(result);
         }
