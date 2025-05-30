@@ -4,7 +4,7 @@ namespace SchedulingBetta.API.Infrastructure.Services;
 
 public class EmailTemplateService : IEmailTemplateService
 {
-    private readonly string _templateDirectory = @"C:\Users\luiz.arruda\OneDrive - NOOVI DO BRASIL LTDA\Área de Trabalho\scheduling-betta\Backend\scheduling-betta-api\SchedulingBetta.API\Infrastructure\EmailTemplates\";
+    private readonly string _templateDirectory = @"C:\Users\luiz.arruda\Desktop\scheduling-betta\Backend\scheduling-betta-api\SchedulingBetta.API\Infrastructure\EmailTemplates\";
 
     public string GetTemplateContent(string templateName, Dictionary<string, string> placeholders)
     {
