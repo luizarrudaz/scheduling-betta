@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+﻿    using FluentValidation;
 using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Domain.Aggregates;
 using SchedulingBetta.API.Domain.Interfaces;
