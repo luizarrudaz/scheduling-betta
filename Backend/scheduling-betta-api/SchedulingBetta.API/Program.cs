@@ -82,7 +82,7 @@ builder.Services.AddSwaggerGen(c =>
 
 // 5. Dependency Injection
 builder.Services.AddScoped<JwtService>();
-builder.Services.AddScoped<LdapAuthService>();
+builder.Services.AddScoped<ILdapAuthService, LdapAuthService>();
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
