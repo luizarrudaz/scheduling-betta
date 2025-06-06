@@ -2,123 +2,122 @@
 
 ## Visão Geral
 
-O **Scheduling-Betta** é um sistema corporativo de agendamento de serviços integrado ao **Active Directory (AD)**.  
-Seu objetivo é otimizar a criação e o gerenciamento de eventos e agendamentos dentro de uma organização.  
-O sistema permite **autenticação centralizada via AD**, **controle de acesso baseado em grupos** e oferece funcionalidades robustas relacionadas ao agendamento de serviços.
+**Scheduling-Betta** é um sistema corporativo de agendamento de serviços com autenticação centralizada via **Active Directory (AD)** e controle de acesso por grupos.  
+Projetado para ambientes organizacionais, o sistema permite o gerenciamento eficiente de eventos e sessões, com uma interface intuitiva e integração futura com ferramentas da Microsoft.
 
 ---
 
-## Funcionalidades Principais
+## Funcionalidades
 
-### 1. Autenticação Corporativa
+### 🔐 Autenticação Corporativa
 
-**Tecnologias Utilizadas:**
-- Backend: LDAP (`System.DirectoryServices`) + JWT
-- Frontend: React + React Router
+- **Backend**: LDAP (`System.DirectoryServices`) + JWT  
+- **Frontend**: React + React Router
 
-**Fluxo de Login:**
-1. O usuário insere suas credenciais corporativas (ex: `user@dominio`).
-2. O sistema valida as credenciais contra o **AD** via protocolo **LDAP**.
-3. O backend gera um **token JWT** com os **claims** de grupo.
-4. O frontend redireciona o usuário conforme seu perfil:
-   - **Admins**:
-     - `/eventos` → Gerenciamento de eventos
-     - `/agendamentos-admin` → Visualização de agendamentos
-     - `/historico-eventos` → Histórico de eventos e agendamentos
-   - **Usuários**:
-     - `/agendamentos` → Agendamento de serviços
+**Fluxo:**
+1. O usuário autentica com suas credenciais corporativas (`user@dominio`).
+2. As credenciais são validadas via **LDAP**.
+3. Um **JWT** é emitido com os grupos do AD nos claims.
+4. O frontend exibe e permite acesso às abas com base no grupo:
 
-**Proteções:**
-- Validação de força de senha conforme políticas do AD.
-- Tokens JWT com expiração de 10 horas.
+| Grupo   | Abas Disponíveis                          |
+|---------|-------------------------------------------|
+| Admin   | `/eventos`, `/agendamentos-admin`, `/historico-eventos` |
+| Usuário | `/agendamentos`                           |
+
+**Segurança:**
+- Validação de senha conforme políticas do AD.
+- Token com expiração de 10h.
 
 ---
 
-### 2. Tela de Agendamento
+### 📅 Tela de Agendamento
 
-**Componentes Principais:**
+**Componentes:**
 - **Calendário Interativo**:
   - Destaque dos dias com eventos disponíveis.
-  - Atualização em tempo real via **WebSocket** (futuro).
+  - Suporte futuro a atualizações em tempo real via **WebSocket**.
 
 - **Seletor de Horários**:
-  - Slots de 30 minutos (das 08:00 às 18:00, por exemplo).
-  - Cores Dinâmicas:
-    - 🩶 Cinza: Disponível
-    - 🟨 Amarelo: Em processo de reserva *(futuro)*
-    - 🟦 Azul: Agendado, com fila de interessados *(futuro)*
-    - 🟥 Vermelho: Ocupado (4 ou mais na fila) *(futuro)*
+  - Intervalos de 30 minutos.
+  - Cores indicam status dos horários:
+    - 🩶 Disponível
+    - 🟨 Em reserva *(futuro)*
+    - 🟦 Com fila *(futuro)*
+    - 🟥 Lotado *(futuro)*
 
 - **Formulário de Reserva**:
-  - Seleção do serviço desejado.
-  - Campo de texto para detalhes.
+  - Seleção do serviço.
+  - Campo descritivo.
   - Confirmação via modal.
+
+**Notificações por Email**:
+- Enviadas automaticamente ao **agendar** ou **cancelar** uma sessão.
 
 ---
 
-### 3. Gestão de Eventos (Admin)
+### 🛠️ Gestão de Eventos (Admin)
 
-**Novos Recursos:**
 - **EventFormModal**:
-  - Formulário dinâmico com validação.
-  - Seleção de pausas programadas (início/fim).
+  - Formulário com validações.
+  - Opção de configurar pausas.
   - Reset automático ao fechar.
 
 - **EventsTable**:
-  - Tabela animada com edição e exclusão.
-  - Integração com histórico de eventos.
+  - Edição e exclusão de eventos.
+  - Integração com o histórico.
+
+**Notificações**:
+- Toda alteração (criação, edição, exclusão) dispara e-mail para o grupo da empresa.
 
 ---
 
-## Implementações Futuras
+## 🧩 Implementações Futuras
 
-1. Substituir dados **mock** por banco **PostgreSQL** com **Entity Framework Core (EF Core)**.
-2. Serviço de notificações por email via **SMTP**.
-3. Integração com **Microsoft 365**:
-   - Alteração automática de status do **Teams** para **"Ocupado"**.
-   - Registro de eventos no **Outlook/Teams Calendar**.
-   - Cancelamento automático com antecedência.
-4. **WebSocket Avançado**:
-   - Feedback visual imediato.
-   - Fila de interessados (até 4).
+- Integração com **Microsoft 365**:
+  - Status automático no **Teams** como "Ocupado".
+  - Registro em **Outlook/Teams Calendar**.
+  - Cancelamento automático com antecedência.
 
----
-
-## Próximos Passos
-
-1. Desenvolver **serviço de notificações por email**.
-2. Integrar **API do Microsoft Graph**.
-3. Adicionar **Testes End-to-End (E2E)**.
+- **WebSocket Avançado**:
+  - Feedback em tempo real.
+  - Fila dinâmica de até 4 interessados.
 
 ---
 
-## Tecnologias Utilizadas
+## 🚧 Roadmap
 
-- **Frontend**: React, React Router, WebSocket *(futuro)*
+1. Integrar **Microsoft Graph API**
+2. Implementar **WebSocket Avançado**
+3. Adicionar **Testes E2E**
+
+---
+
+## 🛠️ Tecnologias
+
+- **Frontend**: React, React Router
 - **Backend**: .NET, LDAP, JWT
-- **Banco de Dados**: PostgreSQL *(em andamento)*
+- **Banco de Dados**: PostgreSQL
 - **ORM**: Entity Framework Core (EF Core)
-- **Integração**: Microsoft Graph
-- **SMTP**: Notificações por email
+- **Integrações**: Microsoft Graph, SMTP
 
 ---
 
-## Contribuições
+## 🤝 Contribuindo
 
-1. Faça um **fork**.
-2. Crie uma branch:  
-   `git checkout -b feature/nova-feature`
-3. Realize alterações e commit.
-4. Envie um **pull request** para `main`.
+1. Fork o repositório
+2. Crie uma branch: `git checkout -b feature/sua-feature`
+3. Commit suas alterações
+4. Envie um pull request para a branch `main`
 
 ---
 
-## Licença
+## 📄 Licença
 
-Este projeto está licenciado sob a **MIT License**.
+Licenciado sob a **MIT License**.
 
 ---
 
 ## ℹ️ Observação
 
-O sistema de **fila**, **WebSocket avançado** e a **integração com a API da Microsoft** são **implementações futuras**.
+Recursos como **fila de espera**, **WebSocket avançado** e **integração com Microsoft 365** estão em desenvolvimento.
