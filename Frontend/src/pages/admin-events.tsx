@@ -3,14 +3,13 @@ import { motion } from "framer-motion";
 import useEvents from "../hooks/Events/UseEvents";
 import EventsTable from "../components/Events/EventsTable";
 import EventFormModal from "../components/Events/EventFormModal";
-import { Event } from "../components/Types/Event";
+import { Event } from "../components/Types/Event/Event.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 
 export default function AdminEventsPage() {
   const { events, loading } = useEvents();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-
 
   return (
     <div className="min-h-screen bg-white flex flex-col justify-center items-center">

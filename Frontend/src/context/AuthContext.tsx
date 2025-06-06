@@ -1,13 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { AuthContextType } from "../components/Types/Context/AuthContextType";
 import api from "../services/api";
-
-interface AuthContextType {
-  isAuthenticated: boolean;
-  loading: boolean;
-  groups: string[];
-  logout: () => void;
-  refreshAuth: () => Promise<void>;
-}
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,

@@ -16,18 +16,18 @@ const AppRoutes = () => {
         <Route
           path="/agendamentos"
           element={
-            <ProtectedRoute>
+            // <ProtectedRoute>
               <Scheduling />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           }
         />
 
         <Route
           path="/eventos"
           element={
-            <ProtectedRoute requiredGroup="RH">
+            // <ProtectedRoute requiredGroup="RH">
               <AdminEvent />
-            </ProtectedRoute>
+            // </ProtectedRoute>
           }
         />
 

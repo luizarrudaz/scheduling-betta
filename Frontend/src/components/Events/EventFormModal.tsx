@@ -1,8 +1,10 @@
+import { useEffect } from 'react';
 import { Dialog } from '@headlessui/react'
 import { motion } from 'framer-motion'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useForm } from 'react-hook-form'
-import { Event } from "../Types/Event" 
+import { Event } from "../Types/Event/Event"
+import { useCreateEvent } from '../../hooks/Events/CreateEvent';
 
 interface EventFormModalProps {
   isOpen: boolean
@@ -10,52 +12,110 @@ interface EventFormModalProps {
   event?: Event | null
 }
 
+const toDateTimeLocalString = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+};
+
+const formatTime = (date: Date) => {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+};
+
+type FormData = {
+  Title: string;
+  SessionDuration: number;
+  Location: string;
+  StartTime: string;
+  EndTime: string;
+  Pause: boolean;
+  BreakStartInput?: string;
+  BreakEndInput?: string;
+};
+
 export default function EventFormModal({ isOpen, onClose, event }: EventFormModalProps) {
-  const { 
-    register, 
-    handleSubmit, 
-    watch, 
+  const {
+    register,
+    handleSubmit,
+    watch,
     reset,
-    formState: { errors } 
-  } = useForm<Event>({
-    defaultValues: event || {
-      id: 0,
-      nome: '',
-      tamanhoSessao: 30,
-      pausa: false,
-      localidade: '',
-      dataInicio: '',
-      dataFim: '',
-      vagasDisponiveis: 0,
+    formState: { errors }
+  } = useForm<FormData>({
+    defaultValues: {
+      Title: '',
+      SessionDuration: 30,
+      Location: '',
+      StartTime: '',
+      EndTime: '',
+      Pause: false,
+      BreakStartInput: '',
+      BreakEndInput: ''
     }
-  })
-  
-  const hasPause = watch('pausa')
+  });
+
+  const { createEvent, isLoading, error: createError } = useCreateEvent("https://localhost:44378/event");
+
+  const hasPause = watch('Pause');
+
+  useEffect(() => {
+    if (isOpen) {
+      if (event) {
+        reset({
+          Title: event.title,
+          SessionDuration: event.sessionDuration,
+          Location: event.location,
+          StartTime: toDateTimeLocalString(event.startTime),
+          EndTime: toDateTimeLocalString(event.endTime),
+          Pause: event.breakWindow !== null,
+          BreakStartInput: event.breakWindow ? formatTime(event.breakWindow.breakStart) : '',
+          BreakEndInput: event.breakWindow ? formatTime(event.breakWindow.breakEnd) : ''
+        });
+      }
+    } else {
+      reset({
+        Title: '',
+        SessionDuration: 30,
+        Location: '',
+        StartTime: '',
+        EndTime: '',
+        Pause: false,
+        BreakStartInput: '',
+        BreakEndInput: ''
+      });
+    }
+  }, [isOpen, event, reset]);
 
   const handleClose = () => {
-    onClose()
-    reset(event || { 
-      nome: '',
-      tamanhoSessao: 30,
-      localidade: '',
-      dataInicio: '',
-      dataFim: '',
-      pausa: false,
-      pausaInicio: '',
-      pausaVolta: '',
-      vagasDisponiveis: 0,
-      id: 0
-    })
-  }
+    onClose();
+  };
 
-  const onSubmit = (data: Event) => {
-    handleClose()
-  }
+  const onSubmit = async (data: FormData) => {
+    const apiEvent = {
+      title: data.Title,
+      sessionDuration: Number(data.SessionDuration),
+      location: data.Location,
+      startTime: toDateTimeLocalString(new Date(data.StartTime)),
+      endTime: toDateTimeLocalString(new Date(data.EndTime)),
+      breakWindow: data.Pause && data.BreakStartInput && data.BreakEndInput ? {
+        breakStart: toDateTimeLocalString(new Date(`${data.StartTime.split('T')[0]}T${data.BreakStartInput}`)),
+        breakEnd: toDateTimeLocalString(new Date(`${data.StartTime.split('T')[0]}T${data.BreakEndInput}`))
+      } : null
+    };
+
+    const result = await createEvent(apiEvent);
+    if (result) {
+      handleClose();
+    }
+  };
 
   return (
-    <Dialog 
-      open={isOpen} 
-      onClose={handleClose} 
+    <Dialog
+      open={isOpen}
+      onClose={handleClose}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
     >
       <motion.div
@@ -66,7 +126,7 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
         transition={{
           type: 'spring',
           stiffness: 350,
-          damping: 20,    
+          damping: 20,
           layout: {
             duration: 0.18,
             ease: 'easeInOut'
@@ -82,7 +142,7 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
           >
             {event ? 'Editar Evento' : 'Novo Evento'}
           </motion.h2>
-          
+
           <motion.button
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
@@ -103,17 +163,17 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
             <div className="col-span-2">
               <label className="block text-sm font-semibold text-gray-600 mb-2">Nome do Evento *</label>
               <motion.input
-                {...register('nome', { required: 'Campo obrigatório' })}
+                {...register('Title', { required: 'Campo obrigatório' })}
                 className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                 whileFocus={{ scale: 1.01 }}
               />
-              {errors.nome && (
-                <motion.span 
+              {errors.Title && (
+                <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="text-red-500 text-xs block mt-1"
                 >
-                  {errors.nome.message}
+                  {errors.Title.message}
                 </motion.span>
               )}
             </div>
@@ -122,20 +182,20 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
               <label className="block text-sm font-semibold text-gray-600 mb-2">Duração (minutos) *</label>
               <motion.input
                 type="number"
-                {...register('tamanhoSessao', { 
+                {...register('SessionDuration', {
                   required: 'Campo obrigatório',
                   min: { value: 1, message: 'Mínimo 1 minuto' }
                 })}
                 className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                 whileFocus={{ scale: 1.01 }}
               />
-              {errors.tamanhoSessao && (
-                <motion.span 
+              {errors.SessionDuration && (
+                <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="text-red-500 text-xs block mt-1"
                 >
-                  {errors.tamanhoSessao.message}
+                  {errors.SessionDuration.message}
                 </motion.span>
               )}
             </div>
@@ -143,17 +203,17 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
             <div>
               <label className="block text-sm font-semibold text-gray-600 mb-2">Local *</label>
               <motion.input
-                {...register('localidade', { required: 'Campo obrigatório' })}
+                {...register('Location', { required: 'Campo obrigatório' })}
                 className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                 whileFocus={{ scale: 1.01 }}
               />
-              {errors.localidade && (
-                <motion.span 
+              {errors.Location && (
+                <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="text-red-500 text-xs block mt-1"
                 >
-                  {errors.localidade.message}
+                  {errors.Location.message}
                 </motion.span>
               )}
             </div>
@@ -161,7 +221,7 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
             <div className="col-span-2 flex items-center gap-3">
               <motion.input
                 type="checkbox"
-                {...register('pausa')}
+                {...register('Pause')}
                 className="h-5 w-5 text-[#FA7014] rounded focus:ring-[#FA7014]"
                 whileTap={{ scale: 0.9 }}
               />
@@ -174,20 +234,29 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                   <label className="block text-sm font-semibold text-gray-600 mb-2">Início da Pausa *</label>
                   <motion.input
                     type="time"
-                    {...register('pausaInicio', { 
+                    {...register('BreakStartInput', {
                       required: 'Campo obrigatório',
-                      validate: value => !!value && (value < (watch('pausaVolta') || '23:59'))
+                      validate: (value) => {
+                        if (!value || !watch('StartTime') || !watch('EndTime')) return true;
+
+                        const eventStart = new Date(watch('StartTime'));
+                        const eventEnd = new Date(watch('EndTime'));
+                        const breakStart = new Date(`${watch('StartTime').split('T')[0]}T${value}`);
+
+                        return (breakStart >= eventStart && breakStart <= eventEnd)
+                          || "Pausa deve estar dentro do horário do evento";
+                      }
                     })}
                     className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                     whileFocus={{ scale: 1.01 }}
                   />
-                  {errors.pausaInicio && (
-                    <motion.span 
+                  {errors.BreakStartInput && (
+                    <motion.span
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="text-red-500 text-xs block mt-1"
                     >
-                      {errors.pausaInicio.message}
+                      {errors.BreakStartInput.message}
                     </motion.span>
                   )}
                 </div>
@@ -196,20 +265,28 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
                   <label className="block text-sm font-semibold text-gray-600 mb-2">Fim da Pausa *</label>
                   <motion.input
                     type="time"
-                    {...register('pausaVolta', { 
+                    {...register('BreakEndInput', {
                       required: 'Campo obrigatório',
-                      validate: value => !!value && (value > (watch('pausaInicio') || '00:00'))
+                      validate: (value) => {
+                        if (!value || !watch('BreakStartInput')) return true;
+
+                        const breakStart = new Date(`2000-01-01T${watch('BreakStartInput')}`);
+                        const breakEnd = new Date(`2000-01-01T${value}`);
+
+                        return breakEnd > breakStart
+                          || "Fim da pausa deve ser após o início";
+                      }
                     })}
                     className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                     whileFocus={{ scale: 1.01 }}
                   />
-                  {errors.pausaVolta && (
-                    <motion.span 
+                  {errors.BreakEndInput && (
+                    <motion.span
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       className="text-red-500 text-xs block mt-1"
                     >
-                      {errors.pausaVolta.message}
+                      {errors.BreakEndInput.message}
                     </motion.span>
                   )}
                 </div>
@@ -218,58 +295,97 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
 
             <div className="col-span-2 grid grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">Data Início *</label>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Início *</label>
                 <motion.input
                   type="datetime-local"
-                  {...register('dataInicio', { 
+                  {...register('StartTime', {
                     required: 'Campo obrigatório',
-                    validate: value => !!value && (value < (watch('dataFim') || '9999-12-31'))
+                    validate: (value) => {
+                      const start = new Date(value);
+                      const end = new Date(watch('EndTime'));
+                      return start < end || 'Início deve ser antes do fim';
+                    }
                   })}
                   className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                   whileFocus={{ scale: 1.01 }}
                 />
-                {errors.dataInicio && (
-                  <motion.span 
+                {errors.StartTime && (
+                  <motion.span
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-red-500 text-xs block mt-1"
                   >
-                    {errors.dataInicio.message}
+                    {errors.StartTime.message}
                   </motion.span>
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-600 mb-2">Data Fim *</label>
+                <label className="block text-sm font-semibold text-gray-600 mb-2">Fim *</label>
                 <motion.input
                   type="datetime-local"
-                  {...register('dataFim', { 
+                  {...register('EndTime', {
                     required: 'Campo obrigatório',
-                    validate: value => !!value && (value > (watch('dataInicio') || '0000-01-01'))
+                    validate: (value) => {
+                      const start = new Date(watch('StartTime'));
+                      const end = new Date(value);
+                      return end > start || 'Fim deve ser após início';
+                    }
                   })}
                   className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                   whileFocus={{ scale: 1.01 }}
                 />
-                {errors.dataFim && (
-                  <motion.span 
+                {errors.EndTime && (
+                  <motion.span
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="text-red-500 text-xs block mt-1"
                   >
-                    {errors.dataFim.message}
+                    {errors.EndTime.message}
                   </motion.span>
                 )}
               </div>
             </div>
           </div>
 
+          {createError && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="text-red-500 p-3 bg-red-50 rounded-lg text-center mb-4"
+            >
+              {createError}
+            </motion.div>
+          )}
+
           <motion.button
             type="submit"
-            whileHover={{ scale: 0.95 }}
-            whileTap={{ scale: 0.92 }}
-            className="w-full bg-[#FA7014] text-white py-3 rounded-xl font-semibold hover:bg-[#E55F00] transition-all duration-300 shadow-md"
+            disabled={isLoading}
+            whileHover={!isLoading ? { scale: 0.95 } : {}}
+            whileTap={!isLoading ? { scale: 0.92 } : {}}
+            className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-md ${
+              isLoading
+                ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                : 'bg-[#FA7014] text-white hover:bg-[#E55F00]'
+            }`}
           >
-            {event ? 'Salvar Alterações' : 'Criar Evento'}
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path 
+                    className="opacity-75" 
+                    fill="currentColor" 
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Processando...
+              </div>
+            ) : event ? (
+              'Salvar Alterações'
+            ) : (
+              'Criar Evento'
+            )}
           </motion.button>
         </motion.form>
       </motion.div>

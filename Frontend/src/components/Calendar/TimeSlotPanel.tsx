@@ -1,7 +1,7 @@
 import { isSameDay, parseISO, format } from 'date-fns';
 import { AnimatePresence, motion } from "framer-motion";
 import { generateAllSlots } from './utils';
-import { TimeSlot } from '../Types/TimeSlot';
+import { TimeSlot } from '../Types/Event/TimeSlot';
 import { useState } from 'react';
 import ScheduleModal from './ScheduleModal';
 

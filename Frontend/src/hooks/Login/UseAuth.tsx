@@ -1,11 +1,8 @@
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
-
-type AuthConfig = {
-  isProd: boolean;
-  apiEndpoint?: string;
-};
+import { AuthConfig } from "../../components/Types/Login/AuthConfig";
+import { Credentials } from "../../components/Types/Login/Credentials";
 
 export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
   const [error, setError] = useState<string | null>(null);
@@ -14,16 +11,16 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
   const { refreshAuth } = useAuthContext();
 
   const login = useCallback(
-    async (username: string, password: string) => {
+    async (credentials: Credentials) => {
       setError(null);
       setIsLoading(true);
 
       try {
         if (!isProd) {
-          if (username === "luiz.arruda" && password === "1234") {
+          if (credentials.username === "luiz.arruda" && credentials.password === "1234") {
             navigate("/agendamentos");
             return true;
-          } else if (username === "admin" && password === "1234") {
+          } else if (credentials.username === "admin" && credentials.password === "1234") {
             navigate("/eventos");
             return true;
           }
@@ -37,7 +34,7 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
         const response = await fetch(apiEndpoint, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
+          body: JSON.stringify(credentials),
         });
 
         if (!response.ok) {
