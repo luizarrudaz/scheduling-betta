@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const refreshAuth = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/Auth/CheckAuth");
+      const res = await api.get("/auth/check-auth");
       
       setIsAuthenticated(res.data.authenticated);
       

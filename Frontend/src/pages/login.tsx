@@ -14,7 +14,7 @@ const Login = () => {
 
   const { login, error, isLoading } = useAuth({
     isProd: false,
-    apiEndpoint: 'https://localhost:44378/Auth/Login'
+    apiEndpoint: 'https://localhost:44378/auth/login'
   });
 
   const { isAuthenticated } = useAuthContext();
