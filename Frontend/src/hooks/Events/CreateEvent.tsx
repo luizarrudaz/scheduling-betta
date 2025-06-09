@@ -1,16 +1,17 @@
-import { useState } from 'react'
-import { Event } from '../../components/Types/Event/Event'
+import { useState } from 'react';
+import { Event } from '../../components/Types/Event/Event';
+import api from '../../services/api'; 
 
 interface ApiEvent {
-  title: string
-  sessionDuration: number
-  location: string
-  startTime: string
-  endTime: string
+  title: string;
+  sessionDuration: number;
+  location: string;
+  startTime: string;
+  endTime: string;
   breakWindow: {
-    breakStart: string
-    breakEnd: string
-  } | null
+    breakStart: string;
+    breakEnd: string;
+  } | null;
 }
 
 export function useCreateEvent(apiEndpoint: string) {
@@ -24,23 +25,24 @@ export function useCreateEvent(apiEndpoint: string) {
     setIsSuccess(false);
 
     try {
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(event),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Erro ${response.status}`);
-      }
-
-      const createdEvent: Event = await response.json();
+      const endpoint = apiEndpoint.replace(api.defaults.baseURL || '', '');
+      
+      const { data: createdEvent } = await api.post<Event>(endpoint, event);
+      
       setIsSuccess(true);
       return createdEvent;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
-      setError(message);
+    } catch (err: any) {
+      let errorMessage = "Erro desconhecido";
+      
+      if (err.response) {
+        errorMessage = err.response.data?.message || `Erro ${err.response.status}`;
+      } else if (err.request) {
+        errorMessage = "Sem resposta do servidor";
+      } else {
+        errorMessage = err.message || errorMessage;
+      }
+
+      setError(errorMessage);
       return null;
     } finally {
       setIsLoading(false);

@@ -12,18 +12,18 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const { login, error, isLoading } = useAuth({
-    isProd: false,
-    apiEndpoint: 'https://localhost:44378/auth/login'
+  const { login, error, isLoading, } = useAuth({
+    isProd: true,
+    apiEndpoint: '/auth/login'
   });
 
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, loading: authLoading } = useAuthContext();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/agendamentos");
+    if (!authLoading && isAuthenticated) {
+      navigate("/agendamentos", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

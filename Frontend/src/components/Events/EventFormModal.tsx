@@ -5,11 +5,13 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useForm } from 'react-hook-form'
 import { Event } from "../Types/Event/Event"
 import { useCreateEvent } from '../../hooks/Events/CreateEvent';
+import { useUpdateEvent } from '../../hooks/Events/UseUpdateEvent';
 
 interface EventFormModalProps {
   isOpen: boolean
   onClose: () => void
   event?: Event | null
+  onSuccess: () => void;
 }
 
 const toDateTimeLocalString = (date: Date) => {
@@ -18,8 +20,7 @@ const toDateTimeLocalString = (date: Date) => {
   const day = String(date.getDate()).padStart(2, '0');
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
-  const seconds = String(date.getSeconds()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
 const formatTime = (date: Date) => {
@@ -37,45 +38,33 @@ type FormData = {
   BreakEndInput?: string;
 };
 
-export default function EventFormModal({ isOpen, onClose, event }: EventFormModalProps) {
+export default function EventFormModal({ isOpen, onClose, event, onSuccess }: EventFormModalProps) {
   const {
     register,
     handleSubmit,
     watch,
     reset,
     formState: { errors }
-  } = useForm<FormData>({
-    defaultValues: {
-      Title: '',
-      SessionDuration: 30,
-      Location: '',
-      StartTime: '',
-      EndTime: '',
-      Pause: false,
-      BreakStartInput: '',
-      BreakEndInput: ''
-    }
-  });
+  } = useForm<FormData>();
 
-  const { createEvent, isLoading, error: createError } = useCreateEvent("https://localhost:44378/event");
+  const { createEvent, isLoading: isCreating, error: createError } = useCreateEvent("/event");
+  const { updateEvent, isLoading: isUpdating, error: updateError } = useUpdateEvent("/event");
 
   const hasPause = watch('Pause');
 
   useEffect(() => {
-    if (isOpen) {
-      if (event) {
-        reset({
-          Title: event.title,
-          SessionDuration: event.sessionDuration,
-          Location: event.location,
-          StartTime: toDateTimeLocalString(event.startTime),
-          EndTime: toDateTimeLocalString(event.endTime),
-          Pause: event.breakWindow !== null,
-          BreakStartInput: event.breakWindow ? formatTime(event.breakWindow.breakStart) : '',
-          BreakEndInput: event.breakWindow ? formatTime(event.breakWindow.breakEnd) : ''
-        });
-      }
-    } else {
+    if (isOpen && event) {
+      reset({
+        Title: event.title,
+        SessionDuration: event.sessionDuration,
+        Location: event.location,
+        StartTime: toDateTimeLocalString(event.startTime),
+        EndTime: toDateTimeLocalString(event.endTime),
+        Pause: !!event.breakWindow,
+        BreakStartInput: event.breakWindow ? formatTime(event.breakWindow.breakStart) : '',
+        BreakEndInput: event.breakWindow ? formatTime(event.breakWindow.breakEnd) : ''
+      });
+    } else if (isOpen) {
       reset({
         Title: '',
         SessionDuration: 30,
@@ -94,23 +83,48 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
   };
 
   const onSubmit = async (data: FormData) => {
+    let breakWindow = null;
+
+    if (data.Pause && data.BreakStartInput && data.BreakEndInput) {
+      const breakStartDate = new Date(data.StartTime);
+      const [hours, minutes] = data.BreakStartInput.split(':').map(Number);
+      breakStartDate.setHours(hours, minutes);
+
+      const breakEndDate = new Date(data.StartTime);
+      const [endHours, endMinutes] = data.BreakEndInput.split(':').map(Number);
+      breakEndDate.setHours(endHours, endMinutes);
+
+      breakWindow = {
+        breakStart: breakStartDate.toISOString(),
+        breakEnd: breakEndDate.toISOString()
+      };
+    }
+
     const apiEvent = {
       title: data.Title,
       sessionDuration: Number(data.SessionDuration),
       location: data.Location,
-      startTime: toDateTimeLocalString(new Date(data.StartTime)),
-      endTime: toDateTimeLocalString(new Date(data.EndTime)),
-      breakWindow: data.Pause && data.BreakStartInput && data.BreakEndInput ? {
-        breakStart: toDateTimeLocalString(new Date(`${data.StartTime.split('T')[0]}T${data.BreakStartInput}`)),
-        breakEnd: toDateTimeLocalString(new Date(`${data.StartTime.split('T')[0]}T${data.BreakEndInput}`))
-      } : null
+      startTime: new Date(data.StartTime).toISOString(),
+      endTime: new Date(data.EndTime).toISOString(),
+      breakWindow,
+      pause: data.Pause
     };
+    let result = null;
 
-    const result = await createEvent(apiEvent);
+    if (event) {
+      result = await updateEvent(event.id, apiEvent);
+    } else {
+      result = await createEvent(apiEvent);
+    }
+
     if (result) {
       handleClose();
+      onSuccess();
     }
   };
+
+    const isLoading = isCreating || isUpdating;
+    const error = createError || updateError;
 
   return (
     <Dialog
@@ -348,13 +362,13 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
             </div>
           </div>
 
-          {createError && (
+          {error && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               className="text-red-500 p-3 bg-red-50 rounded-lg text-center mb-4"
             >
-              {createError}
+              {error}
             </motion.div>
           )}
 
@@ -363,19 +377,18 @@ export default function EventFormModal({ isOpen, onClose, event }: EventFormModa
             disabled={isLoading}
             whileHover={!isLoading ? { scale: 0.95 } : {}}
             whileTap={!isLoading ? { scale: 0.92 } : {}}
-            className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-md ${
-              isLoading
+            className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-md ${isLoading
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
                 : 'bg-[#FA7014] text-white hover:bg-[#E55F00]'
-            }`}
+              }`}
           >
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path 
-                    className="opacity-75" 
-                    fill="currentColor" 
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>

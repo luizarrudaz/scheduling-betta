@@ -1,9 +1,12 @@
+import { Key } from "react";
+
 export interface BreakWindowDto {
   breakStart: Date;
   breakEnd: Date;
 }
 
 export interface Event {
+  id: Key | null | undefined;
   title: string;
   sessionDuration: number;
   location: string;
@@ -13,7 +16,7 @@ export interface Event {
   pause: boolean;
 }
 
-interface EventFormData {
+export interface EventFormData {
   Title: string;
   SessionDuration: number;
   Location: string;
