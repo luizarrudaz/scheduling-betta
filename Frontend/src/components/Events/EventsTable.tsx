@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, isAfter } from 'date-fns';
+import { format } from 'date-fns';
 import { Event } from '../Types/Event/Event';
 
 const rowVariants = {
@@ -30,11 +30,6 @@ export default function EventsTable({
   onEdit,
   onDelete
 }: EventsTableProps) {
-  const currentTime = new Date();
-  const upcomingEvents = events.filter(event => 
-    isAfter(new Date(event.endTime), currentTime)
-  );
-
   return (
     <motion.div
       className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100"
@@ -58,58 +53,46 @@ export default function EventsTable({
           </thead>
           <tbody className="divide-y divide-gray-200">
             <AnimatePresence>
-              {upcomingEvents.length === 0 ? (
+              {events.map((event) => (
                 <motion.tr
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center"
+                  key={event.id}
+                  variants={rowVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  transition={{ duration: 0.25 }}
+                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <td colSpan={5} className="px-5 py-8 text-gray-500 italic">
-                    Nenhum evento futuro encontrado
+                  <td className="px-5 py-4 text-gray-800 max-w-xs truncate font-medium">{event.title}</td>
+                  <td className="px-5 py-4 text-gray-600">{event.location}</td>
+                  <td className="px-5 py-4 text-sm text-gray-700">
+                    {safeFormat(event.startTime, 'dd/MM/yyyy')}
+                  </td>
+                  <td className="px-5 py-4">
+                    <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                      {event.sessionDuration} min
+                    </span>
+                  </td>
+                  <td className="px-5 py-4 space-x-2 flex items-center">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => onEdit(event)}
+                      className="text-gray-600 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
+                    >
+                      ✏️ Editar
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => onDelete(event)}
+                      className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                    >
+                      🗑️ Excluir
+                    </motion.button>
                   </td>
                 </motion.tr>
-              ) : (
-                upcomingEvents.map((event) => (
-                  <motion.tr
-                    key={event.id}
-                    variants={rowVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    transition={{ duration: 0.25 }}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="px-5 py-4 text-gray-800 max-w-xs truncate font-medium">{event.title}</td>
-                    <td className="px-5 py-4 text-gray-600">{event.location}</td>
-                    <td className="px-5 py-4 text-sm text-gray-700">
-                      {safeFormat(event.startTime, 'dd/MM/yyyy')}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
-                        {event.sessionDuration} min
-                      </span>
-                    </td>
-                    <td className="px-5 py-4 space-x-2 flex items-center">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => onEdit(event)}
-                        className="text-gray-600 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
-                      >
-                        ✏️ Editar
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => onDelete(event)}
-                        className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
-                      >
-                        🗑️ Excluir
-                      </motion.button>
-                    </td>
-                  </motion.tr>
-                ))
-              )}
+              ))}
             </AnimatePresence>
           </tbody>
         </table>
