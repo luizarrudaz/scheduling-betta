@@ -6,6 +6,7 @@ import EventFormModal from "../components/Events/EventFormModal";
 import { Event } from "../components/Types/Event/Event.tsx";
 import { useDeleteEvent } from "../hooks/Events/UseDeleteEvent.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
+import { isAfter } from 'date-fns';
 
 export default function AdminEventsPage() {
   const { events, loading, refetch } = useEvents();
@@ -20,6 +21,16 @@ export default function AdminEventsPage() {
         refetch();
       }
     }
+  };
+
+  const currentTime = new Date();
+  const upcomingEvents = events.filter(event =>
+    isAfter(new Date(event.endTime), currentTime)
+  );
+
+  const handleOpenModal = () => {
+    setSelectedEvent(null);
+    setIsModalOpen(true);
   };
 
   return (
@@ -41,31 +52,43 @@ export default function AdminEventsPage() {
         {loading ? (
           <LoadingSkeleton />
         ) : events.length === 0 ? (
-          <NoEvents onCreate={() => setIsModalOpen(true)} />
+          <NoEvents
+            message="Nenhum evento cadastrado"
+            buttonText="Criar Primeiro Evento"
+            onButtonClick={handleOpenModal}
+          />
         ) : (
           <>
-            <div className="flex justify-end mb-4">
-              <motion.button
-                onClick={() => {
-                  setSelectedEvent(null);
+            {upcomingEvents.length > 0 && (
+              <div className="flex justify-end mb-4">
+                <motion.button
+                  onClick={handleOpenModal}
+                  className="bg-[#FA7014] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#E55F00] transition-all"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  +
+                </motion.button>
+              </div>
+            )}
+
+
+            {upcomingEvents.length === 0 ? (
+              <NoEvents
+                message="Nenhum evento cadastrado"
+                buttonText="Criar um evento"
+                onButtonClick={handleOpenModal}
+              />
+            ) : (
+              <EventsTable
+                events={upcomingEvents}
+                onEdit={(event) => {
+                  setSelectedEvent(event);
                   setIsModalOpen(true);
                 }}
-                className="bg-[#FA7014] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#E55F00] transition-all"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                +
-              </motion.button>
-            </div>
-
-            <EventsTable
-              events={events}
-              onEdit={(event) => {
-                setSelectedEvent(event);
-                setIsModalOpen(true);
-              }}
-              onDelete={handleDelete}
-            />
+                onDelete={handleDelete}
+              />
+            )}
           </>
         )}
       </div>
@@ -106,28 +129,31 @@ const LoadingSkeleton = () => (
   </motion.div>
 );
 
-const NoEvents = ({ onCreate }: { onCreate: () => void }) => (
+const NoEvents = ({
+  message,
+  buttonText,
+  onButtonClick
+}: {
+  message: string;
+  buttonText: string;
+  onButtonClick: () => void;
+}) => (
   <motion.div
-    initial={{ opacity: 0, y: 20 }}
+    initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.4 }}
-    className="flex flex-col items-center justify-center h-[50vh] space-y-6"
+    transition={{ duration: 0.3 }}
+    className="flex flex-col items-center justify-center h-[50vh]"
   >
-    <motion.div
-      className="bg-white shadow-xl rounded-2xl p-8 w-80 text-center border border-gray-100"
-      initial={{ scale: 0.95 }}
-      animate={{ scale: 1 }}
-      transition={{ type: "spring", stiffness: 120 }}
-    >
-      <p className="text-gray-700 text-lg mb-6">Nenhum evento cadastrado</p>
+    <div className="text-center py-6 px-6 bg-white rounded-2xl shadow-2xl w-80">
+      <p className="text-gray-600 mb-4 text-lg">{message}</p>
       <motion.button
-        onClick={onCreate}
-        className="w-full bg-[#FA7014] text-white py-3 rounded-xl font-semibold hover:bg-[#E55F00] transition-all duration-300 shadow-md"
-        whileHover={{ scale: 1.04 }}
-        whileTap={{ scale: 0.96 }}
+        onClick={onButtonClick}
+        className="w-full bg-[#FA7014] text-white py-3 rounded-xl font-semibold hover:bg-[#E55F00] transition-all duration-300"
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.95 }}
       >
-        Criar Primeiro Evento
+        {buttonText}
       </motion.button>
-    </motion.div>
+    </div>
   </motion.div>
 );
