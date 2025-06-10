@@ -78,8 +78,8 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
       });
     } else if (isOpen) {
       const now = new Date();
-      const defaultStart = new Date(now.getTime() + 30 * 60000); // Now + 30min
-      const defaultEnd = new Date(defaultStart.getTime() + 60 * 60000); // Start + 60min
+      const defaultStart = new Date(now.getTime() + 30 * 60000); 
+      const defaultEnd = new Date(defaultStart.getTime() + 60 * 60000);
       
       reset({
         Title: '',
@@ -103,8 +103,6 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
 
     const eventStart = new Date(startTime);
     const eventEnd = new Date(endTime);
-    
-    // Create break times using event start date
     const breakStart = new Date(`${startTime.split('T')[0]}T${breakStartInput}`);
     const breakEnd = new Date(`${startTime.split('T')[0]}T${breakEndInput}`);
 
@@ -169,7 +167,6 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
     if (event) {
       result = await updateEvent(event.id, apiEvent);
     } else {
-      // Additional validation for new events only
       const now = new Date();
       const start = new Date(data.StartTime);
       if (start < now) {
