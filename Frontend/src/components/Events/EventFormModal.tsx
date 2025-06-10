@@ -44,13 +44,25 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
     handleSubmit,
     watch,
     reset,
-    formState: { errors }
+    formState: { errors },
+    clearErrors,
+    setError
   } = useForm<FormData>();
 
   const { createEvent, isLoading: isCreating, error: createError } = useCreateEvent("/event");
   const { updateEvent, isLoading: isUpdating, error: updateError } = useUpdateEvent("/event");
 
   const hasPause = watch('Pause');
+  const startTime = watch('StartTime');
+  const endTime = watch('EndTime');
+  const breakStartInput = watch('BreakStartInput');
+  const breakEndInput = watch('BreakEndInput');
+
+  useEffect(() => {
+    if (!hasPause) {
+      clearErrors(['BreakStartInput', 'BreakEndInput']);
+    }
+  }, [hasPause, clearErrors]);
 
   useEffect(() => {
     if (isOpen && event) {
@@ -65,12 +77,16 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
         BreakEndInput: event.breakWindow ? formatTime(event.breakWindow.breakEnd) : ''
       });
     } else if (isOpen) {
+      const now = new Date();
+      const defaultStart = new Date(now.getTime() + 30 * 60000); // Now + 30min
+      const defaultEnd = new Date(defaultStart.getTime() + 60 * 60000); // Start + 60min
+      
       reset({
         Title: '',
         SessionDuration: 30,
         Location: '',
-        StartTime: '',
-        EndTime: '',
+        StartTime: toDateTimeLocalString(defaultStart),
+        EndTime: toDateTimeLocalString(defaultEnd),
         Pause: false,
         BreakStartInput: '',
         BreakEndInput: ''
@@ -82,7 +98,46 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
     onClose();
   };
 
+  const validateBreakTimes = () => {
+    if (!hasPause || !breakStartInput || !breakEndInput) return true;
+
+    const eventStart = new Date(startTime);
+    const eventEnd = new Date(endTime);
+    
+    // Create break times using event start date
+    const breakStart = new Date(`${startTime.split('T')[0]}T${breakStartInput}`);
+    const breakEnd = new Date(`${startTime.split('T')[0]}T${breakEndInput}`);
+
+    if (breakStart < eventStart) {
+      setError('BreakStartInput', {
+        type: 'manual',
+        message: 'Início da pausa deve ser após o início do evento'
+      });
+      return false;
+    }
+
+    if (breakEnd > eventEnd) {
+      setError('BreakEndInput', {
+        type: 'manual',
+        message: 'Fim da pausa deve ser antes do fim do evento'
+      });
+      return false;
+    }
+
+    if (breakEnd <= breakStart) {
+      setError('BreakEndInput', {
+        type: 'manual',
+        message: 'Fim da pausa deve ser após o início'
+      });
+      return false;
+    }
+
+    return true;
+  };
+
   const onSubmit = async (data: FormData) => {
+    if (!validateBreakTimes()) return;
+
     let breakWindow = null;
 
     if (data.Pause && data.BreakStartInput && data.BreakEndInput) {
@@ -114,6 +169,16 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
     if (event) {
       result = await updateEvent(event.id, apiEvent);
     } else {
+      // Additional validation for new events only
+      const now = new Date();
+      const start = new Date(data.StartTime);
+      if (start < now) {
+        setError('StartTime', {
+          type: 'manual',
+          message: 'O evento não pode começar no passado'
+        });
+        return;
+      }
       result = await createEvent(apiEvent);
     }
 
@@ -249,17 +314,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                   <motion.input
                     type="time"
                     {...register('BreakStartInput', {
-                      required: 'Campo obrigatório',
-                      validate: (value) => {
-                        if (!value || !watch('StartTime') || !watch('EndTime')) return true;
-
-                        const eventStart = new Date(watch('StartTime'));
-                        const eventEnd = new Date(watch('EndTime'));
-                        const breakStart = new Date(`${watch('StartTime').split('T')[0]}T${value}`);
-
-                        return (breakStart >= eventStart && breakStart <= eventEnd)
-                          || "Pausa deve estar dentro do horário do evento";
-                      }
+                      required: 'Campo obrigatório'
                     })}
                     className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                     whileFocus={{ scale: 1.01 }}
@@ -280,16 +335,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                   <motion.input
                     type="time"
                     {...register('BreakEndInput', {
-                      required: 'Campo obrigatório',
-                      validate: (value) => {
-                        if (!value || !watch('BreakStartInput')) return true;
-
-                        const breakStart = new Date(`2000-01-01T${watch('BreakStartInput')}`);
-                        const breakEnd = new Date(`2000-01-01T${value}`);
-
-                        return breakEnd > breakStart
-                          || "Fim da pausa deve ser após o início";
-                      }
+                      required: 'Campo obrigatório'
                     })}
                     className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                     whileFocus={{ scale: 1.01 }}
@@ -320,6 +366,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                       return start < end || 'Início deve ser antes do fim';
                     }
                   })}
+                  min={event ? undefined : toDateTimeLocalString(new Date())}
                   className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                   whileFocus={{ scale: 1.01 }}
                 />
