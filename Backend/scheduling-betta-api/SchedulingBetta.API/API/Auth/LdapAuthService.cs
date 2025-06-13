@@ -16,49 +16,18 @@ public class LdapAuthService : ILdapAuthService
     public LdapAuthService(ILogger<LdapAuthService> logger)
     {
         _logger = logger;
-
-        _server = Environment.GetEnvironmentVariable("LDAP_SERVER")
-                  ?? throw new InvalidOperationException("LDAP_SERVER is not configured");
-
-        _domainDn = Environment.GetEnvironmentVariable("LDAP_DOMAIN_DN")
-                    ?? throw new InvalidOperationException("LDAP_DOMAIN_DN is not configured");
-
-        if (!int.TryParse(Environment.GetEnvironmentVariable("LDAP_PORT"), out _port))
-        {
-            _port = 389;
-            _logger.LogWarning("LDAP_PORT is invalid or missing. Using default port: 389");
-        }
-
-        if (!bool.TryParse(Environment.GetEnvironmentVariable("LDAP_USE_SSL"), out _useSsl))
-        {
-            _useSsl = false;
-            _logger.LogWarning("LDAP_USE_SSL is invalid or missing. Using default: false");
-        }
-
-        _logger.LogInformation("LdapAuthService initialized with server: {Server}, domain: {Domain}, port: {Port}, SSL: {SSL}",
-            _server, _domainDn, _port, _useSsl);
+        _server = Environment.GetEnvironmentVariable("LDAP_SERVER") ?? throw new InvalidOperationException("LDAP_SERVER is not configured");
+        _domainDn = Environment.GetEnvironmentVariable("LDAP_DOMAIN_DN") ?? throw new InvalidOperationException("LDAP_DOMAIN_DN is not configured");
+        if (!int.TryParse(Environment.GetEnvironmentVariable("LDAP_PORT"), out _port)) _port = 389;
+        if (!bool.TryParse(Environment.GetEnvironmentVariable("LDAP_USE_SSL"), out _useSsl)) _useSsl = false;
     }
 
     public bool AuthenticateUser(string username, string password)
     {
-        _logger.LogInformation("Attempting to authenticate user: {Username}", username);
-
         try
         {
-            using var userContext = new PrincipalContext(
-                ContextType.Domain,
-                _server,
-                _domainDn,
-                _useSsl ? ContextOptions.SecureSocketLayer : ContextOptions.Negotiate,
-                username,
-                password
-            );
-
-            bool isValid = userContext.ValidateCredentials(username, password);
-
-            _logger.LogInformation("Authentication {Status} for user: {Username}", isValid ? "succeeded" : "failed", username);
-
-            return isValid;
+            using var userContext = new PrincipalContext(ContextType.Domain, _server, _domainDn, _useSsl ? ContextOptions.SecureSocketLayer : ContextOptions.Negotiate, username, password);
+            return userContext.ValidateCredentials(username, password);
         }
         catch (Exception ex)
         {
@@ -69,22 +38,11 @@ public class LdapAuthService : ILdapAuthService
 
     public List<string> GetUserGroups(string username)
     {
-        _logger.LogInformation("Retrieving groups for user: {Username}", username);
-
         try
         {
             using var userContext = new PrincipalContext(ContextType.Domain, _server, _domainDn);
-
             var user = UserPrincipal.FindByIdentity(userContext, IdentityType.SamAccountName, username);
-
-            var groups = user?.GetAuthorizationGroups()
-                .OfType<GroupPrincipal>()
-                .Select(g => g.Name)
-                .ToList() ?? new List<string>();
-
-            _logger.LogInformation("User: {Username} belongs to {GroupCount} groups", username, groups.Count);
-
-            return groups;
+            return user?.GetAuthorizationGroups().OfType<GroupPrincipal>().Select(g => g.Name).ToList() ?? new List<string>();
         }
         catch (Exception ex)
         {
@@ -95,61 +53,61 @@ public class LdapAuthService : ILdapAuthService
 
     public LdapUserInfoDto GetUserInfo(string username)
     {
-        _logger.LogInformation("Retrieving user info for: {Username}", username);
-
+        _logger.LogInformation("GetUserInfo: Iniciando busca para o usuário: '{Username}'", username);
         try
         {
+            _logger.LogInformation("GetUserInfo: Criando PrincipalContext para o servidor: '{Server}', container: '{Container}'", _server, _domainDn);
             using var context = new PrincipalContext(ContextType.Domain, _server, _domainDn);
+            _logger.LogInformation("GetUserInfo: PrincipalContext criado. Buscando por SamAccountName...");
 
-            var user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, username);
+            UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.SamAccountName, username);
 
             if (user == null)
             {
-                _logger.LogWarning("User: {Username} not found in directory", username);
+                _logger.LogWarning("GetUserInfo: Usuário '{Username}' não encontrado por SamAccountName. Tentando por UserPrincipalName...", username);
+                user = UserPrincipal.FindByIdentity(context, IdentityType.UserPrincipalName, username);
+            }
+
+            if (user == null)
+            {
+                _logger.LogError("GetUserInfo: Usuário '{Username}' não encontrado no diretório após duas tentativas.", username);
                 throw new AuthenticationException("User not found in directory");
             }
 
-            if (user.IsAccountLockedOut())
-            {
-                _logger.LogWarning("Account is locked for user: {Username}", username);
-                throw new AuthenticationException("Account is locked");
-            }
+            _logger.LogInformation("GetUserInfo: Usuário '{Username}' encontrado com sucesso. SID: {SID}", username, user.Sid);
 
-            if (user.Enabled.HasValue && !user.Enabled.Value)
-            {
-                _logger.LogWarning("Account is disabled for user: {Username}", username);
-                throw new AuthenticationException("Account is disabled");
-            }
+            if (user.IsAccountLockedOut()) throw new AuthenticationException("Account is locked");
+            if (user.Enabled.HasValue && !user.Enabled.Value) throw new AuthenticationException("Account is disabled");
 
             string email = user.EmailAddress;
-            var directoryEntry = user.GetUnderlyingObject() as DirectoryEntry;
-
-            if (directoryEntry != null && directoryEntry.Properties["mail"]?.Value != null)
+            if (user.GetUnderlyingObject() is DirectoryEntry directoryEntry && directoryEntry.Properties["mail"]?.Value != null)
             {
                 email = directoryEntry.Properties["mail"].Value.ToString();
             }
 
-            var userInfo = new LdapUserInfoDto
+            return new LdapUserInfoDto
             {
                 Sid = user.Sid.ToString(),
                 Username = user.SamAccountName,
                 DisplayName = user.DisplayName,
                 Email = email,
-                Groups = GetUserGroups(username)
+                Groups = GetUserGroups(user.SamAccountName)
             };
-
-            _logger.LogInformation("User info for {Username} retrieved successfully", username);
-
-            return userInfo;
         }
-        catch (AuthenticationException)
+        catch (AuthenticationException ex)
         {
+            _logger.LogError(ex, "GetUserInfo: Erro de autenticação ao buscar '{Username}'.", username);
             throw;
+        }
+        catch (PrincipalServerDownException psdex)
+        {
+            _logger.LogError(psdex, "GetUserInfo: O servidor LDAP está inacessível. Servidor: '{Server}'", _server);
+            throw new AuthenticationException("O servidor de autenticação está indisponível.", psdex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving user info for: {Username}", username);
-            throw new AuthenticationException("Failed to retrieve user information", ex);
+            _logger.LogError(ex, "GetUserInfo: Erro inesperado ao buscar '{Username}'. Exceção interna: {InnerException}", username, ex.InnerException?.Message);
+            throw new AuthenticationException("Falha ao buscar informações do usuário devido a um erro inesperado.", ex);
         }
     }
 }
