@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../context/AuthContext";
 import { AuthConfig } from "../../components/Types/Login/AuthConfig";
 import { Credentials } from "../../components/Types/Login/Credentials";
@@ -8,7 +7,6 @@ import api from "../../services/api";
 export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const { refreshAuth } = useAuthContext();
 
   const login = useCallback(
@@ -44,6 +42,7 @@ export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {
 
         await refreshAuth();
         return true;
+        
       } catch (err: any) {
         let errorMessage = "Erro desconhecido";
 

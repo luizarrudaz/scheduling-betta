@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { AuthContextType } from "../components/Types/Context/AuthContextType";
 import api from "../services/api";
 import axios from "axios";
@@ -7,6 +7,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   loading: true,
   groups: [],
+  sid: null,
   logout: () => {},
   refreshAuth: async () => {},
 });
@@ -15,68 +16,58 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [groups, setGroups] = useState<string[]>([]);
-
-  const checkTokenExists = () => {
-    return !!sessionStorage.getItem('jwtToken');
-  };
-
-  const refreshAuth = async () => {
+  const [sid, setSid] = useState<string | null>(null);
+  
+  const refreshAuth = useCallback(async () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('jwtToken');
-
       if (!token) {
         setIsAuthenticated(false);
         setGroups([]);
+        setSid(null);
         return;
       }
-
       const { data } = await api.get("/auth/check-auth");
       
-      setIsAuthenticated(data.authenticated);
-      
+      setIsAuthenticated(true);
+      setSid(data.sid);
       const normalizedGroups = (data.groups || []).map((g: string) => g.trim().toUpperCase());
       setGroups(normalizedGroups);
-      
+
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 401) {
         sessionStorage.removeItem('jwtToken');
       }
-      
       setIsAuthenticated(false);
       setGroups([]);
+      setSid(null);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = async () => {
-    try {
-      await api.post("/auth/logout");
-    } catch (error) {
-      console.error("Logout error:", error);
-    } finally {
-      sessionStorage.removeItem('jwtToken');
-      setIsAuthenticated(false);
-      setGroups([]);
-    }
-  };
+  const logout = useCallback(() => {
+    sessionStorage.removeItem('jwtToken');
+    setIsAuthenticated(false);
+    setGroups([]);
+    setSid(null);
+  }, []);
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'jwtToken') {
-        refreshAuth();
-      }
+        if (event.key === 'jwtToken') {
+            refreshAuth();
+        }
     };
-
     window.addEventListener('storage', handleStorageChange);
     
     refreshAuth();
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('storage', handleStorageChange);
     };
-  }, []);
+  }, [refreshAuth]);
 
   useEffect(() => {
     const responseInterceptor = api.interceptors.response.use(
@@ -99,9 +90,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       value={{ 
         isAuthenticated, 
         loading, 
-        groups, 
+        groups,
+        sid, 
         logout,
-        refreshAuth 
+        refreshAuth
       }}
     >
       {children}
