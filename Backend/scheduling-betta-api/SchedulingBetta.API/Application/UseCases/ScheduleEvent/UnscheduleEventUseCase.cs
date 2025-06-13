@@ -1,9 +1,8 @@
 ﻿using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
+using SchedulingBetta.API.Domain.Aggregates;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 using SchedulingBetta.API.Domain.Interfaces.ISmtp;
-
-namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent;
 
 public class UnscheduleEventUseCase : IUnscheduleEventUseCase
 {
@@ -29,50 +28,53 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
 
     public async Task<UnscheduleResponseDto> Execute(UnscheduleEventDtoWithUserIdDto unscheduleEventDto)
     {
+        var loggedInUser = _ldapAuthService.GetUserInfo(unscheduleEventDto.UserId ?? string.Empty);
+        Event? eventDetailsForEmail;
+
         await _unitOfWork.BeginTransaction();
+        try
+        {
+            var schedule = await _eventRepository.GetScheduleById(unscheduleEventDto.ScheduleId);
+            if (schedule is null)
+            {
+                throw new InvalidOperationException("Agendamento não encontrado.");
+            }
+
+            if (schedule.UserId != loggedInUser.Sid)
+            {
+                throw new UnauthorizedAccessException("Você não tem permissão para cancelar este agendamento.");
+            }
+
+            eventDetailsForEmail = await _eventRepository.GetEventById(schedule.EventId);
+
+            await _eventRepository.RemoveUserSchedule(schedule);
+            await _unitOfWork.Commit();
+        }
+        catch (Exception)
+        {
+            await _unitOfWork.Rollback();
+            throw;
+        }
 
         try
         {
-            var userInfo = _ldapAuthService.GetUserInfo(unscheduleEventDto.UserId ?? string.Empty);
-            var userId = userInfo.Sid;
-
-            var schedule = await _eventRepository.GetInterestedUser(
-                unscheduleEventDto.EventId,
-                userId
-            );
-
-            if (schedule is null)
-            {
-                _logger.LogWarning("No active schedule found for user {UserId} in event {EventId}", unscheduleEventDto.UserId, unscheduleEventDto.EventId);
-                throw new InvalidOperationException("Schedule not found.");
-            }
-
-            await _eventRepository.RemoveUserSchedule(schedule);
-
-            await _unitOfWork.Commit();
-
-            _logger.LogInformation("User {UserId} successfully unscheduled from event {EventId}", unscheduleEventDto.UserId, unscheduleEventDto.EventId);
-
-            var eventDetails = await _eventRepository.GetEventById(unscheduleEventDto.EventId);
-            if (eventDetails != null)
+            if (eventDetailsForEmail != null && !string.IsNullOrEmpty(loggedInUser.Email))
             {
                 await _eventNotificationService.NotifyUserCancelled(
-                    eventDetails,
-                    userInfo.Email
+                    eventDetailsForEmail,
+                    loggedInUser.Email
                 );
             }
-
-            return new UnscheduleResponseDto
-            {
-                Success = true,
-                Message = $"User {unscheduleEventDto.UserId} unscheduled from event {unscheduleEventDto.EventId}."
-            };
         }
         catch (Exception ex)
         {
-            await _unitOfWork.Rollback();
-            _logger.LogError(ex, "Error unscheduling user {UserId} from event {EventId}", unscheduleEventDto.UserId, unscheduleEventDto.EventId);
-            throw;
+            _logger.LogWarning(ex, "Cancellation for schedule {ScheduleId} SUCCEEDED, but notification email FAILED.", unscheduleEventDto.ScheduleId);
         }
+
+        return new UnscheduleResponseDto
+        {
+            Success = true,
+            Message = $"Agendamento cancelado com sucesso."
+        };
     }
 }
