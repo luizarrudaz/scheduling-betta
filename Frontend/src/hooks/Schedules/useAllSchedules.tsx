@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ScheduledEvent } from '../../components/Types/Event/Schedule';
+import { ScheduledEvent } from '../../components/Types/Schedule/Schedule';
 import api from '../../services/api';
 
 export function useAllSchedules() {
@@ -13,6 +13,7 @@ export function useAllSchedules() {
     try {
       const { data } = await api.get<ScheduledEvent[]>('/schedule-event');
       setSchedules(data);
+      console.log(data)
     } catch (err: any) {
       setError(err.message || "Failed to fetch schedules");
     } finally {

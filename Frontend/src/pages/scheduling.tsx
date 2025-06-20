@@ -9,6 +9,8 @@ import CalendarGrid from '../components/Calendar/CalendarGrid.tsx';
 import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
 import ServiceSelector from '../components/Calendar/ServiceSelector.tsx';
 import LogoutButton from '../components/LogoutButton/LogoutButton.tsx';
+import { useAuthContext } from '../context/AuthContext.tsx';
+import AdminNav from '../components/Admin/AdminNav.tsx';
 
 export default function Calendar() {
   const today = startOfToday();
@@ -18,6 +20,9 @@ export default function Calendar() {
   const { events, loading: eventsLoading } = useEvents();
   const { schedules, loading: schedulesLoading, refetch: refetchSchedules } = useAllSchedules();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+
+  const { groups } = useAuthContext();
+  const isAdmin = groups.some(g => g.toUpperCase() === 'RH');
 
   const upcomingEvents = useMemo(() => {
     if (!events) return [];
@@ -73,52 +78,54 @@ export default function Calendar() {
   }
 
   return (
-    <div className="pt-4 sm:pt-8 flex justify-center">
-      <div className="flex justify-end">
-        <LogoutButton />
-      </div>
+    // Um container principal que permite o posicionamento absoluto dos elementos de navegação
+    <div className="w-full h-full">
+      {isAdmin && <AdminNav />}
+      <LogoutButton />
 
-      <div className="w-full max-w-4xl relative">
-        <div className="absolute top-0 left-1/2 transform -translate-x-1/2 max-w-max whitespace-nowrap text-center">
-          <h1 className="text-3xl text-gray-800 font-bold">Agendamentos Betta</h1>
-        </div>
+      {/* A estrutura original da página é preservada aqui dentro */}
+      <div className="pt-4 sm:pt-8 flex justify-center">
+        <div className="w-full max-w-4xl relative">
+          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 max-w-max whitespace-nowrap text-center">
+            <h1 className="text-3xl text-gray-800 font-bold">Agendamentos Betta</h1>
+          </div>
 
-        <div className="mt-14 sm:mt-16">
-          <ServiceSelector
-            services={upcomingEvents}
-            selectedService={selectedEvent}
-            onServiceSelect={handleServiceSelect}
-          />
+          <div className="mt-14 sm:mt-16">
+            <ServiceSelector
+              services={upcomingEvents}
+              selectedService={selectedEvent}
+              onServiceSelect={handleServiceSelect}
+            />
 
-          <motion.div
-            className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
-            animate={{ width: isExpanded ? "100%" : "fit-content" }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            <div className="min-w-[280px] max-h-[300px]">
-              <CalendarNavigation
-                firstDayCurrentMonth={firstDayCurrentMonth}
-                onPrevious={handlePreviousMonth}
-                onNext={handleNextMonth}
-              />
+            <motion.div
+              className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
+              animate={{ width: isExpanded ? "100%" : "fit-content" }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              <div className="min-w-[280px] max-h-[300px]">
+                <CalendarNavigation
+                  firstDayCurrentMonth={firstDayCurrentMonth}
+                  onPrevious={handlePreviousMonth}
+                  onNext={handleNextMonth}
+                />
+                <CalendarGrid
+                  firstDayCurrentMonth={firstDayCurrentMonth}
+                  selectedDay={selectedDay}
+                  selectedEvent={selectedEvent}
+                  occupiedSlots={occupiedSlotsForEvent}
+                  onDayClick={handleDayClick}
+                />
+              </div>
 
-              <CalendarGrid
-                firstDayCurrentMonth={firstDayCurrentMonth}
+              <TimeSlotsPanel
+                isExpanded={isExpanded}
                 selectedDay={selectedDay}
                 selectedEvent={selectedEvent}
                 occupiedSlots={occupiedSlotsForEvent}
-                onDayClick={handleDayClick}
+                onScheduleSuccess={refetchSchedules}
               />
-            </div>
-
-            <TimeSlotsPanel
-              isExpanded={isExpanded}
-              selectedDay={selectedDay}
-              selectedEvent={selectedEvent}
-              occupiedSlots={occupiedSlotsForEvent}
-              onScheduleSuccess={refetchSchedules}
-            />
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>

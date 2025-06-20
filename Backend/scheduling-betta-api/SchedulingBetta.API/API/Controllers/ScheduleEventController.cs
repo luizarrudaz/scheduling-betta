@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
+using SchedulingBetta.API.Application.UseCases.ScheduleEvent;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 
 namespace SchedulingBetta.API.API.Controllers;
@@ -12,6 +13,7 @@ public class ScheduleEventController : ControllerBase
     private readonly IGetAllSchedulesEventUseCase _getAllSchedulesEventUseCase;
     private readonly IGetAllSchedulesByUserUseCase _getAllSchedulesByUserUseCase;
     private readonly IUnscheduleEventUseCase _unscheduleEventUseCase;
+    private readonly IAdminCancelScheduleUseCase _adminCancelScheduleUseCase;
     private readonly ILogger<ScheduleEventController> _logger;
 
     public ScheduleEventController(
@@ -19,12 +21,14 @@ public class ScheduleEventController : ControllerBase
         IGetAllSchedulesEventUseCase getAllSchedulesEventUseCase,
         IGetAllSchedulesByUserUseCase getAllSchedulesByUserUseCase,
         IUnscheduleEventUseCase unscheduleEventUseCase,
+        IAdminCancelScheduleUseCase adminCancelScheduleUseCase,
         ILogger<ScheduleEventController> logger)
     {
         _scheduleEventUseCase = scheduleEventUseCase;
         _getAllSchedulesEventUseCase = getAllSchedulesEventUseCase;
         _getAllSchedulesByUserUseCase = getAllSchedulesByUserUseCase;
         _unscheduleEventUseCase = unscheduleEventUseCase;
+        _adminCancelScheduleUseCase = adminCancelScheduleUseCase;
         _logger = logger;
     }
 
@@ -64,13 +68,40 @@ public class ScheduleEventController : ControllerBase
         }
     }
 
+    //[Authorize]
+    //[HttpGet]
+    //[ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
+    //public async Task<IActionResult> GetAllScheduleEvents()
+    //{
+    //    var entities = await _getAllSchedulesEventUseCase.Execute();
+    //    return Ok(entities);
+    //}
+
     [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllScheduleEvents()
     {
-        var entities = await _getAllSchedulesEventUseCase.Execute();
-        return Ok(entities);
+        // Bloco adicionado para debug
+        try
+        {
+            var entities = await _getAllSchedulesEventUseCase.Execute();
+            return Ok(entities);
+        }
+        catch (Exception ex)
+        {
+            // Loga o erro completo no servidor
+            _logger.LogError(ex, "Falha crítica ao executar GetAllScheduleEvents");
+
+            // Retorna os detalhes da exceção na resposta da API para podermos ver no navegador
+            return StatusCode(500, new
+            {
+                Error = "Ocorreu um erro interno no servidor durante o debug.",
+                ExceptionMessage = ex.Message,
+                InnerException = ex.InnerException?.ToString(),
+                StackTrace = ex.StackTrace
+            });
+        }
     }
 
     [Authorize]
@@ -116,6 +147,29 @@ public class ScheduleEventController : ControllerBase
         {
             _logger.LogError(ex, "An unexpected error occurred while unscheduling the event. ScheduleId: {ScheduleId}", scheduleId);
             return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails { Title = "Ocorreu um erro ao processar sua solicitação", Detail = ex.Message });
+        }
+    }
+
+    [HttpDelete("admin-cancel/{scheduleId:int}")]
+    public async Task<IActionResult> AdminCancelSchedule(int scheduleId)
+    {
+        try
+        {
+            var success = await _adminCancelScheduleUseCase.Execute(scheduleId);
+            if (success)
+            {
+                return Ok(new { message = "Agendamento cancelado com sucesso." });
+            }
+            return BadRequest(new { message = "Não foi possível cancelar o agendamento." });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Erro ao tentar cancelar o agendamento {ScheduleId} como administrador.", scheduleId);
+            return StatusCode(500, new { message = "Ocorreu um erro interno no servidor." });
         }
     }
 }

@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import ScheduleModal from './ScheduleModal';
 import { useCreateSchedule } from '../../hooks/Schedules/useCreateSchedule';
 import { Event } from '../Types/Event/Event';
-import { ScheduledEvent } from '../Types/Event/Schedule';
+import { ScheduledEvent } from '../Types/Schedule/Schedule';
 import { useAuthContext } from '../../context/AuthContext';
 import { useCancelSchedule } from '../../hooks/Schedules/useCancelSchedule';
 

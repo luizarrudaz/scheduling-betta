@@ -3,7 +3,7 @@ import DayCell from './DayCell';
 import { classNames } from './utils';
 import { Event } from '../Types/Event/Event';
 import { generateSlotsForEvent } from './utils';
-import { ScheduledEvent } from '../Types/Event/Schedule';
+import { ScheduledEvent } from '../Types/Schedule/Schedule';
 
 interface CalendarGridProps {
   firstDayCurrentMonth: Date;

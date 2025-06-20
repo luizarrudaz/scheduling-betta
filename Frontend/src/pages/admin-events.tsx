@@ -7,6 +7,8 @@ import { Event } from "../components/Types/Event/Event.tsx";
 import { useDeleteEvent } from "../hooks/Events/UseDeleteEvent.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 import { isAfter } from 'date-fns';
+import AdminNav from "../components/Admin/AdminNav.tsx";
+import { PlusIcon } from "@heroicons/react/24/solid"; // 1. Importar o ícone
 
 export default function AdminEventsPage() {
   const { events, loading, refetch } = useEvents();
@@ -34,7 +36,8 @@ export default function AdminEventsPage() {
   };
 
   return (
-    <div className="h-screen w-screen bg-gray-50 flex flex-col px-6 py-10">
+    <div className="h-screen w-screen bg-gray-50 flex flex-col px-6 py-10 relative">
+      <AdminNav />
       <div className="w-full max-w-7xl mx-auto">
         <div className="flex justify-end mb-4">
           <LogoutButton />
@@ -51,32 +54,24 @@ export default function AdminEventsPage() {
 
         {loading ? (
           <LoadingSkeleton />
-        ) : events.length === 0 ? (
-          <NoEvents
-            message="Nenhum evento cadastrado"
-            buttonText="Criar Primeiro Evento"
-            onButtonClick={handleOpenModal}
-          />
         ) : (
           <>
-            {upcomingEvents.length > 0 && (
-              <div className="flex justify-end mb-4">
-                <motion.button
-                  onClick={handleOpenModal}
-                  className="bg-[#FA7014] text-white px-4 py-2 rounded-xl font-bold shadow-md hover:bg-[#E55F00] transition-all"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  +
-                </motion.button>
-              </div>
-            )}
-
+            <div className="flex justify-end mb-4">
+              <motion.button
+                onClick={handleOpenModal}
+                className="bg-[#FA7014] text-white p-3 rounded-full font-bold shadow-lg hover:bg-[#E55F00] transition-all"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                title="Criar Novo Evento"
+              >
+                <PlusIcon className="w-6 h-6" />
+              </motion.button>
+            </div>
 
             {upcomingEvents.length === 0 ? (
               <NoEvents
-                message="Nenhum evento cadastrado"
-                buttonText="Criar um evento"
+                message="Nenhum evento cadastrado."
+                buttonText="Criar Primeiro Evento"
                 onButtonClick={handleOpenModal}
               />
             ) : (

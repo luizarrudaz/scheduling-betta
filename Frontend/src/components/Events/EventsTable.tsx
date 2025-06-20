@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { Event } from '../Types/Event/Event';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const rowVariants = {
   hidden: { opacity: 0, x: -10 },
@@ -74,21 +75,24 @@ export default function EventsTable({
                     </span>
                   </td>
                   <td className="px-5 py-4 space-x-2 flex items-center">
+                    {/* 2. Botões com ícones */}
                     <motion.button
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => onEdit(event)}
-                      className="text-gray-600 hover:text-gray-800 p-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
+                      className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
+                      title="Editar Evento"
                     >
-                      ✏️ Editar
+                      <PencilIcon className="w-5 h-5" />
                     </motion.button>
                     <motion.button
-                      whileHover={{ scale: 1.05 }}
+                      whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => onDelete(event)}
-                      className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+                      className="p-2 rounded-full text-red-500 hover:bg-red-50 transition-colors"
+                      title="Excluir Evento"
                     >
-                      🗑️ Excluir
+                      <TrashIcon className="w-5 h-5" />
                     </motion.button>
                   </td>
                 </motion.tr>
