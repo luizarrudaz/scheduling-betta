@@ -29,7 +29,7 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
     public async Task<UnscheduleResponseDto> Execute(UnscheduleEventDtoWithUserIdDto unscheduleEventDto)
     {
         var loggedInUser = _ldapAuthService.GetUserInfo(unscheduleEventDto.UserId ?? string.Empty);
-        Event? eventDetailsForEmail;
+        Event? eventDetailsForEmail = null;
 
         await _unitOfWork.BeginTransaction();
         try
@@ -53,6 +53,7 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
         catch (Exception)
         {
             await _unitOfWork.Rollback();
+            _logger.LogError("Failed to cancel schedule {ScheduleId} for user {UserId}.", unscheduleEventDto.ScheduleId, loggedInUser.Sid);
             throw;
         }
 
