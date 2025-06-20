@@ -61,8 +61,13 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
   useEffect(() => {
     if (!hasPause) {
       clearErrors(['BreakStartInput', 'BreakEndInput']);
+      reset((prev) => ({
+        ...prev,
+        BreakStartInput: '',
+        BreakEndInput: ''
+      }), { keepErrors: true, keepDirty: true });
     }
-  }, [hasPause, clearErrors]);
+  }, [hasPause, clearErrors, reset]);
 
   useEffect(() => {
     if (isOpen && event) {
@@ -89,7 +94,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
         EndTime: toDateTimeLocalString(defaultEnd),
         Pause: false,
         BreakStartInput: '',
-        BreakEndInput: ''
+        BreakEndInput: '' 
       });
     }
   }, [isOpen, event, reset]);
@@ -103,8 +108,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
 
     const eventStart = new Date(startTime);
     const eventEnd = new Date(endTime);
-    const breakStart = new Date(`${startTime.split('T')[0]}T${breakStartInput}`);
-    const breakEnd = new Date(`${startTime.split('T')[0]}T${breakEndInput}`);
+    
+    const breakStart = new Date(eventStart.toDateString() + ' ' + breakStartInput);
+    const breakEnd = new Date(eventStart.toDateString() + ' ' + breakEndInput);
 
     if (breakStart < eventStart) {
       setError('BreakStartInput', {
@@ -134,7 +140,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
   };
 
   const onSubmit = async (data: FormData) => {
-    if (!validateBreakTimes()) return;
+    if (data.Pause && !validateBreakTimes()) {
+      return;
+    }
 
     let breakWindow = null;
 
@@ -311,7 +319,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                   <motion.input
                     type="time"
                     {...register('BreakStartInput', {
-                      required: 'Campo obrigatório'
+                      required: hasPause ? 'Campo obrigatório' : false
                     })}
                     className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                     whileFocus={{ scale: 1.01 }}
@@ -332,7 +340,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                   <motion.input
                     type="time"
                     {...register('BreakEndInput', {
-                      required: 'Campo obrigatório'
+                      required: hasPause ? 'Campo obrigatório' : false
                     })}
                     className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2"
                     whileFocus={{ scale: 1.01 }}
