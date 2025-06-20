@@ -83,9 +83,9 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
             };
 
             await _eventRepository.AddSchedule(schedule);
+
             await _unitOfWork.Commit();
             transactionCommitted = true;
-
             _logger.LogInformation("Transaction committed successfully for scheduling User {UserId}", schedule.UserId);
 
             await _eventNotificationService.NotifyUserScheduled(
@@ -104,6 +104,7 @@ public class ScheduleEventUseCase : IScheduleEventUseCase
             if (!transactionCommitted)
             {
                 await _unitOfWork.Rollback();
+                _logger.LogWarning("Transaction rolled back due to error for User {UserId} on Event {EventId}", scheduleEventDto.UserId, scheduleEventDto.EventId);
             }
 
             _logger.LogError(ex,
