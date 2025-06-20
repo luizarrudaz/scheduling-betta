@@ -112,6 +112,8 @@ builder.Services.AddSingleton<IEmailSender, SmtpEmailService>();
 builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<IEventNotificationService, EventNotificationService>();
 
+builder.Services.AddScoped<IAdminCancelScheduleUseCase, AdminCancelScheduleUseCase>();
+
 
 // 6. CORS
 builder.Services.AddCors(options => options.AddPolicy("AllowFrontend", policy =>
