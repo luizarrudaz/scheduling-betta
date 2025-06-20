@@ -27,7 +27,6 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
             var result = schedules.Select(schedule => new GetScheduledEventDto
             {
                 Id = schedule.Id,
-                //EventId = schedule.EventId,
                 UserId = schedule.UserId,
                 SelectedSlot = DateTimeHelper.ConvertFromUtc(schedule.ScheduleTime),
                 Status = (Domain.Enum.ScheduleStatus)(int)schedule.Status,

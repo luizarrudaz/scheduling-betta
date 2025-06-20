@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
@@ -38,167 +37,85 @@ public class ScheduleEventController : ControllerBase
     {
         try
         {
-            var SamAccountName = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.WindowsAccountName)?.Value;
+            var samAccountName = User.Identity?.Name;
+
+            if (string.IsNullOrEmpty(samAccountName))
+            {
+                return Unauthorized("Não foi possível identificar o usuário a partir do token.");
+            }
 
             var scheduleEventDtoWithUserId = new ScheduleEventDtoWithUserIdDto
             {
                 EventId = scheduleEventDto.EventId,
                 SelectedSlot = scheduleEventDto.SelectedSlot,
-                UserId = SamAccountName
+                UserId = samAccountName
             };
 
-            _logger.LogInformation("Scheduling event for user {UserId} at slot {Slot}", SamAccountName, scheduleEventDto.SelectedSlot);
-            var eventId = await _scheduleEventUseCase.Execute(scheduleEventDtoWithUserId);
-            _logger.LogInformation("Event scheduled with ID {EventId}", scheduleEventDto.EventId);
-            return CreatedAtAction(
-                nameof(ScheduleEvent),
-                new { id = eventId },
-                new { EventId = eventId });
+            var result = await _scheduleEventUseCase.Execute(scheduleEventDtoWithUserId);
+            return CreatedAtAction(nameof(ScheduleEvent), new { id = result.ScheduleId }, result);
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Failed to schedule event: {ErrorMessage}", ex.Message);
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Falha ao agendar evento",
-                Detail = ex.Message
-            });
+            return BadRequest(new ProblemDetails { Title = "Falha ao agendar evento", Detail = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An error occurred while scheduling the event: {ErrorMessage}", ex.Message);
-            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-            {
-                Title = "Erro interno no servidor",
-                Detail = "Ocorreu um erro ao processar o seu pedido. Tente novamente mais tarde."
-            });
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails { Title = "Erro interno no servidor", Detail = "Ocorreu um erro ao processar o seu pedido. Tente novamente mais tarde." });
         }
     }
 
     [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetAllScheduleEvents()
     {
-        try
-        {
-            var entities = await _getAllSchedulesEventUseCase.Execute();
-
-            var scheduleDtos = entities.Select(s => new GetScheduledEventDto
-            {
-                Id = s.Id,
-                Event = s.Event,
-                UserId = s.UserId,
-                SelectedSlot = s.SelectedSlot,
-                Status = s.Status,
-                CreatedAt = s.CreatedAt
-            }).ToList();
-
-            return Ok(scheduleDtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "An error occurred while fetching all schedules. ErrorMessage: {ErrorMessage}",
-                ex.Message);
-
-            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-            {
-                Title = "Erro ao buscar agendamentos",
-                Detail = ex.Message
-            });
-
-        }
+        var entities = await _getAllSchedulesEventUseCase.Execute();
+        return Ok(entities);
     }
 
     [Authorize]
     [HttpGet("{userId}")]
     [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetSchedulesByUser(string userId)
     {
-        try
-        {
-            var entities = await _getAllSchedulesByUserUseCase.Execute(userId);
-
-            var scheduleDtos = entities.Select(s => new GetScheduledEventDto
-            {
-                Id = s.Id,
-                Event = s.Event,
-                UserId = s.UserId,
-                SelectedSlot = s.SelectedSlot,
-                Status = s.Status,
-                CreatedAt = s.CreatedAt
-            }).ToList();
-
-            return Ok(scheduleDtos);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex,
-                "An error occurred while fetching schedules for user {UserId}. ErrorMessage: {ErrorMessage}",
-                userId,
-                ex.Message);
-
-            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-            {
-                Title = "Erro ao buscar agendamentos do usuário",
-                Detail = ex.Message
-            });
-
-        }
+        var entities = await _getAllSchedulesByUserUseCase.Execute(userId);
+        return Ok(entities);
     }
 
     [Authorize]
-    [HttpDelete("{id:int}")]
+    [HttpDelete("{scheduleId:int}")]
     [ProducesResponseType(typeof(UnscheduleResponseDto), StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UnscheduleEvent(int id)
+    public async Task<IActionResult> UnscheduleEvent(int scheduleId)
     {
         try
         {
-            var SamAccountName = User.Claims
-                .FirstOrDefault(c => c.Type == ClaimTypes.WindowsAccountName)?.Value;
-
-            var unscheduleEventDtoWithUserId = new UnscheduleEventDtoWithUserIdDto
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
             {
-                EventId = id,
-                UserId = SamAccountName
+                return Unauthorized("Não foi possível identificar o usuário a partir do token.");
+            }
+
+            var unscheduleDto = new UnscheduleEventDtoWithUserIdDto
+            {
+                ScheduleId = scheduleId,
+                UserId = username
             };
 
-            _logger.LogInformation("Unscheduling event for user {UserId} from event {EventId}", SamAccountName, id);
-            var result = await _unscheduleEventUseCase.Execute(unscheduleEventDtoWithUserId);
-            _logger.LogInformation("User {UserId} unscheduled from event {EventId}", SamAccountName, id);
-
+            var result = await _unscheduleEventUseCase.Execute(unscheduleDto);
             return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ProblemDetails { Title = "Acesso Negado", Detail = ex.Message });
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex,
-                "Failed to unschedule event. ErrorMessage: {ErrorMessage}",
-                ex.Message);
-
-            return BadRequest(new ProblemDetails
-            {
-                Title = "Falha ao desagendar evento",
-                Detail = ex.Message
-            });
-
+            return BadRequest(new ProblemDetails { Title = "Falha ao cancelar agendamento", Detail = ex.Message });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
-                "An unexpected error occurred while unscheduling the event. ErrorMessage: {ErrorMessage}",
-                ex.Message);
-
-            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails
-            {
-                Title = "Ocorreu um erro ao processar sua solicitação",
-                Detail = ex.Message
-            });
+            _logger.LogError(ex, "An unexpected error occurred while unscheduling the event. ScheduleId: {ScheduleId}", scheduleId);
+            return StatusCode(StatusCodes.Status500InternalServerError, new ProblemDetails { Title = "Ocorreu um erro ao processar sua solicitação", Detail = ex.Message });
         }
     }
 }

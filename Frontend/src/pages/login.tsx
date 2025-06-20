@@ -2,32 +2,32 @@ import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import bgImage from '../assets/bg-login.webp';
 import { useAuth } from '../hooks/Login/UseAuth';
 import { useAuthContext } from "../context/AuthContext";
+import bgImage from '../assets/bg-login.webp';
 
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
-  
-  const { login, error, isLoading } = useAuth({
+
+  const { login, error, isLoading, } = useAuth({
     isProd: true,
-    apiEndpoint: 'https://localhost:44378/Auth/Login'
+    apiEndpoint: '/auth/login'
   });
 
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, loading: authLoading } = useAuthContext();
 
   useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/agendamentos");
+    if (!authLoading && isAuthenticated) {
+      navigate("/agendamentos", { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await login(username, password);
+    await login({ username, password })
   };
 
   return (
@@ -40,7 +40,7 @@ const Login = () => {
 
       <div className="bg-white p-8 rounded-2xl shadow-2xl w-96 transform transition-all duration-300 hover:scale-105 relative">
         <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Login</h2>
-        
+
         {error && (
           <p className="text-red-500 text-center mb-4 bg-red-50 p-2 rounded-lg border border-red-200">
             {error}
@@ -91,11 +91,10 @@ const Login = () => {
 
           <button
             type="submit"
-            className={`w-full text-white py-3 rounded-lg font-semibold transition-all duration-300 ${
-              isLoading 
-                ? "bg-gray-400 cursor-not-allowed" 
-                : "bg-black hover:bg-gray-900 transform hover:scale-105 active:scale-95"
-            }`}
+            className={`w-full text-white py-3 rounded-lg font-semibold transition-all duration-300 ${isLoading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-black hover:bg-gray-900 transform hover:scale-105 active:scale-95"
+              }`}
             disabled={isLoading}
           >
             {isLoading ? "Processando..." : "Entrar"}

@@ -4,16 +4,26 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 interface ScheduleModalProps {
     isOpen: boolean;
     selectedTime: string;
+    isCancelling: boolean;
     onClose: () => void;
     onSchedule: () => void;
+    onCancel: () => void;
+    isLoading: boolean;
+    error: string | null;
 }
 
 export default function ScheduleModal({
     isOpen,
     selectedTime,
+    isCancelling,
     onClose,
     onSchedule,
+    onCancel,
+    isLoading,
+    error,
 }: ScheduleModalProps) {
+    const title = isCancelling ? `Cancelar: ${selectedTime}` : `Confirmar: ${selectedTime}`
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -33,7 +43,7 @@ export default function ScheduleModal({
                     >
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-lg font-semibold text-gray-900">
-                                Agendamento - {selectedTime}
+                                {title}
                             </h3>
                             <motion.button
                                 onClick={onClose}
@@ -45,23 +55,43 @@ export default function ScheduleModal({
                             </motion.button>
                         </div>
 
-                        <div className="space-y-3">
-                            <motion.button
-                                onClick={onSchedule}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium"
-                                whileHover={{ scale: 1.03 }}
-                                transition={{ type: "spring", stiffness: 300 }}
-                            >
-                                Confirmar Agendamento
-                            </motion.button>
+                        {error && (
+                            <div className="bg-red-50 text-red-700 p-3 rounded-lg mb-4 text-sm text-center">
+                                {error}
+                            </div>
+                        )}
 
+                        <div className="space-y-3">
+                            {isCancelling ? (
+                                <motion.button
+                                    onClick={onCancel}
+                                    disabled={isLoading}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-medium disabled:bg-gray-400"
+                                    whileHover={{ scale: isLoading ? 1 : 1.03 }}
+                                    transition={{ type: "spring", stiffness: 300 }}
+                                >
+                                    {isLoading ? 'Cancelando...' : 'Confirmar Cancelamento'}
+                                </motion.button>
+                            ) : (
+                                <motion.button
+                                    onClick={onSchedule}
+                                    disabled={isLoading}
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-medium disabled:bg-gray-400"
+                                    whileHover={{ scale: isLoading ? 1 : 1.03 }}
+                                    transition={{ type: "spring", stiffness: 300 }}
+                                >
+                                    {isLoading ? 'Agendando...' : 'Confirmar Agendamento'}
+                                </motion.button>
+                            )}
+                            
                             <motion.button
                                 onClick={onClose}
-                                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg font-medium"
-                                whileHover={{ scale: 1.03 }}
+                                disabled={isLoading}
+                                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-lg font-medium disabled:opacity-50"
+                                whileHover={{ scale: isLoading ? 1 : 1.03 }}
                                 transition={{ type: "spring", stiffness: 300 }}
                             >
-                                Cancelar
+                                Voltar
                             </motion.button>
                         </div>
                     </motion.div>

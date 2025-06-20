@@ -2,7 +2,7 @@
 {
     public class UnscheduleEventDtoWithUserIdDto
     {
-        public int EventId { get; set; }
-        public new string? UserId { get; set; }
+        public int ScheduleId { get; set; }
+        public string? UserId { get; set; }
     }
 }

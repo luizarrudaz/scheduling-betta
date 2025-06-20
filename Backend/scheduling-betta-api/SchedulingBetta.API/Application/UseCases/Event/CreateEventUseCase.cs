@@ -39,15 +39,18 @@ public class CreateEventUseCase : ICreateEventUseCase
         _logger.LogInformation("Starting event creation: Title = {Title}, Start = {StartTime:O}, End = {EndTime:O}",
             command.Title ?? "NULL", command.StartTime, command.EndTime);
 
-        await _eventValidator.ValidateAndThrowAsync(command);
-        _logger.LogInformation("EventDto validation succeeded for Title = {Title}", command.Title ?? "NULL");
-
-        var sessionDuration = TimeSpan.FromMinutes(command.SessionDuration);
-        _logger.LogInformation("Session duration set to {SessionDuration} minutes for event Title = {Title}",
-            command.SessionDuration, command.Title ?? "NULL");
+        await _unitOfWork.BeginTransaction();
+        bool transactionCommitted = false;
 
         try
         {
+            await _eventValidator.ValidateAndThrowAsync(command);
+            _logger.LogInformation("EventDto validation succeeded for Title = {Title}", command.Title ?? "NULL");
+
+            var sessionDuration = TimeSpan.FromMinutes(command.SessionDuration);
+            _logger.LogInformation("Session duration set to {SessionDuration} minutes for event Title = {Title}",
+                command.SessionDuration, command.Title ?? "NULL");
+
             var availableSlots = _slotCalculator.CalculateSlots(
                 command.StartTime,
                 command.EndTime,
@@ -82,6 +85,7 @@ public class CreateEventUseCase : ICreateEventUseCase
             _logger.LogInformation("Event persisted with Id {EventId} for Title = {Title}", eventEntity.Id, command.Title ?? "NULL");
 
             await _unitOfWork.Commit();
+            transactionCommitted = true;
             _logger.LogInformation("UnitOfWork committed for event Id {EventId}", eventEntity.Id);
 
             eventAggregate.SetId(eventEntity.Id);
@@ -94,6 +98,12 @@ public class CreateEventUseCase : ICreateEventUseCase
         }
         catch (Exception ex)
         {
+            if (!transactionCommitted)
+            {
+                await _unitOfWork.Rollback();
+                _logger.LogWarning("Transaction rolled back due to error during event creation for Title = {Title}", command.Title ?? "NULL");
+            }
+
             _logger.LogError(ex, "Slot calculation failed for event Title = {Title}", command.Title ?? "NULL");
             throw new Exception("Invalid event timing configuration", ex);
         }

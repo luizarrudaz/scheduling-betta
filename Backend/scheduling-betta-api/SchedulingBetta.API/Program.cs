@@ -17,6 +17,7 @@ using SchedulingBetta.API.Domain.Interfaces.ISmtp;
 using SchedulingBetta.API.Infraestructure.Repositories;
 using SchedulingBetta.API.Infraestructure.UnitOfWork;
 using SchedulingBetta.API.Infrastructure.Services;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,7 +47,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = Env.GetString("JWT_ISSUER"),
             ValidAudience = Env.GetString("JWT_AUDIENCE"),
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET")))
+                Encoding.UTF8.GetBytes(Env.GetString("JWT_SECRET"))),
+
+            NameClaimType = ClaimTypes.Name,
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
