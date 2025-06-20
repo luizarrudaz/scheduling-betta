@@ -147,6 +147,13 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
             .FirstOrDefaultAsync(i => i.EventId == eventId && i.UserId == userId);
     }
 
+    public async Task<List<EventSchedule>> GetSchedulesByEventId(int eventId)
+    {
+        return await _dbContext.EventSchedules
+            .Where(s => s.EventId == eventId)
+            .ToListAsync();
+    }
+
     public async Task<List<EventSchedule>> GetAllSchedules()
     {
         return await _dbContext.EventSchedules
@@ -166,5 +173,11 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
     {
         _dbContext.EventSchedules.Remove(schedule);
         await Task.CompletedTask;
+    }
+
+
+    public void RemoveScheduleRange(IEnumerable<EventSchedule> schedules)
+    {
+        _dbContext.EventSchedules.RemoveRange(schedules);
     }
 }

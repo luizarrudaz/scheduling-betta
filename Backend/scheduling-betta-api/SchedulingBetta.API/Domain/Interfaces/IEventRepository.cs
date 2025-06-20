@@ -21,7 +21,9 @@ public interface IEventRepository
     Task DeleteEvent(Event @event, CancellationToken cancellationToken = default);
     Task AddSchedule(EventSchedule schedule, CancellationToken cancellationToken = default);
     Task<EventSchedule?> GetUserSchedule(int eventId, string userId);
+    Task<List<EventSchedule>> GetSchedulesByEventId(int eventId);
     Task<List<EventSchedule>> GetAllSchedules();
     Task<List<EventSchedule>> GetAllSchedulesByUser(string userId);
     Task RemoveUserSchedule(EventSchedule schedule);
+    void RemoveScheduleRange(IEnumerable<EventSchedule> schedules);
 }
