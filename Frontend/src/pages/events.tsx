@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { startOfToday, format, parse, add, isSameDay, isAfter } from 'date-fns';
 import { motion } from "framer-motion";
 import { Event } from '../components/Types/Event/Event';
@@ -10,7 +10,8 @@ import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
 import ServiceSelector from '../components/Calendar/ServiceSelector.tsx';
 import LogoutButton from '../components/LogoutButton/LogoutButton.tsx';
 import { useAuthContext } from '../context/AuthContext.tsx';
-import AdminNav from '../components/Admin/AdminNav.tsx';
+import AppNav from '../components/Admin/AppNav.tsx';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 export default function Calendar() {
   const today = startOfToday();
@@ -21,8 +22,21 @@ export default function Calendar() {
   const { schedules, loading: schedulesLoading, refetch: refetchSchedules } = useAllSchedules();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const { groups } = useAuthContext();
-  const isAdmin = groups.some(g => g.toUpperCase() === 'RH');
+  const { isAuthenticated } = useAuthContext();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const eventIdToSelect = location.state?.eventIdToSelect;
+    if (eventIdToSelect && events.length > 0) {
+      const eventToSelect = events.find(event => event.id === eventIdToSelect);
+      if (eventToSelect) {
+        handleServiceSelect(eventToSelect);
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location.state, events, navigate]);
+
 
   const upcomingEvents = useMemo(() => {
     if (!events) return [];
@@ -64,8 +78,9 @@ export default function Calendar() {
   const handleServiceSelect = (service: Event | null) => {
     setSelectedEvent(service);
     if (service) {
-      setSelectedDay(new Date(service.startTime));
-      setCurrentMonth(format(new Date(service.startTime), 'MMM-yyyy'));
+      const serviceStartDate = new Date(service.startTime);
+      setSelectedDay(serviceStartDate);
+      setCurrentMonth(format(serviceStartDate, 'MMM-yyyy'));
     }
   };
 
@@ -78,12 +93,10 @@ export default function Calendar() {
   }
 
   return (
-    // Um container principal que permite o posicionamento absoluto dos elementos de navegação
     <div className="w-full h-full">
-      {isAdmin && <AdminNav />}
+      {isAuthenticated && <AppNav />}
       <LogoutButton />
 
-      {/* A estrutura original da página é preservada aqui dentro */}
       <div className="pt-4 sm:pt-8 flex justify-center">
         <div className="w-full max-w-4xl relative">
           <div className="absolute top-0 left-1/2 transform -translate-x-1/2 max-w-max whitespace-nowrap text-center">

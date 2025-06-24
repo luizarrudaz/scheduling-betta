@@ -21,7 +21,7 @@ const Login = () => {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated) {
-      navigate("/agendamentos", { replace: true });
+      navigate("/eventos", { replace: true });
     }
   }, [isAuthenticated, authLoading, navigate]);
 

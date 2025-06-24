@@ -2,17 +2,26 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthContext } from '../../context/AuthContext';
+
+const baseRoutes = [
+  { name: 'Agendar', path: '/eventos'},
+  { name: 'Meus Agendamentos', path: '/agendamentos' },
+];
 
 const adminRoutes = [
-  { name: 'Agendar', path: '/agendamentos'},
-  { name: 'Gerenciar Eventos', path: '/eventos' },
-  { name: 'Agendamentos', path: '/agendamentos-admin' },
+  { name: 'Gerenciar Eventos', path: '/eventos-admin' },
+  { name: 'Gerenciar Agendamentos', path: '/agendamentos-admin' },
   { name: 'Histórico', path: '/'}
 ];
 
-export default function AdminNav() {
+export default function AppNav() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { groups } = useAuthContext();
+  const isAdmin = groups.some(g => g.toUpperCase() === 'RH');
+  
+  const navRoutes = isAdmin ? [...baseRoutes, ...adminRoutes] : baseRoutes;
 
   const menuVariants = {
     hidden: { opacity: 0, y: -20 },
@@ -32,7 +41,7 @@ export default function AdminNav() {
         className="p-2 rounded-md text-gray-700 bg-white shadow-md hover:bg-gray-100 transition-colors"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
-        aria-label="Abrir menu de administração"
+        aria-label="Abrir menu de navegação"
       >
         {isOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
       </motion.button>
@@ -47,7 +56,7 @@ export default function AdminNav() {
             className="absolute top-14 left-0 w-64 bg-white rounded-lg shadow-2xl border border-gray-100 overflow-hidden"
           >
             <ul className="py-2">
-              {adminRoutes.map((route) => (
+              {navRoutes.map((route) => (
                 <motion.li key={route.path} variants={itemVariants}>
                   <Link
                     to={route.path}

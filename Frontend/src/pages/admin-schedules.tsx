@@ -6,7 +6,7 @@ import SchedulesTable from "../components/Schedules/SchedulesTable.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 import { ScheduledEvent } from "../components/Types/Schedule/Schedule.tsx"; 
 import { useAdminCancelSchedule } from "../hooks/Schedules/useAdminCancelSchedule.tsx";
-import AdminNav from "../components/Admin/AdminNav.tsx";
+import AdminNav from "../components/Admin/AppNav.tsx";
 
 type SortKey = keyof ScheduledEvent | 'event.title' | 'event.sessionDuration' | 'selectedSlot' | 'displayName' | 'email' | 'createdAt';
 
