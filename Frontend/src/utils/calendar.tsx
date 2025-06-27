@@ -1,5 +1,5 @@
 import { addMinutes, format, isWithinInterval, startOfDay, endOfDay, max, min } from 'date-fns';
-import { Event } from '../Types/Event/Event';
+import { Event } from '../types/Event/Event';
 
 export function classNames(...classes: (string | boolean)[]) {
   return classes.filter(Boolean).join(' ');

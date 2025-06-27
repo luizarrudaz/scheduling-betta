@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ScheduledEvent } from '../../components/Types/Schedule/Schedule';
+import { ScheduledEvent } from '../../types/Schedule/Schedule';
 import api from '../../services/api';
 
 export function useAllSchedules() {

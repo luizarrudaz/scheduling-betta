@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { startOfToday, format, parse, add, isSameDay, isAfter } from 'date-fns';
 import { motion } from "framer-motion";
-import { Event } from '../components/Types/Event/Event';
+import { Event } from '../types/Event/Event';
 import useEvents from '../hooks/Events/UseEvents';
 import { useAllSchedules } from '../hooks/Schedules/useAllSchedules';
 import CalendarNavigation from '../components/Calendar/CalendarNavigation.tsx';

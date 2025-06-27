@@ -4,7 +4,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useAllSchedules } from "../hooks/Schedules/useAllSchedules.tsx";
 import SchedulesTable from "../components/Schedules/SchedulesTable.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
-import { ScheduledEvent } from "../components/Types/Schedule/Schedule.tsx"; 
+import { ScheduledEvent } from "../types/Schedule/Schedule.tsx"; 
 import { useAdminCancelSchedule } from "../hooks/Schedules/useAdminCancelSchedule.tsx";
 import AdminNav from "../components/Admin/AppNav.tsx";
 

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { ScheduledEvent } from '../Types/Schedule/Schedule';
+import { ScheduledEvent } from '../../types/Schedule/Schedule';
 import { PencilIcon, XCircleIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 

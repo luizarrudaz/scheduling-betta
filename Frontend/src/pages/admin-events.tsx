@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import useEvents from "../hooks/Events/UseEvents";
 import EventsTable from "../components/Events/EventsTable";
 import EventFormModal from "../components/Events/EventFormModal";
-import { Event } from "../components/Types/Event/Event.tsx";
+import { Event } from "../types/Event/Event.tsx";
 import { useDeleteEvent } from "../hooks/Events/UseDeleteEvent.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 import { isAfter } from 'date-fns';

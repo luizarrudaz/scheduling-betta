@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Event } from '../../components/Types/Event/Event';
+import { Event } from '../../types/Event/Event';
 import api from '../../services/api';
 
 export default function useEvents() {

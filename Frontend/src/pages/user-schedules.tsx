@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useUserSchedules } from "../hooks/Schedules/useUserSchedules.tsx";
 import UserSchedulesTable from "../components/Schedules/UserScheduleTable.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
-import { ScheduledEvent } from "../components/Types/Schedule/Schedule.tsx"; 
+import { ScheduledEvent } from "../types/Schedule/Schedule.tsx"; 
 import { useCancelSchedule } from "../hooks/Schedules/useCancelSchedule.tsx";
 import AppNav from "../components/Admin/AppNav.tsx";
 import { useNavigate } from "react-router-dom";
@@ -150,7 +150,7 @@ const NoSchedules = ({ message, buttonText }: { message: string; buttonText: str
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="flex flex-col items-center justify-center h-[40vh]"
+        className="flex flex-col items-center justify-center h-[50vh]"
         >
             <div className="text-center py-6 px-6 bg-white rounded-2xl shadow-xl w-80">
                 <p className="text-gray-600 text-lg mb-4">{message}</p>

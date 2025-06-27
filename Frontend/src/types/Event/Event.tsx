@@ -21,6 +21,6 @@ export interface EventFormData {
   StartTime: string;
   EndTime: string;
   Pause: boolean;
-  BreakStart?: string;
-  BreakEnd?: string;
+  BreakStartInput?: string;
+  BreakEndInput?: string;
 }
