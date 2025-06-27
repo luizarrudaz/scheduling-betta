@@ -22,8 +22,8 @@ Projetado para ambientes organizacionais, o sistema permite o gerenciamento efic
 
 | Grupo   | Abas Disponíveis                          |
 |---------|-------------------------------------------|
-| Admin   | `/eventos`, `/agendamentos-admin`, `/historico-eventos` |
-| Usuário | `/agendamentos`                           |
+| Admin   | `/eventos-admin`, `/agendamentos-admin`, `/historico-admin` |
+| Usuário | `/eventos`, `/agendamentos`                           |
 
 **Segurança:**
 - Validação de senha conforme políticas do AD.
@@ -99,7 +99,7 @@ Projetado para ambientes organizacionais, o sistema permite o gerenciamento efic
 - **Backend**: .NET, LDAP, JWT
 - **Banco de Dados**: PostgreSQL
 - **ORM**: Entity Framework Core (EF Core)
-- **Integrações**: Microsoft Graph, SMTP
+- **Integrações**: Microsoft Graph (futuro), SMTP
 
 ---
 
