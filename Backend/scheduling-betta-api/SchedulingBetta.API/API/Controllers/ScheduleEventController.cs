@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
-using SchedulingBetta.API.Application.UseCases.ScheduleEvent;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 
 namespace SchedulingBetta.API.API.Controllers;
@@ -13,6 +12,7 @@ public class ScheduleEventController : ControllerBase
     private readonly IGetAllSchedulesEventUseCase _getAllSchedulesEventUseCase;
     private readonly IGetAllSchedulesByUserUseCase _getAllSchedulesByUserUseCase;
     private readonly IUnscheduleEventUseCase _unscheduleEventUseCase;
+    private readonly IGetAllOccupiedSlotsUseCase _getAllOccupiedSlotsUseCase;
     private readonly IAdminCancelScheduleUseCase _adminCancelScheduleUseCase;
     private readonly ILogger<ScheduleEventController> _logger;
 
@@ -21,6 +21,7 @@ public class ScheduleEventController : ControllerBase
         IGetAllSchedulesEventUseCase getAllSchedulesEventUseCase,
         IGetAllSchedulesByUserUseCase getAllSchedulesByUserUseCase,
         IUnscheduleEventUseCase unscheduleEventUseCase,
+        IGetAllOccupiedSlotsUseCase getAllOccupiedSlotsUseCase,
         IAdminCancelScheduleUseCase adminCancelScheduleUseCase,
         ILogger<ScheduleEventController> logger)
     {
@@ -28,6 +29,7 @@ public class ScheduleEventController : ControllerBase
         _getAllSchedulesEventUseCase = getAllSchedulesEventUseCase;
         _getAllSchedulesByUserUseCase = getAllSchedulesByUserUseCase;
         _unscheduleEventUseCase = unscheduleEventUseCase;
+        _getAllOccupiedSlotsUseCase = getAllOccupiedSlotsUseCase;
         _adminCancelScheduleUseCase = adminCancelScheduleUseCase;
         _logger = logger;
     }
@@ -68,21 +70,11 @@ public class ScheduleEventController : ControllerBase
         }
     }
 
-    //[Authorize]
-    //[HttpGet]
-    //[ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
-    //public async Task<IActionResult> GetAllScheduleEvents()
-    //{
-    //    var entities = await _getAllSchedulesEventUseCase.Execute();
-    //    return Ok(entities);
-    //}
-
     [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllScheduleEvents()
     {
-        // Bloco adicionado para debug
         try
         {
             var entities = await _getAllSchedulesEventUseCase.Execute();
@@ -90,10 +82,8 @@ public class ScheduleEventController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Loga o erro completo no servidor
             _logger.LogError(ex, "Falha crítica ao executar GetAllScheduleEvents");
 
-            // Retorna os detalhes da exceção na resposta da API para podermos ver no navegador
             return StatusCode(500, new
             {
                 Error = "Ocorreu um erro interno no servidor durante o debug.",
@@ -102,6 +92,15 @@ public class ScheduleEventController : ControllerBase
                 StackTrace = ex.StackTrace
             });
         }
+    }
+
+    [Authorize]
+    [HttpGet("occupied-slots")]
+    [ProducesResponseType(typeof(List<GetOccupiedSlotDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetOccupiedSlots()
+    {
+        var entities = await _getAllOccupiedSlotsUseCase.Execute();
+        return Ok(entities);
     }
 
     [Authorize]

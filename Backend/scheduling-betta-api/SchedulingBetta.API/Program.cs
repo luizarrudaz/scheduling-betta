@@ -101,6 +101,7 @@ builder.Services.AddScoped<IDeleteEventUseCase, DeleteEventUseCase>();
 builder.Services.AddScoped<ISlotCalculator, SlotCalculator>();
 
 builder.Services.AddScoped<IScheduleEventUseCase, ScheduleEventUseCase>();
+builder.Services.AddScoped<IGetAllOccupiedSlotsUseCase, GetAllOccupiedSlotsUseCase>();
 builder.Services.AddScoped<IGetAllSchedulesEventUseCase, GetAllSchedulesEventUseCase>();
 builder.Services.AddScoped<IGetAllSchedulesByUserUseCase, GetAllSchedulesByUserUseCase>();
 builder.Services.AddScoped<IUnscheduleEventUseCase, UnscheduleEventUseCase>();
