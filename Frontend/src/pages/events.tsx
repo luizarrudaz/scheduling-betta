@@ -1,17 +1,18 @@
 import { useState, useMemo, useEffect } from 'react';
-import { startOfToday, format, parse, add, isSameDay, isAfter } from 'date-fns';
+import { startOfToday, format, parse, add, isSameDay, isAfter, startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns';
 import { motion } from "framer-motion";
 import { Event } from '../types/Event/Event';
 import useEvents from '../hooks/Events/UseEvents';
-import { useAllSchedules } from '../hooks/Schedules/useAllSchedules';
+import { useOccupiedSlots } from '../hooks/Schedules/useOccupiedSlots';
 import CalendarNavigation from '../components/Calendar/CalendarNavigation.tsx';
 import CalendarGrid from '../components/Calendar/CalendarGrid.tsx';
 import TimeSlotsPanel from '../components/Calendar/TimeSlotPanel.tsx';
 import ServiceSelector from '../components/Calendar/ServiceSelector.tsx';
 import LogoutButton from '../components/LogoutButton/LogoutButton.tsx';
 import { useAuthContext } from '../context/AuthContext.tsx';
-import AppNav from '../components/Admin/AppNav.tsx';
+import AppNav from '../components/Nav/AppNav.tsx';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { generateSlotsForEvent } from '../utils/calendar';
 
 export default function Calendar() {
   const today = startOfToday();
@@ -19,7 +20,7 @@ export default function Calendar() {
   const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM-yyyy'));
 
   const { events, loading: eventsLoading } = useEvents();
-  const { schedules, loading: schedulesLoading, refetch: refetchSchedules } = useAllSchedules();
+  const { occupiedSlots, loading: schedulesLoading, refetch: refetchSchedules } = useOccupiedSlots();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const { isAuthenticated } = useAuthContext();
@@ -37,7 +38,6 @@ export default function Calendar() {
     }
   }, [location.state, events, navigate]);
 
-
   const upcomingEvents = useMemo(() => {
     if (!events) return [];
     const now = new Date();
@@ -48,18 +48,49 @@ export default function Calendar() {
 
   const occupiedSlotsForEvent = useMemo(() => {
     if (!selectedEvent) return [];
-    return schedules.filter(s => s.event?.id === selectedEvent.id);
-  }, [schedules, selectedEvent]);
+    return occupiedSlots.filter(slot => slot.eventId === selectedEvent.id);
+  }, [occupiedSlots, selectedEvent]);
+
+  const availableDaysSet = useMemo(() => {
+    const available = new Set<string>();
+    if (!selectedEvent) return available;
+
+    const eventStartDate = startOfDay(new Date(selectedEvent.startTime));
+    const eventEndDate = endOfDay(new Date(selectedEvent.endTime));
+    
+    const dailyOccupiedCount = new Map<string, number>();
+    occupiedSlotsForEvent.forEach(slot => {
+        const dayKey = format(parseISO(slot.scheduleTime), 'yyyy-MM-dd');
+        dailyOccupiedCount.set(dayKey, (dailyOccupiedCount.get(dayKey) || 0) + 1);
+    });
+
+    let currentDate = eventStartDate;
+    while (currentDate <= eventEndDate) {
+        const dayKey = format(currentDate, 'yyyy-MM-dd');
+        const possibleSlots = generateSlotsForEvent(selectedEvent, currentDate);
+        const occupiedCount = dailyOccupiedCount.get(dayKey) || 0;
+
+        if (possibleSlots.length > occupiedCount) {
+            available.add(dayKey);
+        }
+        currentDate = add(currentDate, { days: 1 });
+    }
+
+    return available;
+  }, [selectedEvent, occupiedSlotsForEvent]);
 
   const isExpanded = useMemo(() => {
     if (!selectedEvent) return false;
-    const dayHasAppointments = schedules.some(
-      s => s.event?.id === selectedEvent.id && isSameDay(new Date(s.selectedSlot), selectedDay)
+    const dayHasAppointments = occupiedSlotsForEvent.some(
+      s => isSameDay(parseISO(s.scheduleTime), selectedDay)
     );
-    const eventIsActiveOnDay = isSameDay(new Date(selectedEvent.startTime), selectedDay) || isSameDay(new Date(selectedEvent.endTime), selectedDay) || (selectedDay > new Date(selectedEvent.startTime) && selectedDay < new Date(selectedEvent.endTime));
+    const eventIsActiveOnDay = isWithinInterval(selectedDay, {
+        start: startOfDay(new Date(selectedEvent.startTime)),
+        end: endOfDay(new Date(selectedEvent.endTime))
+    });
 
     return eventIsActiveOnDay || dayHasAppointments;
-  }, [selectedDay, selectedEvent, schedules]);
+  }, [selectedDay, selectedEvent, occupiedSlotsForEvent]);
 
   const handlePreviousMonth = () => {
     const firstDayNextMonth = add(firstDayCurrentMonth, { months: -1 });
@@ -124,8 +155,7 @@ export default function Calendar() {
                 <CalendarGrid
                   firstDayCurrentMonth={firstDayCurrentMonth}
                   selectedDay={selectedDay}
-                  selectedEvent={selectedEvent}
-                  occupiedSlots={occupiedSlotsForEvent}
+                  availableDaysSet={availableDaysSet}
                   onDayClick={handleDayClick}
                 />
               </div>

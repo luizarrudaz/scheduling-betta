@@ -41,7 +41,7 @@ const AppRoutes = () => {
           }
         />
 
-          <Route
+        <Route
           path="/agendamentos-admin"
           element={
             <ProtectedRoute requiredGroup="RH">

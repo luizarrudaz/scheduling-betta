@@ -5,7 +5,7 @@ import UserSchedulesTable from "../components/Schedules/UserScheduleTable.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 import { ScheduledEvent } from "../types/Schedule/Schedule.tsx"; 
 import { useCancelSchedule } from "../hooks/Schedules/useCancelSchedule.tsx";
-import AppNav from "../components/Admin/AppNav.tsx";
+import AppNav from "../components/Nav/AppNav.tsx";
 import { useNavigate } from "react-router-dom";
 
 type SortKey = keyof ScheduledEvent | 'event.title' | 'event.sessionDuration' | 'selectedSlot' | 'createdAt';

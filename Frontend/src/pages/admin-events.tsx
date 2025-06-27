@@ -7,8 +7,8 @@ import { Event } from "../types/Event/Event.tsx";
 import { useDeleteEvent } from "../hooks/Events/UseDeleteEvent.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 import { isAfter } from 'date-fns';
-import AdminNav from "../components/Admin/AppNav.tsx";
-import { PlusIcon } from "@heroicons/react/24/solid"; // 1. Importar o ícone
+import AdminNav from "../components/Nav/AppNav.tsx";
+import { PlusIcon } from "@heroicons/react/24/solid";
 
 export default function AdminEventsPage() {
   const { events, loading, refetch } = useEvents();

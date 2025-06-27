@@ -34,13 +34,8 @@ const modalVariants = {
 };
 
 const errorShakeVariants = {
-  shake: {
-    x: [0, -8, 8, -4, 4, 0],
-    transition: { duration: 0.4 }
-  },
-  initial: {
-    x: 0
-  }
+  shake: { x: [0, -8, 8, -4, 4, 0], transition: { duration: 0.4 } },
+  initial: { x: 0 }
 };
 
 export default function EventFormModal({ isOpen, onClose, event, onSuccess }: EventFormModalProps) {
@@ -64,7 +59,6 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
   useEffect(() => {
     if (isOpen) {
       if (event) {
-        // Editando evento existente
         reset({
           Title: event.title,
           SessionDuration: event.sessionDuration,
@@ -76,19 +70,14 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
           BreakEndInput: event.breakWindow ? formatTime(new Date(event.breakWindow.breakEnd)) : ''
         });
       } else {
-        // Criando novo evento
         const now = new Date();
         const defaultStart = new Date(now.getTime() + 30 * 60000); 
         const defaultEnd = new Date(defaultStart.getTime() + 60 * 60000);
         reset({
-          Title: '',
-          SessionDuration: 30,
-          Location: '',
+          Title: '', SessionDuration: 30, Location: '',
           StartTime: toDateTimeLocalString(defaultStart),
           EndTime: toDateTimeLocalString(defaultEnd),
-          Pause: false,
-          BreakStartInput: '',
-          BreakEndInput: '' 
+          Pause: false, BreakStartInput: '', BreakEndInput: '' 
         });
       }
       clearErrors();
@@ -96,7 +85,11 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
   }, [isOpen, event, reset, clearErrors]);
 
   const onSubmit = async (data: EventFormData) => {
-    // Validações Manuais Adicionais
+    if (!event && new Date(data.StartTime) < new Date()) {
+        setError('StartTime', { type: 'manual', message: 'O evento não pode começar no passado.' });
+        return;
+    }
+      
     if (data.Pause) {
         if (!data.BreakStartInput || !data.BreakEndInput) {
             if (!data.BreakStartInput) setError('BreakStartInput', { type: 'manual', message: 'Início é obrigatório.' });
@@ -104,9 +97,25 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
             return;
         }
 
-        const breakStart = new Date(`1970-01-01T${data.BreakStartInput}`);
-        const breakEnd = new Date(`1970-01-01T${data.BreakEndInput}`);
+        const eventStart = new Date(data.StartTime);
+        const eventEnd = new Date(data.EndTime);
+        // Construir a data completa da pausa usando a data do início do evento
+        const breakStart = new Date(`${formatDate(eventStart)}T${data.BreakStartInput}`);
+        const breakEnd = new Date(`${formatDate(eventStart)}T${data.BreakEndInput}`);
 
+        // Validação 1: Início da pausa deve ser após o início do evento
+        if (breakStart <= eventStart) {
+            setError('BreakStartInput', { type: 'manual', message: 'Deve ser após o início do evento.' });
+            return;
+        }
+
+        // Validação 2: Fim da pausa deve ser antes do fim do evento
+        if (breakEnd >= eventEnd) {
+            setError('BreakEndInput', { type: 'manual', message: 'Deve ser antes do fim do evento.' });
+            return;
+        }
+        
+        // Validação 3: Fim da pausa deve ser após o início da pausa
         if (breakEnd <= breakStart) {
             setError('BreakEndInput', { type: 'manual', message: 'Fim da pausa deve ser após o início.' });
             return;
@@ -135,6 +144,13 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
       onClose();
     }
   };
+    
+  const formatDate = (date: Date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+  };
 
   const isLoading = isCreating || isUpdating;
 
@@ -145,19 +161,19 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
           static
           open={isOpen}
           onClose={isLoading ? () => {} : onClose}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
         >
           <motion.div
             variants={modalVariants}
             initial="hidden"
             animate="visible"
             exit="exit"
-            layout
-            className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-2xl"
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col h-auto max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold text-gray-800">
+            {/* CABEÇALHO FIXO */}
+            <div className="flex-shrink-0 flex justify-between items-center p-6 border-b border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-800">
                 {event ? 'Editar Evento' : 'Novo Evento'}
               </h2>
               <motion.button
@@ -172,79 +188,84 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
               </motion.button>
             </div>
             
+            {/* CONTEÚDO COM ROLAGEM */}
             <motion.form
+              layout
               variants={errorShakeVariants}
               animate={isSubmitting && hasValidationErrors ? "shake" : "initial"}
               onSubmit={handleSubmit(onSubmit)}
-              className="space-y-6"
+              className="flex-grow overflow-y-auto p-6"
+              id="eventForm"
+              noValidate
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Nome do Evento *</label>
-                  <input
-                    {...register('Title', { required: 'Campo obrigatório' })}
-                    className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Title ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {errors.Title && <span className="text-red-500 text-xs block mt-1">{errors.Title.message}</span>}
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Nome do Evento *</label>
+                    <input
+                      {...register('Title', { required: 'Campo obrigatório' })}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Title ? 'border-red-500' : 'border-gray-200'}`}
+                    />
+                    {errors.Title && <span className="text-red-500 text-xs block mt-1">{errors.Title.message}</span>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Duração (minutos) *</label>
+                    <input
+                      type="number"
+                      {...register('SessionDuration', { required: 'Campo obrigatório', min: { value: 1, message: 'Mínimo 1 minuto' } })}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.SessionDuration ? 'border-red-500' : 'border-gray-200'}`}
+                    />
+                    {errors.SessionDuration && <span className="text-red-500 text-xs block mt-1">{errors.SessionDuration.message}</span>}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-600 mb-2">Local *</label>
+                    <input
+                      {...register('Location', { required: 'Campo obrigatório' })}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Location ? 'border-red-500' : 'border-gray-200'}`}
+                    />
+                    {errors.Location && <span className="text-red-500 text-xs block mt-1">{errors.Location.message}</span>}
+                  </div>
+
+                  <div className="md:col-span-2 flex items-center gap-3">
+                    <input type="checkbox" {...register('Pause')} className="h-5 w-5 text-[#FA7014] rounded focus:ring-[#FA7014]" />
+                    <label className="text-sm text-gray-600">Incluir pausa programada</label>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Duração (minutos) *</label>
-                  <input
-                    type="number"
-                    {...register('SessionDuration', { required: 'Campo obrigatório', min: { value: 1, message: 'Mínimo 1 minuto' } })}
-                    className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.SessionDuration ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {errors.SessionDuration && <span className="text-red-500 text-xs block mt-1">{errors.SessionDuration.message}</span>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-600 mb-2">Local *</label>
-                  <input
-                    {...register('Location', { required: 'Campo obrigatório' })}
-                    className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Location ? 'border-red-500' : 'border-gray-200'}`}
-                  />
-                  {errors.Location && <span className="text-red-500 text-xs block mt-1">{errors.Location.message}</span>}
-                </div>
-
-                <div className="md:col-span-2 flex items-center gap-3">
-                  <input type="checkbox" {...register('Pause')} className="h-5 w-5 text-[#FA7014] rounded focus:ring-[#FA7014]" />
-                  <label className="text-sm text-gray-600">Incluir pausa programada</label>
-                </div>
-                
                 <AnimatePresence>
-                {hasPause && (
-                  <motion.div 
-                    className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6"
-                    initial={{ opacity: 0, height: 0, marginTop: -24 }}
-                    animate={{ opacity: 1, height: 'auto', marginTop: 0 }}
-                    exit={{ opacity: 0, height: 0, marginTop: -24 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                  >
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-2">Início da Pausa *</label>
-                      <input
-                        type="time"
-                        {...register('BreakStartInput', { required: hasPause })}
-                        className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakStartInput ? 'border-red-500' : 'border-gray-200'}`}
-                      />
-                      {errors.BreakStartInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakStartInput.message}</span>}
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-600 mb-2">Fim da Pausa *</label>
-                      <input
-                        type="time"
-                        {...register('BreakEndInput', { required: hasPause })}
-                        className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakEndInput ? 'border-red-500' : 'border-gray-200'}`}
-                      />
-                      {errors.BreakEndInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakEndInput.message}</span>}
-                    </div>
-                  </motion.div>
-                )}
+                  {hasPause && (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, y: -10, height: 0 }}
+                      animate={{ opacity: 1, y: 0, height: 'auto', transition: { duration: 0.3 } }}
+                      exit={{ opacity: 0, y: -10, height: 0, transition: { duration: 0.2 } }}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
+                    >
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-600 mb-2">Início da Pausa *</label>
+                        <input
+                          type="time"
+                          {...register('BreakStartInput', { required: hasPause })}
+                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakStartInput ? 'border-red-500' : 'border-gray-200'}`}
+                        />
+                        {errors.BreakStartInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakStartInput.message}</span>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-600 mb-2">Fim da Pausa *</label>
+                        <input
+                          type="time"
+                          {...register('BreakEndInput', { required: hasPause })}
+                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakEndInput ? 'border-red-500' : 'border-gray-200'}`}
+                        />
+                        {errors.BreakEndInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakEndInput.message}</span>}
+                      </div>
+                    </motion.div>
+                  )}
                 </AnimatePresence>
 
-                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                   <div>
                     <label className="block text-sm font-semibold text-gray-600 mb-2">Início *</label>
                     <input
@@ -257,7 +278,6 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                     />
                     {errors.StartTime && <span className="text-red-500 text-xs block mt-1">{errors.StartTime.message}</span>}
                   </div>
-
                   <div>
                     <label className="block text-sm font-semibold text-gray-600 mb-2">Fim *</label>
                     <input
@@ -271,35 +291,39 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                     {errors.EndTime && <span className="text-red-500 text-xs block mt-1">{errors.EndTime.message}</span>}
                   </div>
                 </div>
-              </div>
 
-              {apiError && (
-                <div className="text-red-600 p-3 bg-red-50 rounded-lg text-center font-medium">
-                  {apiError}
-                </div>
-              )}
-              
-              <motion.button
-                type="submit"
-                disabled={isLoading}
-                whileHover={!isLoading ? { scale: 1.03 } : {}}
-                whileTap={!isLoading ? { scale: 0.98 } : {}}
-                className={`w-full py-3 mt-4 rounded-xl font-semibold transition-all duration-300 shadow-md ${isLoading
-                    ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                    : 'bg-[#FA7014] text-white hover:bg-[#E55F00]'
-                  }`}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Processando...
+                {apiError && (
+                  <div className="text-red-600 p-3 bg-red-50 rounded-lg text-center font-medium">
+                    {apiError}
                   </div>
-                ) : (event ? 'Salvar Alterações' : 'Criar Evento')}
-              </motion.button>
+                )}
+              </div>
             </motion.form>
+            
+            {/* RODAPÉ FIXO */}
+            <div className="flex-shrink-0 p-6 border-t border-gray-200">
+              <motion.button
+                  type="submit"
+                  form="eventForm"
+                  disabled={isLoading}
+                  whileHover={!isLoading ? { scale: 1.03 } : {}}
+                  whileTap={!isLoading ? { scale: 0.98 } : {}}
+                  className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-md ${isLoading
+                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+                      : 'bg-[#FA7014] text-white hover:bg-[#E55F00]'
+                    }`}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Processando...
+                    </div>
+                  ) : (event ? 'Salvar Alterações' : 'Criar Evento')}
+                </motion.button>
+            </div>
           </motion.div>
         </Dialog>
       )}
