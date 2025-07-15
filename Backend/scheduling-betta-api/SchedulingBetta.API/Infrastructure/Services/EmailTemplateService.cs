@@ -4,7 +4,12 @@ namespace SchedulingBetta.API.Infrastructure.Services;
 
 public class EmailTemplateService : IEmailTemplateService
 {
-    private readonly string _templateDirectory = @"C:\Users\luiz.arruda\Desktop\scheduling-betta\Backend\scheduling-betta-api\SchedulingBetta.API\Infrastructure\EmailTemplates\";
+    private readonly string _templateDirectory;
+
+    public EmailTemplateService(IWebHostEnvironment env)
+    {
+        _templateDirectory = Path.Combine(env.ContentRootPath, "Infrastructure", "EmailTemplates");
+    }
 
     public string GetTemplateContent(string templateName, Dictionary<string, string> placeholders)
     {
@@ -22,4 +27,3 @@ public class EmailTemplateService : IEmailTemplateService
         return content;
     }
 }
-

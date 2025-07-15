@@ -28,7 +28,8 @@ public class EventNotificationService : IEventNotificationService
         {
             { "Title", @event.Title ?? "Sem título" },
             { "Start_Time", localStart.ToString("dd/MM/yyyy HH:mm") },
-            { "End_Time", localEnd.ToString("dd/MM/yyyy HH:mm") }
+            { "End_Time", localEnd.ToString("dd/MM/yyyy HH:mm") },
+            { "Location", @event.Location ?? "Sem localização" }
         };
 
         if (customPlaceholders != null)
