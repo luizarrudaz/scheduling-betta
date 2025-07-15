@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { Dialog } from '@headlessui/react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useForm } from 'react-hook-form';
 import { Event, EventFormData } from "../../types/Event/Event";
@@ -27,13 +27,13 @@ const formatTime = (date: Date) => {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 };
 
-const modalVariants = {
+const modalVariants: Variants = {
   hidden: { scale: 0.95, opacity: 0 },
   visible: { scale: 1, opacity: 1, transition: { type: 'spring', stiffness: 400, damping: 30 } },
   exit: { scale: 0.95, opacity: 0, transition: { duration: 0.2 } }
 };
 
-const errorShakeVariants = {
+const errorShakeVariants: Variants = {
   shake: { x: [0, -8, 8, -4, 4, 0], transition: { duration: 0.4 } },
   initial: { x: 0 }
 };
@@ -99,23 +99,23 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
 
         const eventStart = new Date(data.StartTime);
         const eventEnd = new Date(data.EndTime);
-        // Construir a data completa da pausa usando a data do início do evento
+        
         const breakStart = new Date(`${formatDate(eventStart)}T${data.BreakStartInput}`);
         const breakEnd = new Date(`${formatDate(eventStart)}T${data.BreakEndInput}`);
 
-        // Validação 1: Início da pausa deve ser após o início do evento
+        
         if (breakStart <= eventStart) {
             setError('BreakStartInput', { type: 'manual', message: 'Deve ser após o início do evento.' });
             return;
         }
 
-        // Validação 2: Fim da pausa deve ser antes do fim do evento
+        
         if (breakEnd >= eventEnd) {
             setError('BreakEndInput', { type: 'manual', message: 'Deve ser antes do fim do evento.' });
             return;
         }
         
-        // Validação 3: Fim da pausa deve ser após o início da pausa
+        
         if (breakEnd <= breakStart) {
             setError('BreakEndInput', { type: 'manual', message: 'Fim da pausa deve ser após o início.' });
             return;
@@ -171,8 +171,8 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
             className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col h-auto max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* CABEÇALHO FIXO */}
-            <div className="flex-shrink-0 flex justify-between items-center p-6 border-b border-gray-200">
+            
+            <div className="flex-shrink-0 flex justify-between items-center p-6">
               <h2 className="text-2xl font-bold text-gray-800">
                 {event ? 'Editar Evento' : 'Novo Evento'}
               </h2>
@@ -188,7 +188,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
               </motion.button>
             </div>
             
-            {/* CONTEÚDO COM ROLAGEM */}
+            
             <motion.form
               layout
               variants={errorShakeVariants}
@@ -300,7 +300,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
               </div>
             </motion.form>
             
-            {/* RODAPÉ FIXO */}
+            
             <div className="flex-shrink-0 p-6 border-t border-gray-200">
               <motion.button
                   type="submit"

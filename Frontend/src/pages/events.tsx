@@ -124,53 +124,54 @@ export default function Calendar() {
   }
 
   return (
-    <div className="w-full h-full">
-      {isAuthenticated && <AppNav />}
-      <LogoutButton />
+    <div className="w-screen min-h-screen bg-gray-50 flex justify-center items-center p-4">
+        {isAuthenticated && <AppNav />}
+        <LogoutButton />
 
-      <div className="pt-4 sm:pt-8 flex justify-center">
-        <div className="w-full max-w-4xl relative">
-          <div className="absolute top-0 left-1/2 transform -translate-x-1/2 max-w-max whitespace-nowrap text-center">
-            <h1 className="text-3xl text-gray-800 font-bold">Agendamentos Betta</h1>
-          </div>
+        <div className="flex flex-col items-center">
+            <motion.h1 
+                className="text-3xl font-bold text-gray-800"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+            >
+                Eventos
+            </motion.h1>
 
-          <div className="mt-14 sm:mt-16">
             <ServiceSelector
-              services={upcomingEvents}
-              selectedService={selectedEvent}
-              onServiceSelect={handleServiceSelect}
+                services={upcomingEvents}
+                selectedService={selectedEvent}
+                onServiceSelect={handleServiceSelect}
             />
 
             <motion.div
-              className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 mx-auto mt-2"
-              animate={{ width: isExpanded ? "100%" : "fit-content" }}
-              transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 -mt-2"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
             >
-              <div className="min-w-[280px] max-h-[300px]">
-                <CalendarNavigation
-                  firstDayCurrentMonth={firstDayCurrentMonth}
-                  onPrevious={handlePreviousMonth}
-                  onNext={handleNextMonth}
-                />
-                <CalendarGrid
-                  firstDayCurrentMonth={firstDayCurrentMonth}
-                  selectedDay={selectedDay}
-                  availableDaysSet={availableDaysSet}
-                  onDayClick={handleDayClick}
-                />
-              </div>
+                <div className="min-w-[280px] max-h-[300px]">
+                    <CalendarNavigation
+                        firstDayCurrentMonth={firstDayCurrentMonth}
+                        onPrevious={handlePreviousMonth}
+                        onNext={handleNextMonth}
+                    />
+                    <CalendarGrid
+                        firstDayCurrentMonth={firstDayCurrentMonth}
+                        selectedDay={selectedDay}
+                        availableDaysSet={availableDaysSet}
+                        onDayClick={handleDayClick}
+                    />
+                </div>
 
-              <TimeSlotsPanel
-                isExpanded={isExpanded}
-                selectedDay={selectedDay}
-                selectedEvent={selectedEvent}
-                occupiedSlots={occupiedSlotsForEvent}
-                onScheduleSuccess={refetchSchedules}
-              />
+                <TimeSlotsPanel
+                    isExpanded={isExpanded}
+                    selectedDay={selectedDay}
+                    selectedEvent={selectedEvent}
+                    occupiedSlots={occupiedSlotsForEvent}
+                    onScheduleSuccess={refetchSchedules}
+                />
             </motion.div>
-          </div>
         </div>
-      </div>
     </div>
   );
 }

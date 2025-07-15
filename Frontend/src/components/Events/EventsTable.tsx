@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { Event } from '../Types/Event/Event';
+import { Event } from '../../types/Event/Event';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const rowVariants = {

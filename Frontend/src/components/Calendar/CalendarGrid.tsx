@@ -28,13 +28,13 @@ export default function CalendarGrid({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 mt-2 text-xs max-h-[250px] overflow-hidden">
+      <div className="grid grid-cols-7 mt-2 text-sm">
         {days.map((day, dayIdx) => (
           <div
             key={day.toString()}
             className={classNames(
               dayIdx === 0 && getDay(day) > 0 && `col-start-${getDay(day) + 1}`,
-              'py-0 max-w-[30px] mx-auto'
+              'py-1.5'
             )}
           >
             <DayCell

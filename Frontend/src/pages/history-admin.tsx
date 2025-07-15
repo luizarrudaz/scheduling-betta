@@ -1,9 +1,7 @@
 import { useState, useMemo } from "react";
-import { isAfter } from "date-fns";
 import { motion } from "framer-motion";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useAllSchedules } from "../hooks/Schedules/useAllSchedules.tsx";
-import { useAdminCancelSchedule } from "../hooks/Schedules/useAdminCancelSchedule.tsx";
 import SchedulesTable from "../components/Schedules/SchedulesTable.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 import { ScheduledEvent } from "../types/Schedule/Schedule.tsx";
@@ -14,19 +12,13 @@ import Pagination from "../components/Pagination/Pagination.tsx";
 
 type SortKey = keyof ScheduledEvent | 'event.title' | 'event.sessionDuration' | 'selectedSlot' | 'displayName' | 'email' | 'createdAt';
 
-export default function AdminSchedules() {
-  const { schedules, loading, refetch } = useAllSchedules();
-  const { adminCancel, isCancelling, error: cancelError } = useAdminCancelSchedule();
+export default function AdminHistoryPage() {
+  const { schedules, loading } = useAllSchedules();
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'selectedSlot', direction: 'ascending' });
-
-  const futureSchedules = useMemo(() => {
-    const now = new Date();
-    return schedules.filter(schedule => isAfter(new Date(schedule.selectedSlot), now));
-  }, [schedules]);
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'selectedSlot', direction: 'descending' });
 
   const filteredAndSortedSchedules = useMemo(() => {
-    let searchableSchedules = futureSchedules.filter(schedule => {
+    let searchableSchedules = schedules.filter(schedule => {
       const eventTitle = schedule.event?.title?.toLowerCase() || '';
       const userName = schedule.displayName?.toLowerCase() || '';
       const userEmail = schedule.email?.toLowerCase() || '';
@@ -71,7 +63,7 @@ export default function AdminSchedules() {
     }
 
     return searchableSchedules;
-  }, [futureSchedules, searchTerm, sortConfig]);
+  }, [schedules, searchTerm, sortConfig]);
 
   const {
     currentPage,
@@ -86,11 +78,6 @@ export default function AdminSchedules() {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
-  };
-
-  const handleCancel = async (scheduleId: number) => {
-    await adminCancel(scheduleId);
-    refetch();
   };
 
   const handleCsvDownload = () => {
@@ -115,7 +102,7 @@ export default function AdminSchedules() {
           transition={{ duration: 0.5 }}
           className="text-4xl font-extrabold text-gray-800 text-center mb-10"
         >
-          Gerenciar Agendamentos
+          Histórico de Agendamentos
         </motion.h1>
 
         <div className="mb-8 flex justify-center items-center gap-4">
@@ -137,15 +124,15 @@ export default function AdminSchedules() {
         {loading ? (
           <LoadingSkeleton />
         ) : filteredAndSortedSchedules.length === 0 ? (
-          <NoSchedules message="Nenhum agendamento futuro encontrado." />
+          <NoSchedules message="Nenhum agendamento no histórico." />
         ) : (
           <>
             <SchedulesTable
               schedules={paginatedData}
               onSort={requestSort}
               sortConfig={sortConfig}
-              onCancel={handleCancel}
-              disabled={isCancelling}
+              onCancel={() => {}}
+              showActions={false}
             />
             <div className="mt-8 flex justify-center">
               <Pagination

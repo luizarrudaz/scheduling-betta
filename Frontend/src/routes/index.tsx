@@ -5,6 +5,7 @@ import Events from "../pages/events";
 import Schedulings from "../pages/user-schedules";
 import AdminEvents from "../pages/admin-events";
 import AdminSchedules from "../pages/admin-schedules";
+import AdminHistory from "../pages/history-admin";
 import AccessDenied from "../pages/access-denied";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -46,6 +47,15 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute requiredGroup="RH">
               <AdminSchedules />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/historico-admin"
+          element={
+            <ProtectedRoute requiredGroup="RH">
+              <AdminHistory />
             </ProtectedRoute>
           }
         />

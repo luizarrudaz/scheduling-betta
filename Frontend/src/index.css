@@ -3,91 +3,29 @@
   line-height: 1.5;
   font-weight: 400;
   color: #213547;
-  background-color: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* --- CORREÇÕES APLICADAS ABAIXO --- */
+
 body, html {
-  background-color: #ffffff;
-  width: 100vw;
-  max-width: 100vw;
-  height: 100vh;
-  max-height: 100vh;
   margin: 0;
   padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  background-color: #f8f9fa; /* Um fundo cinza claro para a página */
 }
 
-.flex-col, .flex-row {
-  min-width: 0;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #f9f9f9;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-
-button:hover {
-  border-color: #646cff;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
+/* Removemos os estilos globais de botão que conflitam com o Tailwind */
+/* O estilo de cada botão será definido em seu próprio componente */
 
 input,
 textarea,
 select {
   background-color: white !important;
   color: #1a1a1a !important;
-}
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-.indicator-dot {
-  transition: opacity 0.2s ease;
-}
-
-.input-field {
-  @apply w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FA7014] focus:ring-0 transition-colors bg-white text-gray-800;
 }
 
 input:-webkit-autofill,
@@ -97,6 +35,41 @@ input:-webkit-autofill:focus {
   -webkit-text-fill-color: #1a1a1a !important;
 }
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- ESTILOS MANTIDOS POIS SÃO ÚTEIS --- */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+.input-field {
+  @apply w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FA7014] focus:ring-0 transition-colors bg-white text-gray-800;
+}
+
 .input-error {
   @apply border-red-500 focus:border-red-500;
+}
+
+[role="menuitem"]:focus,
+[role="menuitem"]:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }

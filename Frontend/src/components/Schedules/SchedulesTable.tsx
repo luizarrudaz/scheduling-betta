@@ -9,6 +9,25 @@ const rowVariants = {
   exit: { opacity: 0, x: 10 }
 };
 
+const formatEventName = (name: string): string => {
+  if (name.length <= 28) {
+    return name;
+  }
+  const words = name.split(' ');
+  if (words.length <= 1) {
+    return `${name.substring(0, 25)}...`;
+  }
+  return `${words[0]}... ${words[words.length - 1]}`;
+};
+
+const formatUserName = (name: string): string => {
+  const words = name.split(' ');
+  if (words.length <= 1) {
+    return name;
+  }
+  return `${words[0]} ${words[words.length - 1]}`;
+};
+
 const safeFormat = (date: Date | string | null, formatStr: string) => {
   if (!date) return 'N/A';
   try {
@@ -25,16 +44,13 @@ interface SchedulesTableProps {
   schedules: ScheduledEvent[];
   onSort: (key: SortKey) => void;
   sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null;
-  onCancel: (scheduleId: number) => void;
-  disabled: boolean;
+  showActions?: boolean;
+  // CORREÇÃO: As props de ação agora são opcionais
+  onCancel?: (scheduleId: number) => void;
+  disabled?: boolean;
 }
 
-const SortableHeader = ({
-  label,
-  sortKey,
-  onSort,
-  sortConfig
-}: {
+const SortableHeader = ({ label, sortKey, onSort, sortConfig }: {
   label: string;
   sortKey: SortKey;
   onSort: (key: SortKey) => void;
@@ -42,7 +58,6 @@ const SortableHeader = ({
 }) => {
   const isSorted = sortConfig?.key === sortKey;
   const sortIcon = isSorted ? (sortConfig?.direction === 'ascending' ? '▲' : '▼') : '';
-
   return (
     <th
       className="px-5 py-4 text-left text-sm font-semibold text-gray-600 whitespace-nowrap cursor-pointer select-none"
@@ -53,7 +68,14 @@ const SortableHeader = ({
   );
 };
 
-export default function SchedulesTable({ schedules, onSort, sortConfig, onCancel, disabled }: SchedulesTableProps) {
+export default function SchedulesTable({
+  schedules,
+  onSort,
+  sortConfig,
+  showActions = true,
+  onCancel, // Prop opcional
+  disabled = false // Prop opcional
+}: SchedulesTableProps) {
   return (
     <motion.div
       className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100"
@@ -70,7 +92,9 @@ export default function SchedulesTable({ schedules, onSort, sortConfig, onCancel
               <SortableHeader label="Email" sortKey="email" onSort={onSort} sortConfig={sortConfig} />
               <SortableHeader label="Duração" sortKey="event.sessionDuration" onSort={onSort} sortConfig={sortConfig} />
               <SortableHeader label="Data" sortKey="selectedSlot" onSort={onSort} sortConfig={sortConfig} />
-              <th className="px-5 py-4 text-left text-sm font-semibold text-gray-600">Ações</th>
+              {showActions && (
+                <th className="px-5 py-4 text-center text-sm font-semibold text-gray-600">Ações</th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -85,10 +109,10 @@ export default function SchedulesTable({ schedules, onSort, sortConfig, onCancel
                   transition={{ duration: 0.25 }}
                   className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-5 py-4 text-gray-800 whitespace-nowrap font-medium">{schedule.event?.title || 'N/A'}</td>
-                  <td className="px-5 py-4 text-gray-600 whitespace-nowrap">{schedule.displayName}</td>
-                  <td className="px-5 py-4 text-gray-600 whitespace-nowrap">{schedule.email}</td>
-                  <td className="px-5 py-4 whitespace-nowrap">
+                  <td className="px-5 py-4 text-gray-800 whitespace-nowrap font-medium" title={schedule.event?.title}>{formatEventName(schedule.event?.title || 'N/A')}</td>
+                  <td className="px-5 py-4 text-gray-600 whitespace-nowrap" title={schedule.displayName}>{formatUserName(schedule.displayName || 'N/A')}</td>
+                  <td className="px-5 py-4 text-gray-600 whitespace-nowrap max-w-[220px] truncate" title={schedule.email}>{schedule.email}</td>
+                  <td className="px-5 py-4 whitespace-nowrap text-center">
                     <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
                       {schedule.event?.sessionDuration || 'N/A'} min
                     </span>
@@ -96,16 +120,18 @@ export default function SchedulesTable({ schedules, onSort, sortConfig, onCancel
                   <td className="px-5 py-4 text-sm text-gray-700 whitespace-nowrap">
                     {safeFormat(schedule.selectedSlot, 'dd/MM/yyyy HH:mm')}
                   </td>
-                  <td className="px-5 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => onCancel(schedule.id)}
-                      disabled={disabled}
-                      className="text-gray-400 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      title="Cancelar Agendamento"
-                    >
-                      <XCircleIcon className="w-6 h-6" />
-                    </button>
-                  </td>
+                  {showActions && (
+                    <td className="px-5 py-4 whitespace-nowrap text-center">
+                      <button
+                        onClick={() => onCancel && onCancel(schedule.id)}
+                        disabled={disabled}
+                        className="text-gray-400 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        title="Cancelar Agendamento"
+                      >
+                        <XCircleIcon className="w-6 h-6" />
+                      </button>
+                    </td>
+                  )}
                 </motion.tr>
               ))}
             </AnimatePresence>
