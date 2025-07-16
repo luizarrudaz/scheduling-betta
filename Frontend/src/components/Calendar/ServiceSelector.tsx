@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/solid';
-import { Event } from '../Types/Event/Event';
+import { Event } from '../../types/Event/Event';
 
 interface ServiceSelectorProps {
   services: Event[];

@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children, requiredGroup }: ProtectedRouteProps) => {
     const hasAccess = groups.some(
       g => g.trim().toUpperCase() === requiredGroup.trim().toUpperCase()
     );
-    
+
     if (!hasAccess) return <Navigate to="/access-denied" />;
   }
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { AuthContextType } from "../components/Types/Context/AuthContextType";
+import { AuthContextType } from "../types/Context/AuthContextType";
 import api from "../services/api";
 import axios from "axios";
 

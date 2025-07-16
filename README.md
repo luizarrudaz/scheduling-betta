@@ -1,123 +1,105 @@
 # 📄 Scheduling-Betta
 
-## Visão Geral
+📘 [Leia este documento em português](./README.pt-BR.md)
 
-**Scheduling-Betta** é um sistema corporativo de agendamento de serviços com autenticação centralizada via **Active Directory (AD)** e controle de acesso por grupos.  
-Projetado para ambientes organizacionais, o sistema permite o gerenciamento eficiente de eventos e sessões, com uma interface intuitiva e integração futura com ferramentas da Microsoft.
+## Overview
 
----
-
-## Funcionalidades
-
-### 🔐 Autenticação Corporativa
-
-- **Backend**: LDAP (`System.DirectoryServices`) + JWT  
-- **Frontend**: React + React Router
-
-**Fluxo:**
-1. O usuário autentica com suas credenciais corporativas (`user@dominio`).
-2. As credenciais são validadas via **LDAP**.
-3. Um **JWT** é emitido com os grupos do AD nos claims.
-4. O frontend exibe e permite acesso às abas com base no grupo:
-
-| Grupo   | Abas Disponíveis                          |
-|---------|-------------------------------------------|
-| Admin   | `/eventos`, `/agendamentos-admin`, `/historico-eventos` |
-| Usuário | `/agendamentos`                           |
-
-**Segurança:**
-- Validação de senha conforme políticas do AD.
-- Token com expiração de 10h.
+**Scheduling-Betta** is a corporate service scheduling system with centralized authentication via **Active Directory (AD)** and access control by group. Designed for organizational environments, the system allows efficient management of events, bookings, and history, with advanced filtering, sorting, and data export features.
 
 ---
 
-### 📅 Tela de Agendamento
+## 🏛️ Architecture & Performance
 
-**Componentes:**
-- **Calendário Interativo**:
-  - Destaque dos dias com eventos disponíveis.
-  - Suporte futuro a atualizações em tempo real via **WebSocket**.
-
-- **Seletor de Horários**:
-  - Intervalos de 30 minutos.
-  - Cores indicam status dos horários:
-    - 🩶 Disponível
-    - 🟨 Em reserva *(futuro)*
-    - 🟦 Com fila *(futuro)*
-    - 🟥 Lotado *(futuro)*
-
-- **Formulário de Reserva**:
-  - Seleção do serviço.
-  - Campo descritivo.
-  - Confirmação via modal.
-
-**Notificações por Email**:
-- Enviadas automaticamente ao **agendar** ou **cancelar** uma sessão.
+The system was refactored to adopt a **Server-Side Processing** architecture. All filtering, sorting, and pagination operations are performed in the **backend**, ensuring a lightweight and fast **frontend**, even with large data volumes. This means that data queries and table organization happen directly in the database, sending only the necessary data to the client.
 
 ---
 
-### 🛠️ Gestão de Eventos (Admin)
+## ✨ Features
 
-- **EventFormModal**:
-  - Formulário com validações.
-  - Opção de configurar pausas.
-  - Reset automático ao fechar.
+### For End Users
 
-- **EventsTable**:
-  - Edição e exclusão de eventos.
-  - Integração com o histórico.
+#### 🔐 Corporate Authentication
+- **Backend**: LDAP (`System.DirectoryServices`) + JWT.
+- **Frontend**: React + React Router.
+- **Flow:**
+  1. Users authenticate using corporate credentials (`user@domain`).
+  2. Credentials are validated via **LDAP**.
+  3. A **JWT** is issued with AD group claims to enforce access control.
+  4. The frontend unlocks routes based on the user’s group.
 
-**Notificações**:
-- Toda alteração (criação, edição, exclusão) dispara e-mail para o grupo da empresa.
+#### 📅 Booking Page (`/eventos`)
+- **Interactive Calendar**: Highlights days with available events, showing only upcoming dates.
+- **Time Slot Selection**: Clear display of available time slots for a given day and event.
+- **Email Notifications**: Automatic emails are sent when a session is **booked** or **canceled**, confirming the action.
+
+#### 🗓️ My Bookings (`/agendamentos`)
+- Users can view and manage all their upcoming bookings.
+- Allows cancellation and redirection to the events page for rescheduling.
+
+### 🚀 For Admins (HR Group)
+
+#### 🛠️ Event Management (`/eventos-admin`)
+- **Event CRUD**: Create, edit, and delete events through a modal form.
+- **Performance**: Event list supports filtering and sorting processed in the **backend**.
+- **Notifications**: Any change (create, edit, delete) triggers an email to the company staff group.
+
+#### 📊 Booking Management (`/agendamentos-admin`)
+- View all **upcoming** bookings from all users.
+- Includes backend-powered search and sorting.
+- Allows canceling any booking on behalf of a user, who will be notified via email.
+
+#### 📈 Booking History (`/historico-admin`)
+- Access to all **past** bookings, with a powerful filtering system:
+  - **Period Filter**: "Last 3 months", "Last 6 months", "This year".
+  - **Dynamic Year Filter**: Year buttons (e.g., 2024, 2023) appear only if records exist for that period.
+  - **Global Search**: Search by event name, user name, or email.
+
+#### 📁 Data Export
+- Both management and history pages allow exporting **filtered data** to:
+  - **CSV**: Simple pipe-delimited text file (`|`).
+  - **Excel (.xlsx)**: Native formatted Excel file.
 
 ---
 
-## 🧩 Implementações Futuras
+## 🧩 Upcoming Features
 
-- Integração com **Microsoft 365**:
-  - Status automático no **Teams** como "Ocupado".
-  - Registro em **Outlook/Teams Calendar**.
-  - Cancelamento automático com antecedência.
+- **Microsoft 365 Integration**:
+  - Automatically set Teams status to “Busy”.
+  - Register event in **Outlook/Teams Calendar**.
 
-- **WebSocket Avançado**:
-  - Feedback em tempo real.
-  - Fila dinâmica de até 4 interessados.
+- **Advanced WebSocket**:
+  - Real-time feedback.
+  - Dynamic queue with up to 4 interested users.
 
 ---
 
 ## 🚧 Roadmap
 
-1. Integrar **Microsoft Graph API**
-2. Implementar **WebSocket Avançado**
-3. Adicionar **Testes E2E**
+1. Integrate **Microsoft Graph API**
+2. Implement **advanced WebSocket**
+3. Add **E2E tests**
 
 ---
 
-## 🛠️ Tecnologias
+## 🛠️ Tech Stack
 
-- **Frontend**: React, React Router
+- **Frontend**: React, React Router, TailwindCSS, Framer Motion, date-fns, xlsx (SheetJS)
 - **Backend**: .NET, LDAP, JWT
-- **Banco de Dados**: PostgreSQL
+- **Database**: PostgreSQL
 - **ORM**: Entity Framework Core (EF Core)
-- **Integrações**: Microsoft Graph, SMTP
+- **Integrations**: SMTP
 
 ---
 
-## 🤝 Contribuindo
+## 🤝 Contributing
 
-1. Fork o repositório
-2. Crie uma branch: `git checkout -b feature/sua-feature`
-3. Commit suas alterações
-4. Envie um pull request para a branch `main`
-
----
-
-## 📄 Licença
-
-Licenciado sob a **MIT License**.
+1. Fork the repository
+2. Create a new branch: `git checkout -b feature/your-feature`
+3. Commit your changes
+4. Open a pull request to the `main` branch
 
 ---
 
-## ℹ️ Observação
+## 📄 License
 
-Recursos como **fila de espera**, **WebSocket avançado** e **integração com Microsoft 365** estão em desenvolvimento.
+Licensed under the **MIT License**.

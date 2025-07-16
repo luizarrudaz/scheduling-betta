@@ -95,15 +95,17 @@ builder.Services.AddScoped<ICreateEventUseCase, CreateEventUseCase>();
 builder.Services.AddScoped<IGetAllEventsUseCase, GetAllEventsUseCase>();
 builder.Services.AddScoped<IGetEventByIdUseCase, GetEventByIdUseCase>();
 builder.Services.AddScoped<IGetEventByNameUseCase, GetEventByNameUseCase>();
-builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>(); 
+builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>();
 builder.Services.AddScoped<IDeleteEventUseCase, DeleteEventUseCase>();
 
 builder.Services.AddScoped<ISlotCalculator, SlotCalculator>();
 
 builder.Services.AddScoped<IScheduleEventUseCase, ScheduleEventUseCase>();
+builder.Services.AddScoped<IGetAllOccupiedSlotsUseCase, GetAllOccupiedSlotsUseCase>();
 builder.Services.AddScoped<IGetAllSchedulesEventUseCase, GetAllSchedulesEventUseCase>();
 builder.Services.AddScoped<IGetAllSchedulesByUserUseCase, GetAllSchedulesByUserUseCase>();
 builder.Services.AddScoped<IUnscheduleEventUseCase, UnscheduleEventUseCase>();
+builder.Services.AddScoped<IGetDistinctScheduleYearsUseCase, GetDistinctScheduleYearsUseCase>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEventCommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<BreakWindowValidator>();
@@ -111,6 +113,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<BreakWindowValidator>();
 builder.Services.AddSingleton<IEmailSender, SmtpEmailService>();
 builder.Services.AddSingleton<IEmailTemplateService, EmailTemplateService>();
 builder.Services.AddScoped<IEventNotificationService, EventNotificationService>();
+
+builder.Services.AddScoped<IAdminCancelScheduleUseCase, AdminCancelScheduleUseCase>();
 
 
 // 6. CORS

@@ -110,4 +110,42 @@ public class LdapAuthService : ILdapAuthService
             throw new AuthenticationException("Falha ao buscar informações do usuário devido a um erro inesperado.", ex);
         }
     }
+
+    public LdapUserInfoDto GetUserInfoBySid(string sid)
+    {
+        _logger.LogInformation("GetUserInfoBySid: Buscando usuário pelo SID: '{SID}'", sid);
+        try
+        {
+            using var context = new PrincipalContext(ContextType.Domain, _server, _domainDn);
+            UserPrincipal user = UserPrincipal.FindByIdentity(context, IdentityType.Sid, sid);
+
+            if (user == null)
+            {
+                _logger.LogError("GetUserInfoBySid: Usuário com SID '{SID}' não encontrado.", sid);
+                throw new AuthenticationException("User with specified SID not found");
+            }
+            if (user.IsAccountLockedOut()) throw new AuthenticationException("Account is locked");
+            if (user.Enabled.HasValue && !user.Enabled.Value) throw new AuthenticationException("Account is disabled");
+
+            string email = user.EmailAddress;
+            if (user.GetUnderlyingObject() is DirectoryEntry directoryEntry && directoryEntry.Properties["mail"]?.Value != null)
+            {
+                email = directoryEntry.Properties["mail"].Value.ToString();
+            }
+
+            return new LdapUserInfoDto
+            {
+                Sid = user.Sid.ToString(),
+                Username = user.SamAccountName,
+                DisplayName = user.DisplayName,
+                Email = email,
+                Groups = GetUserGroups(user.SamAccountName)
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "GetUserInfoBySid: Erro ao buscar usuário pelo SID: {SID}", sid);
+            throw new AuthenticationException("Falha ao buscar informações do usuário pelo SID.", ex);
+        }
+    }
 }

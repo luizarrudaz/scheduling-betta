@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { useAuthContext } from "../../context/AuthContext";
-import { AuthConfig } from "../../components/Types/Login/AuthConfig";
-import { Credentials } from "../../components/Types/Login/Credentials";
+import { AuthConfig } from "../../types/Login/AuthConfig";
+import { Credentials } from "../../types/Login/Credentials";
 import api from "../../services/api";
 
 export const useAuth = ({ isProd, apiEndpoint }: AuthConfig) => {

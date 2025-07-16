@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Evento Atualizado</title>
+    <title>Evento Alterado - Reagende seu Horário</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -42,16 +42,15 @@
 </head>
 <body>
     <div class="container">
-        <h2>Evento atualizado</h2>
-        <p>Um evento foi atualizado. Confira as informações:</p>
+        <h2>Aviso: Evento Atualizado</h2>
+        <p>O seguinte evento foi atualizado no sistema:</p>
         <ul>
-            <li><strong>Título:</strong> {{Title}}</li>
-            <li><strong>Início:</strong> {{Start_Time}}</li>
-            <li><strong>Término:</strong> {{End_Time}}</li>
+            <li><strong>Evento:</strong> {{Title}}</li>
         </ul>
-        <p>Consulte o site de agendamentos da organização para detalhes.</p>
+        <p><strong>Atenção:</strong> Como resultado desta atualização, <strong>todos os agendamentos pré-existentes para este evento foram removidos.</strong></p>
+        <p>Os usuários precisarão realizar novos agendamentos conforme as novas regras do evento.</p>
         <div class="footer">
-            Esta é uma mensagem automática. Por favor, não responda.
+            Mensagem automática do Sistema de Agendamentos.
         </div>
     </div>
 </body>

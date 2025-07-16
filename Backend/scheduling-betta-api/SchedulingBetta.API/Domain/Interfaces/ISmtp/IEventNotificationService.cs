@@ -1,4 +1,5 @@
-﻿using SchedulingBetta.API.Domain.Aggregates;
+﻿using SchedulingBetta.API.Application.DTOs.Auth;
+using SchedulingBetta.API.Domain.Aggregates;
 
 namespace SchedulingBetta.API.Domain.Interfaces.ISmtp;
 
@@ -9,4 +10,5 @@ public interface IEventNotificationService
     Task NotifyEventCancelled(Event @event);
     Task NotifyUserScheduled(Event @event, string userEmail, DateTime selectedSlot);
     Task NotifyUserCancelled(Event @event, string userEmail);
+    Task NotifyAdminCancelled(LdapUserInfoDto user, Event @event, DateTime scheduledTime);
 }

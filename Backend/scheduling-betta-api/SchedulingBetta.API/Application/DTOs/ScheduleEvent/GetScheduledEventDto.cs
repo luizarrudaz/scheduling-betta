@@ -7,6 +7,8 @@ public class GetScheduledEventDto
 {
     public int Id { get; set; }
     public string UserId { get; init; } = null!;
+    public string DisplayName { get; init; } = null!;
+    public string Email { get; init; } = null!;
     public DateTime SelectedSlot { get; init; }
     public GetEventDto? Event { get; init; }
     public ScheduleStatus Status { get; init; }

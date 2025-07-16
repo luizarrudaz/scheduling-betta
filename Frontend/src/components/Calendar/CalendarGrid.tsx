@@ -1,48 +1,24 @@
-import { eachDayOfInterval, endOfMonth, getDay, isEqual, isSameDay, isSameMonth, isToday, startOfDay, endOfDay, isWithinInterval } from 'date-fns';
+import { eachDayOfInterval, endOfMonth, getDay, isEqual, isSameMonth, isToday, format } from 'date-fns';
 import DayCell from './DayCell';
-import { classNames } from './utils';
-import { Event } from '../Types/Event/Event';
-import { generateSlotsForEvent } from './utils';
-import { ScheduledEvent } from '../Types/Event/Schedule';
+import { classNames } from '../../utils/calendar';
 
 interface CalendarGridProps {
   firstDayCurrentMonth: Date;
   selectedDay: Date;
-  selectedEvent: Event | null;
-  occupiedSlots: ScheduledEvent[];
+  availableDaysSet: Set<string>;
   onDayClick: (day: Date) => void;
 }
 
 export default function CalendarGrid({
   firstDayCurrentMonth,
   selectedDay,
-  selectedEvent,
-  occupiedSlots,
+  availableDaysSet,
   onDayClick
 }: CalendarGridProps) {
   const days = eachDayOfInterval({
     start: firstDayCurrentMonth,
     end: endOfMonth(firstDayCurrentMonth),
   });
-
-  const hasAvailableSlots = (day: Date): boolean => {
-    if (!selectedEvent) return false;
-
-    const eventStartDate = startOfDay(new Date(selectedEvent.startTime));
-    const eventEndDate = endOfDay(new Date(selectedEvent.endTime));
-
-    if (!isWithinInterval(day, { start: eventStartDate, end: eventEndDate })) {
-        return false;
-    }
-
-    const possibleSlots = generateSlotsForEvent(selectedEvent, day);
-    if (possibleSlots.length === 0) return false;
-
-    const occupiedCount = occupiedSlots.filter(s => isSameDay(new Date(s.selectedSlot), day)).length;
-
-    return possibleSlots.length > occupiedCount;
-  };
-
 
   return (
     <>
@@ -52,13 +28,13 @@ export default function CalendarGrid({
         ))}
       </div>
 
-      <div className="grid grid-cols-7 mt-2 text-xs max-h-[250px] overflow-hidden">
+      <div className="grid grid-cols-7 mt-2 text-sm">
         {days.map((day, dayIdx) => (
           <div
             key={day.toString()}
             className={classNames(
               dayIdx === 0 && getDay(day) > 0 && `col-start-${getDay(day) + 1}`,
-              'py-0 max-w-[30px] mx-auto'
+              'py-1.5'
             )}
           >
             <DayCell
@@ -66,7 +42,7 @@ export default function CalendarGrid({
               isSelected={isEqual(day, selectedDay)}
               isToday={isToday(day)}
               isSameMonth={isSameMonth(day, firstDayCurrentMonth)}
-              hasEvents={hasAvailableSlots(day)}
+              hasEvents={availableDaysSet.has(format(day, 'yyyy-MM-dd'))}
               onDayClick={onDayClick}
             />
           </div>

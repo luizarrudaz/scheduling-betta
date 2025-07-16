@@ -1,19 +1,19 @@
 import { isSameDay, parseISO, format } from 'date-fns';
 import { AnimatePresence, motion } from "framer-motion";
-import { generateSlotsForEvent } from './utils';
+import { generateSlotsForEvent } from '../../utils/calendar';
 import { useState, useMemo } from 'react';
 import ScheduleModal from './ScheduleModal';
 import { useCreateSchedule } from '../../hooks/Schedules/useCreateSchedule';
-import { Event } from '../Types/Event/Event';
-import { ScheduledEvent } from '../Types/Event/Schedule';
+import { Event } from '../../types/Event/Event';
 import { useAuthContext } from '../../context/AuthContext';
 import { useCancelSchedule } from '../../hooks/Schedules/useCancelSchedule';
+import { OccupiedSlot } from '../../hooks/Schedules/useOccupiedSlots';
 
 interface TimeSlotsPanelProps {
   isExpanded: boolean;
   selectedDay: Date;
   selectedEvent: Event | null;
-  occupiedSlots: ScheduledEvent[];
+  occupiedSlots: OccupiedSlot[];
   onScheduleSuccess: () => void;
 }
 
@@ -39,11 +39,11 @@ export default function TimeSlotsPanel({
   const occupiedTimeMap = useMemo(() => {
     const map = new Map<string, {isMine: boolean, scheduleId: number}>();
     occupiedSlots
-      .filter(slot => isSameDay(parseISO(slot.selectedSlot), selectedDay))
+      .filter(slot => isSameDay(parseISO(slot.scheduleTime), selectedDay))
       .forEach(slot => {
-        map.set(format(parseISO(slot.selectedSlot), 'HH:mm'), {
+        map.set(format(parseISO(slot.scheduleTime), 'HH:mm'), {
           isMine: slot.userId?.trim().toUpperCase() === sid?.trim().toUpperCase(),
-          scheduleId: slot.id
+          scheduleId: slot.scheduleId // Usando o ID do agendamento
         });
       });
     return map;

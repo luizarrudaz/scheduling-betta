@@ -25,33 +25,21 @@ public class DeleteEventUseCase : IDeleteEventUseCase
 
     public async Task<bool> Execute(int id)
     {
-        _logger.LogInformation("Starting deletion of event with ID {EventId}", id);
-
         var eventToDelete = await _eventRepository.GetEventById(id);
-        if (eventToDelete == null)
+        if (eventToDelete == null) return false;
+
+        var existingSchedules = await _eventRepository.GetSchedulesByEventId(id);
+
+        if (existingSchedules.Any())
         {
-            _logger.LogWarning("Event with ID {EventId} not found for deletion", id);
-            return false;
+            _eventRepository.RemoveScheduleRange(existingSchedules);
         }
 
-        try
-        {
-            await _eventRepository.DeleteEvent(eventToDelete);
-            _logger.LogInformation("Event with ID {EventId} marked for deletion in repository", id);
+        await _eventRepository.DeleteEvent(eventToDelete);
+        await _unitOfWork.Commit();
 
-            await _unitOfWork.Commit();
-            _logger.LogInformation("UnitOfWork committed successfully for event deletion with ID {EventId}", id);
+        await _eventNotificationService.NotifyEventCancelled(eventToDelete);
 
-            await _eventNotificationService.NotifyEventCancelled(eventToDelete);
-            _logger.LogInformation("Notification sent for event cancellation with ID {EventId}", id);
-
-            _logger.LogInformation("Event with ID {EventId} deleted successfully", id);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while deleting event with ID {EventId}", id);
-            throw;
-        }
+        return true;
     }
 }

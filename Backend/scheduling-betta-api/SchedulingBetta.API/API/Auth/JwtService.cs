@@ -29,7 +29,7 @@ public class JwtService
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Username),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Name, user.Username), // Mantém o nome de usuário para referência
+            new Claim(ClaimTypes.Name, user.Username),
             
             new Claim("user_sid", user.Sid.ToString())
         };

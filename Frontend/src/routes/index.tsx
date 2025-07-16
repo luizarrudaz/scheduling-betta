@@ -1,10 +1,12 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Login from "../pages/login";
-import Scheduling from "../pages/scheduling";
-import AdminEvent from "../pages/admin-events"
+import Events from "../pages/events";
+import Schedulings from "../pages/user-schedules";
+import AdminEvents from "../pages/admin-events";
+import AdminSchedules from "../pages/admin-schedules";
+import AdminHistory from "../pages/history-admin";
 import AccessDenied from "../pages/access-denied";
-
 import ProtectedRoute from "./ProtectedRoute";
 
 const AppRoutes = () => {
@@ -14,19 +16,46 @@ const AppRoutes = () => {
         <Route path="/" element={<Login />} />
 
         <Route
-          path="/agendamentos"
+          path="/eventos"
           element={
             <ProtectedRoute>
-              <Scheduling />
+              <Events />
             </ProtectedRoute>
           }
         />
 
         <Route
-          path="/eventos"
+          path="/agendamentos"
+          element={
+            <ProtectedRoute>
+              <Schedulings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/eventos-admin"
           element={
             <ProtectedRoute requiredGroup="RH">
-              <AdminEvent />
+              <AdminEvents />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/agendamentos-admin"
+          element={
+            <ProtectedRoute requiredGroup="RH">
+              <AdminSchedules />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/historico-admin"
+          element={
+            <ProtectedRoute requiredGroup="RH">
+              <AdminHistory />
             </ProtectedRoute>
           }
         />

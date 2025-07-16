@@ -1,0 +1,58 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Agendamento Cancelado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f7;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: auto;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #F44336;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            margin: 10px 0;
+            font-size: 16px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Agendamento Cancelado pelo Administrador</h2>
+        <p>Olá,</p>
+        <p>Informamos que o seu agendamento para o evento abaixo foi cancelado por um administrador do sistema:</p>
+        <ul>
+            <li><strong>Título:</strong> {{Title}}</li>
+            <li><strong>Horário Agendado:</strong> {{Selected_Slot}}</li>
+        </ul>
+        <p>Caso tenha alguma dúvida, por favor, entre em contato com o departamento de RH.</p>
+        <div class="footer">
+            Esta é uma mensagem automática. Por favor, não responda.
+        </div>
+    </div>
+</body>
+</html>
