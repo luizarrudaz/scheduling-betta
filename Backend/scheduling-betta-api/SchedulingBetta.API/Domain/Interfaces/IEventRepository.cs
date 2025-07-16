@@ -1,12 +1,13 @@
 ﻿using SchedulingBetta.API.Domain.Aggregates;
 using SchedulingBetta.API.Domain.Entities;
 using SchedulingBetta.API.Application.DTOs.Event;
+using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
 
 namespace SchedulingBetta.API.Domain.Interfaces;
 
 public interface IEventRepository
 {
-    Task<List<GetEventDto>> GetAllEvents();
+    Task<List<EventEntity>> GetAllEvents(GetAllEventsRequestDto request);
     Task<Event?> GetEventById(int id, CancellationToken cancellationToken = default);
     Task<EventSchedule?> GetScheduleById(int scheduleId, CancellationToken cancellationToken = default);
     Task<EventEntity?> GetEventByName(string name, CancellationToken cancellationToken = default);
@@ -22,8 +23,9 @@ public interface IEventRepository
     Task AddSchedule(EventSchedule schedule, CancellationToken cancellationToken = default);
     Task<EventSchedule?> GetUserSchedule(int eventId, string userId);
     Task<List<EventSchedule>> GetSchedulesByEventId(int eventId);
-    Task<List<EventSchedule>> GetAllSchedules();
+    Task<List<EventSchedule>> GetAllSchedules(GetAllSchedulesEventRequestDto request);
     Task<List<EventSchedule>> GetAllSchedulesByUser(string userId);
     Task RemoveUserSchedule(EventSchedule schedule);
     void RemoveScheduleRange(IEnumerable<EventSchedule> schedules);
+    Task<List<int>> GetDistinctScheduleYears();
 }

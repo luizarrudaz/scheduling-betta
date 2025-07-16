@@ -95,7 +95,7 @@ builder.Services.AddScoped<ICreateEventUseCase, CreateEventUseCase>();
 builder.Services.AddScoped<IGetAllEventsUseCase, GetAllEventsUseCase>();
 builder.Services.AddScoped<IGetEventByIdUseCase, GetEventByIdUseCase>();
 builder.Services.AddScoped<IGetEventByNameUseCase, GetEventByNameUseCase>();
-builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>(); 
+builder.Services.AddScoped<IUpdateEventUseCase, UpdateEventUseCase>();
 builder.Services.AddScoped<IDeleteEventUseCase, DeleteEventUseCase>();
 
 builder.Services.AddScoped<ISlotCalculator, SlotCalculator>();
@@ -105,6 +105,7 @@ builder.Services.AddScoped<IGetAllOccupiedSlotsUseCase, GetAllOccupiedSlotsUseCa
 builder.Services.AddScoped<IGetAllSchedulesEventUseCase, GetAllSchedulesEventUseCase>();
 builder.Services.AddScoped<IGetAllSchedulesByUserUseCase, GetAllSchedulesByUserUseCase>();
 builder.Services.AddScoped<IUnscheduleEventUseCase, UnscheduleEventUseCase>();
+builder.Services.AddScoped<IGetDistinctScheduleYearsUseCase, GetDistinctScheduleYearsUseCase>();
 
 builder.Services.AddValidatorsFromAssemblyContaining<CreateEventCommandValidator>();
 builder.Services.AddValidatorsFromAssemblyContaining<BreakWindowValidator>();

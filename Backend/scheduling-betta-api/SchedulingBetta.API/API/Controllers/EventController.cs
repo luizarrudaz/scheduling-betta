@@ -92,9 +92,9 @@ public class EventController : ControllerBase
     [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GetEventDto>), (int)HttpStatusCode.OK)]
-    public async Task<IActionResult> GetAllEvents()
+    public async Task<IActionResult> GetAllEvents([FromQuery] GetAllEventsRequestDto request)
     {
-        var events = await _getAllEventsUseCase.Execute();
+        var events = await _getAllEventsUseCase.Execute(request);
         return Ok(events ?? []);
     }
 

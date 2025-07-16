@@ -15,7 +15,6 @@ public class UpdateEventUseCase : IUpdateEventUseCase
     private readonly IValidator<BreakWindowDto> _breakWindowValidator;
     private readonly ISlotCalculator _slotCalculator;
     private readonly IEventNotificationService _eventNotificationService;
-    private readonly ILdapAuthService _ldapAuthService;
     private readonly ILogger<UpdateEventUseCase> _logger;
 
     public UpdateEventUseCase(
@@ -25,7 +24,6 @@ public class UpdateEventUseCase : IUpdateEventUseCase
         IValidator<BreakWindowDto> breakWindowValidator,
         ISlotCalculator slotCalculator,
         IEventNotificationService eventNotificationService,
-        ILdapAuthService ldapAuthService,
         ILogger<UpdateEventUseCase> logger)
     {
         _eventRepository = eventRepository;
@@ -34,7 +32,6 @@ public class UpdateEventUseCase : IUpdateEventUseCase
         _breakWindowValidator = breakWindowValidator;
         _slotCalculator = slotCalculator;
         _eventNotificationService = eventNotificationService;
-        _ldapAuthService = ldapAuthService;
         _logger = logger;
     }
 

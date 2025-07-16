@@ -1,7 +1,6 @@
 ﻿using SchedulingBetta.API.Application.DTOs.Auth;
 using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
-using SchedulingBetta.API.Domain.Entities;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 using SchedulingBetta.API.Domain.ValueObjects;
@@ -12,56 +11,57 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
     {
         private readonly IEventRepository _eventRepository;
         private readonly ILogger<GetAllSchedulesEventUseCase> _logger;
-        // Adicione o ILdapAuthService se precisar buscar DisplayName e Email
         private readonly ILdapAuthService _ldapAuthService;
 
         public GetAllSchedulesEventUseCase(
             IEventRepository eventRepository,
             ILogger<GetAllSchedulesEventUseCase> logger,
-            ILdapAuthService ldapAuthService) // Adicione aqui
+            ILdapAuthService ldapAuthService)
         {
             _eventRepository = eventRepository;
             _logger = logger;
-            _ldapAuthService = ldapAuthService; // Adicione aqui
+            _ldapAuthService = ldapAuthService;
         }
 
-        public async Task<List<GetScheduledEventDto>> Execute()
+        public async Task<List<GetScheduledEventDto>> Execute(GetAllSchedulesEventRequestDto request)
         {
-            _logger.LogInformation("Fetching all event schedules");
-            var schedules = await _eventRepository.GetAllSchedules();
+            _logger.LogInformation("Fetching event schedules with date/sort filters from repository.");
+            var schedulesFromDb = await _eventRepository.GetAllSchedules(request);
+
             var result = new List<GetScheduledEventDto>();
 
-            // Otimização para buscar dados do LDAP
-            var uniqueUserSids = schedules.Select(s => s.UserId).Where(id => !string.IsNullOrEmpty(id)).Distinct().ToList();
+            var uniqueUserSids = schedulesFromDb.Select(s => s.UserId).Where(id => !string.IsNullOrEmpty(id)).Distinct().ToList();
             var userInfoCache = new Dictionary<string, LdapUserInfoDto>();
-            foreach (var sid in uniqueUserSids)
+            if (uniqueUserSids.Any())
             {
-                try
+                foreach (var sid in uniqueUserSids)
                 {
-                    userInfoCache[sid] = _ldapAuthService.GetUserInfoBySid(sid);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Could not fetch LDAP info for SID {SID}", sid);
+                    try
+                    {
+                        if (!userInfoCache.ContainsKey(sid))
+                        {
+                            userInfoCache[sid] = _ldapAuthService.GetUserInfoBySid(sid);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Could not fetch LDAP info for SID {SID}", sid);
+                        userInfoCache[sid] = new LdapUserInfoDto { DisplayName = "Usuário não encontrado", Email = "N/A" };
+                    }
                 }
             }
 
-            foreach (var schedule in schedules)
+            foreach (var schedule in schedulesFromDb)
             {
                 try
                 {
-                    // Pula o registro se o evento associado for nulo, evitando o crash
                     if (schedule.Event == null)
                     {
                         _logger.LogWarning("Schedule with ID {ScheduleId} has a null Event reference and will be skipped.", schedule.Id);
                         continue;
                     }
 
-                    LdapUserInfoDto userInfo = null;
-                    if (!string.IsNullOrEmpty(schedule.UserId))
-                    {
-                        userInfoCache.TryGetValue(schedule.UserId, out userInfo);
-                    }
+                    userInfoCache.TryGetValue(schedule.UserId, out var userInfo);
 
                     result.Add(new GetScheduledEventDto
                     {
@@ -91,10 +91,21 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
                 }
                 catch (Exception ex)
                 {
-                    // Se qualquer outro erro ocorrer, ele é registrado e o sistema continua.
                     _logger.LogError(ex, "Failed to process schedule with ID {ScheduleId}. It will be skipped.", schedule.Id);
                 }
             }
+
+            if (!string.IsNullOrEmpty(request.SearchTerm))
+            {
+                _logger.LogInformation("Applying in-memory search filter for term: {SearchTerm}", request.SearchTerm);
+                var term = request.SearchTerm.ToLowerInvariant();
+                return result.Where(dto =>
+                    (dto.Event?.Title?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (dto.DisplayName?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (dto.Email?.ToLowerInvariant().Contains(term) ?? false)
+                ).ToList();
+            }
+
             return result;
         }
     }

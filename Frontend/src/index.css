@@ -9,17 +9,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* --- CORREÇÕES APLICADAS ABAIXO --- */
-
 body, html {
   margin: 0;
   padding: 0;
   width: 100%;
-  background-color: #f8f9fa; /* Um fundo cinza claro para a página */
+  background-color: #f8f9fa;
 }
-
-/* Removemos os estilos globais de botão que conflitam com o Tailwind */
-/* O estilo de cada botão será definido em seu próprio componente */
 
 input,
 textarea,
@@ -38,8 +33,6 @@ input:-webkit-autofill:focus {
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* --- ESTILOS MANTIDOS POIS SÃO ÚTEIS --- */
 
 ::-webkit-scrollbar {
   width: 8px;

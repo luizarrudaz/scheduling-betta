@@ -14,6 +14,7 @@ public class ScheduleEventController : ControllerBase
     private readonly IUnscheduleEventUseCase _unscheduleEventUseCase;
     private readonly IGetAllOccupiedSlotsUseCase _getAllOccupiedSlotsUseCase;
     private readonly IAdminCancelScheduleUseCase _adminCancelScheduleUseCase;
+    private readonly IGetDistinctScheduleYearsUseCase _getDistinctScheduleYearsUseCase;
     private readonly ILogger<ScheduleEventController> _logger;
 
     public ScheduleEventController(
@@ -23,6 +24,7 @@ public class ScheduleEventController : ControllerBase
         IUnscheduleEventUseCase unscheduleEventUseCase,
         IGetAllOccupiedSlotsUseCase getAllOccupiedSlotsUseCase,
         IAdminCancelScheduleUseCase adminCancelScheduleUseCase,
+        IGetDistinctScheduleYearsUseCase getDistinctScheduleYearsUseCase,
         ILogger<ScheduleEventController> logger)
     {
         _scheduleEventUseCase = scheduleEventUseCase;
@@ -31,6 +33,7 @@ public class ScheduleEventController : ControllerBase
         _unscheduleEventUseCase = unscheduleEventUseCase;
         _getAllOccupiedSlotsUseCase = getAllOccupiedSlotsUseCase;
         _adminCancelScheduleUseCase = adminCancelScheduleUseCase;
+        _getDistinctScheduleYearsUseCase = getDistinctScheduleYearsUseCase;
         _logger = logger;
     }
 
@@ -73,11 +76,11 @@ public class ScheduleEventController : ControllerBase
     [Authorize]
     [HttpGet]
     [ProducesResponseType(typeof(List<GetScheduledEventDto>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> GetAllScheduleEvents()
+    public async Task<IActionResult> GetAllScheduleEvents([FromQuery] GetAllSchedulesEventRequestDto request)
     {
         try
         {
-            var entities = await _getAllSchedulesEventUseCase.Execute();
+            var entities = await _getAllSchedulesEventUseCase.Execute(request);
             return Ok(entities);
         }
         catch (Exception ex)
@@ -92,6 +95,15 @@ public class ScheduleEventController : ControllerBase
                 StackTrace = ex.StackTrace
             });
         }
+    }
+
+    [Authorize]
+    [HttpGet("history-years")]
+    [ProducesResponseType(typeof(List<int>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetHistoryYears()
+    {
+        var years = await _getDistinctScheduleYearsUseCase.Execute();
+        return Ok(years);
     }
 
     [Authorize]

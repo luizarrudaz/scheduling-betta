@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { startOfToday, format, parse, add, isSameDay, isAfter, startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns';
+import { startOfToday, format, parse, add, isSameDay, startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns';
 import { motion } from "framer-motion";
 import { Event } from '../types/Event/Event';
 import useEvents from '../hooks/Events/UseEvents';
@@ -19,7 +19,7 @@ export default function Calendar() {
   const [selectedDay, setSelectedDay] = useState<Date>(today);
   const [currentMonth, setCurrentMonth] = useState(format(today, 'MMM-yyyy'));
 
-  const { events, loading: eventsLoading } = useEvents();
+  const { events, loading: eventsLoading } = useEvents({ filter: 'upcoming' });
   const { occupiedSlots, loading: schedulesLoading, refetch: refetchSchedules } = useOccupiedSlots();
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
@@ -38,12 +38,6 @@ export default function Calendar() {
     }
   }, [location.state, events, navigate]);
 
-  const upcomingEvents = useMemo(() => {
-    if (!events) return [];
-    const now = new Date();
-    return events.filter(event => isAfter(new Date(event.endTime), now));
-  }, [events]);
-
   const firstDayCurrentMonth = parse(currentMonth, 'MMM-yyyy', new Date());
 
   const occupiedSlotsForEvent = useMemo(() => {
@@ -57,23 +51,23 @@ export default function Calendar() {
 
     const eventStartDate = startOfDay(new Date(selectedEvent.startTime));
     const eventEndDate = endOfDay(new Date(selectedEvent.endTime));
-    
+
     const dailyOccupiedCount = new Map<string, number>();
     occupiedSlotsForEvent.forEach(slot => {
-        const dayKey = format(parseISO(slot.scheduleTime), 'yyyy-MM-dd');
-        dailyOccupiedCount.set(dayKey, (dailyOccupiedCount.get(dayKey) || 0) + 1);
+      const dayKey = format(parseISO(slot.scheduleTime), 'yyyy-MM-dd');
+      dailyOccupiedCount.set(dayKey, (dailyOccupiedCount.get(dayKey) || 0) + 1);
     });
 
     let currentDate = eventStartDate;
     while (currentDate <= eventEndDate) {
-        const dayKey = format(currentDate, 'yyyy-MM-dd');
-        const possibleSlots = generateSlotsForEvent(selectedEvent, currentDate);
-        const occupiedCount = dailyOccupiedCount.get(dayKey) || 0;
+      const dayKey = format(currentDate, 'yyyy-MM-dd');
+      const possibleSlots = generateSlotsForEvent(selectedEvent, currentDate);
+      const occupiedCount = dailyOccupiedCount.get(dayKey) || 0;
 
-        if (possibleSlots.length > occupiedCount) {
-            available.add(dayKey);
-        }
-        currentDate = add(currentDate, { days: 1 });
+      if (possibleSlots.length > occupiedCount) {
+        available.add(dayKey);
+      }
+      currentDate = add(currentDate, { days: 1 });
     }
 
     return available;
@@ -85,8 +79,8 @@ export default function Calendar() {
       s => isSameDay(parseISO(s.scheduleTime), selectedDay)
     );
     const eventIsActiveOnDay = isWithinInterval(selectedDay, {
-        start: startOfDay(new Date(selectedEvent.startTime)),
-        end: endOfDay(new Date(selectedEvent.endTime))
+      start: startOfDay(new Date(selectedEvent.startTime)),
+      end: endOfDay(new Date(selectedEvent.endTime))
     });
 
     return eventIsActiveOnDay || dayHasAppointments;
@@ -125,53 +119,53 @@ export default function Calendar() {
 
   return (
     <div className="w-screen min-h-screen bg-gray-50 flex justify-center items-center p-4">
-        {isAuthenticated && <AppNav />}
-        <LogoutButton />
+      {isAuthenticated && <AppNav />}
+      <LogoutButton />
 
-        <div className="flex flex-col items-center">
-            <motion.h1 
-                className="text-3xl font-bold text-gray-800"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-            >
-                Eventos
-            </motion.h1>
+      <div className="flex flex-col items-center">
+        <motion.h1
+          className="text-3xl font-bold text-gray-800"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          Eventos
+        </motion.h1>
 
-            <ServiceSelector
-                services={upcomingEvents}
-                selectedService={selectedEvent}
-                onServiceSelect={handleServiceSelect}
+        <ServiceSelector
+          services={events}
+          selectedService={selectedEvent}
+          onServiceSelect={handleServiceSelect}
+        />
+
+        <motion.div
+          className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 -mt-2"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <div className="min-w-[280px] max-h-[300px]">
+            <CalendarNavigation
+              firstDayCurrentMonth={firstDayCurrentMonth}
+              onPrevious={handlePreviousMonth}
+              onNext={handleNextMonth}
             />
+            <CalendarGrid
+              firstDayCurrentMonth={firstDayCurrentMonth}
+              selectedDay={selectedDay}
+              availableDaysSet={availableDaysSet}
+              onDayClick={handleDayClick}
+            />
+          </div>
 
-            <motion.div
-                className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 -mt-2"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-            >
-                <div className="min-w-[280px] max-h-[300px]">
-                    <CalendarNavigation
-                        firstDayCurrentMonth={firstDayCurrentMonth}
-                        onPrevious={handlePreviousMonth}
-                        onNext={handleNextMonth}
-                    />
-                    <CalendarGrid
-                        firstDayCurrentMonth={firstDayCurrentMonth}
-                        selectedDay={selectedDay}
-                        availableDaysSet={availableDaysSet}
-                        onDayClick={handleDayClick}
-                    />
-                </div>
-
-                <TimeSlotsPanel
-                    isExpanded={isExpanded}
-                    selectedDay={selectedDay}
-                    selectedEvent={selectedEvent}
-                    occupiedSlots={occupiedSlotsForEvent}
-                    onScheduleSuccess={refetchSchedules}
-                />
-            </motion.div>
-        </div>
+          <TimeSlotsPanel
+            isExpanded={isExpanded}
+            selectedDay={selectedDay}
+            selectedEvent={selectedEvent}
+            occupiedSlots={occupiedSlotsForEvent}
+            onScheduleSuccess={refetchSchedules}
+          />
+        </motion.div>
+      </div>
     </div>
   );
 }

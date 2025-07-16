@@ -14,12 +14,12 @@ public class GetAllEventsUseCase : IGetAllEventsUseCase
         _eventRepository = eventRepository;
     }
 
-    public async Task<List<GetEventDto?>?> Execute()
+    public async Task<List<GetEventDto>> Execute(GetAllEventsRequestDto request)
     {
-        var events = await _eventRepository.GetAllEvents();
+        var events = await _eventRepository.GetAllEvents(request);
         if (events == null || events.Count == 0)
         {
-            return null;
+            return new List<GetEventDto>();
         }
 
         var eventDtos = events.Select(e => new GetEventDto
@@ -30,14 +30,10 @@ public class GetAllEventsUseCase : IGetAllEventsUseCase
             Location = e.Location,
             StartTime = DateTimeHelper.ConvertFromUtc(e.StartTime),
             EndTime = DateTimeHelper.ConvertFromUtc(e.EndTime),
-            BreakWindow = e.BreakWindow != null ? new BreakWindowDto
+            BreakWindow = e.BreakStart.HasValue && e.BreakEnd.HasValue ? new BreakWindowDto
             {
-                BreakStart = e.BreakWindow.BreakStart != default
-                    ? DateTimeHelper.ConvertFromUtc(e.BreakWindow.BreakStart)
-                    : default,
-                BreakEnd = e.BreakWindow.BreakEnd != default
-                    ? DateTimeHelper.ConvertFromUtc(e.BreakWindow.BreakEnd)
-                    : default
+                BreakStart = DateTimeHelper.ConvertFromUtc(e.BreakStart.Value),
+                BreakEnd = DateTimeHelper.ConvertFromUtc(e.BreakEnd.Value)
             } : null,
             AvailableSlots = e.AvailableSlots
         }).ToList();

@@ -27,7 +27,6 @@ export const usePagination = <T,>(
     setCurrentPage(pageNumber);
   };
 
-  // Resetar para a primeira página quando os dados mudam (ex: filtro)
   useMemo(() => {
     if (currentPage > totalPages && totalPages > 0) {
       setCurrentPage(1);

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useAllSchedules } from "../hooks/Schedules/useAllSchedules.tsx";
@@ -9,68 +9,43 @@ import AdminNav from "../components/Nav/AppNav.tsx";
 import DownloadButton from "../components/Buttons/DownloadButton.tsx";
 import { usePagination } from "../hooks/usePagination.tsx";
 import Pagination from "../components/Pagination/Pagination.tsx";
+import DateFilterSelector from "../components/Buttons/DateFilterSelector.tsx";
+import api from "../services/api.tsx";
+import { exportToCsv, exportToExcel } from "../utils/export.tsx";
 
 type SortKey = keyof ScheduledEvent | 'event.title' | 'event.sessionDuration' | 'selectedSlot' | 'displayName' | 'email' | 'createdAt';
 
 export default function AdminHistoryPage() {
-  const { schedules, loading } = useAllSchedules();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'selectedSlot', direction: 'descending' });
+  const [dateFilter, setDateFilter] = useState('last3months');
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
 
-  const filteredAndSortedSchedules = useMemo(() => {
-    let searchableSchedules = schedules.filter(schedule => {
-      const eventTitle = schedule.event?.title?.toLowerCase() || '';
-      const userName = schedule.displayName?.toLowerCase() || '';
-      const userEmail = schedule.email?.toLowerCase() || '';
-      const term = searchTerm.toLowerCase();
-      return eventTitle.includes(term) || userName.includes(term) || userEmail.includes(term);
-    });
-
-    if (sortConfig !== null) {
-      searchableSchedules.sort((a, b) => {
-        let aValue: any, bValue: any;
-        const key = sortConfig.key;
-
-        if (key.startsWith('event.')) {
-          const eventKey = key.split('.')[1] as keyof ScheduledEvent['event'];
-          aValue = a.event?.[eventKey];
-          bValue = b.event?.[eventKey];
-        } else {
-          aValue = a[key as keyof ScheduledEvent];
-          bValue = b[key as keyof ScheduledEvent];
+  useEffect(() => {
+    const fetchYears = async () => {
+        try {
+            const { data } = await api.get<number[]>('/schedule-event/history-years');
+            setAvailableYears(data);
+        } catch (error) {
+            console.error("Failed to fetch history years", error);
         }
+    };
+    fetchYears();
+  }, []);
 
-        if (aValue == null) return 1;
-        if (bValue == null) return -1;
-
-        if (key === 'selectedSlot' || key === 'createdAt') {
-          const dateA = new Date(aValue as string);
-          const dateB = new Date(bValue as string);
-          if (dateA.getTime() < dateB.getTime()) return sortConfig.direction === 'ascending' ? -1 : 1;
-          if (dateA.getTime() > dateB.getTime()) return sortConfig.direction === 'ascending' ? 1 : -1;
-          return 0;
-        }
-
-        if (typeof aValue === 'string') {
-          return aValue.localeCompare(bValue, 'pt-BR', { sensitivity: 'base' }) * (sortConfig.direction === 'ascending' ? 1 : -1);
-        }
-
-        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
-
-        return 0;
-      });
-    }
-
-    return searchableSchedules;
-  }, [schedules, searchTerm, sortConfig]);
-
+  const { schedules, loading } = useAllSchedules({ 
+    searchTerm, 
+    sortConfig,
+    timeFilter: 'past',
+    dateRangeFilter: dateFilter
+  });
+  
   const {
     currentPage,
     totalPages,
     paginatedData,
     setCurrentPage,
-  } = usePagination(filteredAndSortedSchedules, 8);
+  } = usePagination(schedules, 8);
 
   const requestSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -81,17 +56,17 @@ export default function AdminHistoryPage() {
   };
 
   const handleCsvDownload = () => {
-    console.log("Download CSV: usar 'filteredAndSortedSchedules'", filteredAndSortedSchedules);
+    exportToCsv(schedules, `historico_agendamentos_${dateFilter}.csv`);
   };
 
   const handleXlsxDownload = () => {
-    console.log("Download XLSX: usar 'filteredAndSortedSchedules'", filteredAndSortedSchedules);
+    exportToExcel(schedules, `historico_agendamentos_${dateFilter}.xlsx`);
   };
 
   return (
     <div className="h-screen w-screen bg-gray-50 flex flex-col px-6 py-10 relative">
       <AdminNav />
-      <div className="w-full max-w-5xl mx-auto">
+      <div className="w-full max-w-6xl mx-auto">
         <div className="flex justify-end mb-4">
           <LogoutButton />
         </div>
@@ -100,13 +75,13 @@ export default function AdminHistoryPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-extrabold text-gray-800 text-center mb-10"
+          className="text-4xl font-extrabold text-gray-800 text-center mb-6"
         >
           Histórico de Agendamentos
         </motion.h1>
 
-        <div className="mb-8 flex justify-center items-center gap-4">
-          <div className="relative flex-grow max-w-lg">
+        <div className="mb-6 flex flex-col md:flex-row justify-center items-center gap-4">
+          <div className="relative flex-grow w-full md:w-auto md:max-w-lg">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
               <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
             </span>
@@ -120,11 +95,15 @@ export default function AdminHistoryPage() {
           </div>
           <DownloadButton onCsvDownload={handleCsvDownload} onXlsxDownload={handleXlsxDownload} />
         </div>
+        
+        <div className="mb-6">
+            <DateFilterSelector availableYears={availableYears} onFilterChange={setDateFilter} />
+        </div>
 
         {loading ? (
           <LoadingSkeleton />
-        ) : filteredAndSortedSchedules.length === 0 ? (
-          <NoSchedules message="Nenhum agendamento no histórico." />
+        ) : schedules.length === 0 ? (
+          <NoSchedules message="Nenhum agendamento encontrado para o filtro selecionado." />
         ) : (
           <>
             <SchedulesTable
@@ -150,7 +129,7 @@ export default function AdminHistoryPage() {
 
 const LoadingSkeleton = () => (
   <motion.div
-    className="space-y-4 w-full max-w-5xl mx-auto"
+    className="space-y-4 w-full max-w-6xl mx-auto"
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}

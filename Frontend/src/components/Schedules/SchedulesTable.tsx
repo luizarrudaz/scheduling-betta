@@ -45,7 +45,6 @@ interface SchedulesTableProps {
   onSort: (key: SortKey) => void;
   sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null;
   showActions?: boolean;
-  // CORREÇÃO: As props de ação agora são opcionais
   onCancel?: (scheduleId: number) => void;
   disabled?: boolean;
 }
@@ -73,8 +72,8 @@ export default function SchedulesTable({
   onSort,
   sortConfig,
   showActions = true,
-  onCancel, // Prop opcional
-  disabled = false // Prop opcional
+  onCancel,
+  disabled = false
 }: SchedulesTableProps) {
   return (
     <motion.div

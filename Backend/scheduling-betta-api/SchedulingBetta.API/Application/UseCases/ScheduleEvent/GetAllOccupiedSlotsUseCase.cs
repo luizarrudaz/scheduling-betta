@@ -19,7 +19,7 @@ public class GetAllOccupiedSlotsUseCase : IGetAllOccupiedSlotsUseCase
     public async Task<List<GetOccupiedSlotDto>> Execute()
     {
         _logger.LogInformation("Fetching all occupied slots (lightweight)");
-        var schedules = await _eventRepository.GetAllSchedules();
+        var schedules = await _eventRepository.GetAllSchedules(new GetAllSchedulesEventRequestDto());
 
         var result = schedules.Select(s => new GetOccupiedSlotDto
         {

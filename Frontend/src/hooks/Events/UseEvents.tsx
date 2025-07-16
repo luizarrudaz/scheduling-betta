@@ -1,18 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Event } from '../../types/Event/Event';
 import api from '../../services/api';
 
-export default function useEvents() {
+interface UseEventsProps {
+    filter?: 'upcoming' | 'all';
+    searchTerm?: string;
+    sortConfig?: { key: string; direction: string; } | null;
+}
+
+export default function useEvents({ filter = 'all', searchTerm = '', sortConfig }: UseEventsProps = {}) {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await api.get<Event[]>('/event');
+      const params = new URLSearchParams();
+      if (filter) {
+        params.append('filter', filter);
+      }
+      if (searchTerm) {
+          params.append('searchTerm', searchTerm);
+      }
+      if (sortConfig) {
+          params.append('sortKey', sortConfig.key);
+          params.append('sortDirection', sortConfig.direction);
+      }
+
+      const response = await api.get<Event[]>('/event', { params });
 
       const eventsWithDates = response.data.map(event => ({
         ...event,
@@ -40,11 +58,11 @@ export default function useEvents() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, searchTerm, sortConfig]);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
   return { events, loading, error, refetch: fetchEvents };
 }

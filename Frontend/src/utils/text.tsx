@@ -1,4 +1,3 @@
-// Trunca um nome de evento longo, mantendo o início e o fim.
 export const formatEventName = (name: string, maxLength: number = 18): string => {
   if (name.length <= maxLength) {
     return name;
@@ -8,7 +7,6 @@ export const formatEventName = (name: string, maxLength: number = 18): string =>
   return `${start.trim()}... ${end}`;
 };
 
-// Formata um nome completo para exibir apenas o primeiro e o último nome.
 export const formatDisplayName = (fullName: string): string => {
   if (!fullName || !fullName.trim()) {
     return '';

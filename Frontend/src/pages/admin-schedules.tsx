@@ -1,5 +1,4 @@
-import { useState, useMemo } from "react";
-import { isAfter } from "date-fns";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useAllSchedules } from "../hooks/Schedules/useAllSchedules.tsx";
@@ -11,74 +10,28 @@ import AdminNav from "../components/Nav/AppNav.tsx";
 import DownloadButton from "../components/Buttons/DownloadButton.tsx";
 import { usePagination } from "../hooks/usePagination.tsx";
 import Pagination from "../components/Pagination/Pagination.tsx";
+import { exportToCsv, exportToExcel } from "../utils/export.tsx";
 
 type SortKey = keyof ScheduledEvent | 'event.title' | 'event.sessionDuration' | 'selectedSlot' | 'displayName' | 'email' | 'createdAt';
 
 export default function AdminSchedules() {
-  const { schedules, loading, refetch } = useAllSchedules();
-  const { adminCancel, isCancelling, error: cancelError } = useAdminCancelSchedule();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'selectedSlot', direction: 'ascending' });
 
-  const futureSchedules = useMemo(() => {
-    const now = new Date();
-    return schedules.filter(schedule => isAfter(new Date(schedule.selectedSlot), now));
-  }, [schedules]);
+  const { schedules, loading, refetch } = useAllSchedules({
+    searchTerm,
+    sortConfig,
+    timeFilter: 'future'
+  });
 
-  const filteredAndSortedSchedules = useMemo(() => {
-    let searchableSchedules = futureSchedules.filter(schedule => {
-      const eventTitle = schedule.event?.title?.toLowerCase() || '';
-      const userName = schedule.displayName?.toLowerCase() || '';
-      const userEmail = schedule.email?.toLowerCase() || '';
-      const term = searchTerm.toLowerCase();
-      return eventTitle.includes(term) || userName.includes(term) || userEmail.includes(term);
-    });
-
-    if (sortConfig !== null) {
-      searchableSchedules.sort((a, b) => {
-        let aValue: any, bValue: any;
-        const key = sortConfig.key;
-
-        if (key.startsWith('event.')) {
-          const eventKey = key.split('.')[1] as keyof ScheduledEvent['event'];
-          aValue = a.event?.[eventKey];
-          bValue = b.event?.[eventKey];
-        } else {
-          aValue = a[key as keyof ScheduledEvent];
-          bValue = b[key as keyof ScheduledEvent];
-        }
-
-        if (aValue == null) return 1;
-        if (bValue == null) return -1;
-
-        if (key === 'selectedSlot' || key === 'createdAt') {
-          const dateA = new Date(aValue as string);
-          const dateB = new Date(bValue as string);
-          if (dateA.getTime() < dateB.getTime()) return sortConfig.direction === 'ascending' ? -1 : 1;
-          if (dateA.getTime() > dateB.getTime()) return sortConfig.direction === 'ascending' ? 1 : -1;
-          return 0;
-        }
-
-        if (typeof aValue === 'string') {
-          return aValue.localeCompare(bValue, 'pt-BR', { sensitivity: 'base' }) * (sortConfig.direction === 'ascending' ? 1 : -1);
-        }
-
-        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
-
-        return 0;
-      });
-    }
-
-    return searchableSchedules;
-  }, [futureSchedules, searchTerm, sortConfig]);
+  const { adminCancel, isCancelling } = useAdminCancelSchedule();
 
   const {
     currentPage,
     totalPages,
     paginatedData,
     setCurrentPage,
-  } = usePagination(filteredAndSortedSchedules, 8);
+  } = usePagination(schedules, 8);
 
   const requestSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -94,11 +47,11 @@ export default function AdminSchedules() {
   };
 
   const handleCsvDownload = () => {
-    console.log("Download CSV: usar 'filteredAndSortedSchedules'", filteredAndSortedSchedules);
+    exportToCsv(schedules, 'agendamentos_futuros.csv');
   };
 
   const handleXlsxDownload = () => {
-    console.log("Download XLSX: usar 'filteredAndSortedSchedules'", filteredAndSortedSchedules);
+    exportToExcel(schedules, 'agendamentos_futuros.xlsx');
   };
 
   return (
@@ -136,7 +89,7 @@ export default function AdminSchedules() {
 
         {loading ? (
           <LoadingSkeleton />
-        ) : filteredAndSortedSchedules.length === 0 ? (
+        ) : schedules.length === 0 ? (
           <NoSchedules message="Nenhum agendamento futuro encontrado." />
         ) : (
           <>

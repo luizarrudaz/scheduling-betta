@@ -8,9 +8,9 @@ interface PaginationProps {
 
 export default function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps) {
   const getPageNumbers = () => {
-    const pageNeighbours = 1; // Quantos vizinhos de cada lado do número atual
-    const totalNumbers = (pageNeighbours * 2) + 1; // Total de números a mostrar (ex: 3)
-    const totalBlocks = totalNumbers + 2; // Total incluindo "..." (ex: 5)
+    const pageNeighbours = 1; 
+    const totalNumbers = (pageNeighbours * 2) + 1;
+    const totalBlocks = totalNumbers + 2;
 
     if (totalPages <= totalBlocks) {
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -46,7 +46,6 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
       finalPages.splice(finalPages.length - 1, 0, '...');
     }
     
-    // Simplificação para mostrar sempre até 4 números como no exemplo
     if(totalPages > 4) {
       let start = Math.max(1, currentPage - 1);
       let end = Math.min(start + 3, totalPages);

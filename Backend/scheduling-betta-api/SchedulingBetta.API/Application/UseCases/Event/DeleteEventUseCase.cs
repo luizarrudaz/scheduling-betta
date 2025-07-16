@@ -9,20 +9,17 @@ public class DeleteEventUseCase : IDeleteEventUseCase
     private readonly IEventRepository _eventRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IEventNotificationService _eventNotificationService;
-    private readonly ILdapAuthService _ldapAuthService;
     private readonly ILogger<DeleteEventUseCase> _logger;
 
     public DeleteEventUseCase(
         IEventRepository eventRepository,
         IUnitOfWork unitOfWork,
         IEventNotificationService eventNotificationService,
-        ILdapAuthService ldapAuthService,
         ILogger<DeleteEventUseCase> logger)
     {
         _eventRepository = eventRepository;
         _unitOfWork = unitOfWork;
         _eventNotificationService = eventNotificationService;
-        _ldapAuthService = ldapAuthService;
         _logger = logger;
     }
 

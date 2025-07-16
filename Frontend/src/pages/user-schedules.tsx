@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useUserSchedules } from "../hooks/Schedules/useUserSchedules.tsx";
 import UserSchedulesTable from "../components/Schedules/UserScheduleTable.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
-import { ScheduledEvent } from "../types/Schedule/Schedule.tsx"; 
+import { ScheduledEvent } from "../types/Schedule/Schedule.tsx";
 import { useCancelSchedule } from "../hooks/Schedules/useCancelSchedule.tsx";
 import AppNav from "../components/Nav/AppNav.tsx";
 import { useNavigate } from "react-router-dom";
@@ -29,17 +29,17 @@ export default function MySchedulesPage() {
       }
     }
   };
-  
+
   const sortedSchedules = useMemo(() => {
     const now = new Date();
-    
+
     const futureSchedules = schedules.filter(schedule => {
-        if (!schedule.selectedSlot) return false;
-        try {
-            return new Date(schedule.selectedSlot) > now;
-        } catch {
-            return false;
-        }
+      if (!schedule.selectedSlot) return false;
+      try {
+        return new Date(schedule.selectedSlot) > now;
+      } catch {
+        return false;
+      }
     });
 
     if (sortConfig !== null) {
@@ -48,28 +48,28 @@ export default function MySchedulesPage() {
         const key = sortConfig.key;
 
         if (key.startsWith('event.')) {
-            const eventKey = key.split('.')[1] as keyof ScheduledEvent['event'];
-            aValue = a.event?.[eventKey];
-            bValue = b.event?.[eventKey];
+          const eventKey = key.split('.')[1] as keyof ScheduledEvent['event'];
+          aValue = a.event?.[eventKey];
+          bValue = b.event?.[eventKey];
         } else {
-            aValue = a[key as keyof ScheduledEvent];
-            bValue = b[key as keyof ScheduledEvent];
+          aValue = a[key as keyof ScheduledEvent];
+          bValue = b[key as keyof ScheduledEvent];
         }
 
         if (aValue == null) return 1;
         if (bValue == null) return -1;
 
         if (key === 'selectedSlot' || key === 'createdAt') {
-            const dateA = new Date(aValue as string);
-            const dateB = new Date(bValue as string);
-            if (dateA < dateB) return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (dateA > dateB) return sortConfig.direction === 'ascending' ? 1 : -1;
-            return 0;
+          const dateA = new Date(aValue as string);
+          const dateB = new Date(bValue as string);
+          if (dateA < dateB) return sortConfig.direction === 'ascending' ? -1 : 1;
+          if (dateA > dateB) return sortConfig.direction === 'ascending' ? 1 : -1;
+          return 0;
         }
 
         if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
         if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
-        
+
         return 0;
       });
     }
@@ -112,13 +112,13 @@ export default function MySchedulesPage() {
             buttonText="Fazer um agendamento"
           />
         ) : (
-            <UserSchedulesTable
-                schedules={sortedSchedules}
-                onSort={requestSort}
-                sortConfig={sortConfig}
-                onCancel={handleCancel}
-                disabled={isCancelling}
-            />
+          <UserSchedulesTable
+            schedules={sortedSchedules}
+            onSort={requestSort}
+            sortConfig={sortConfig}
+            onCancel={handleCancel}
+            disabled={isCancelling}
+          />
         )}
       </div>
     </div>
@@ -126,43 +126,43 @@ export default function MySchedulesPage() {
 }
 
 const LoadingSkeleton = () => (
-    <motion.div
-      className="space-y-4 w-full max-w-5xl mx-auto"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      {[...Array(3)].map((_, i) => (
-        <div key={i} className="flex space-x-4 animate-pulse">
-          <div className="h-6 bg-gray-200 rounded w-1/3" />
-          <div className="h-6 bg-gray-200 rounded w-1/6" />
-          <div className="h-6 bg-gray-200 rounded w-1/4" />
-          <div className="h-6 bg-gray-200 rounded w-1/6" />
-        </div>
-      ))}
-    </motion.div>
-  );
-  
+  <motion.div
+    className="space-y-4 w-full max-w-5xl mx-auto"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+  >
+    {[...Array(3)].map((_, i) => (
+      <div key={i} className="flex space-x-4 animate-pulse">
+        <div className="h-6 bg-gray-200 rounded w-1/3" />
+        <div className="h-6 bg-gray-200 rounded w-1/6" />
+        <div className="h-6 bg-gray-200 rounded w-1/4" />
+        <div className="h-6 bg-gray-200 rounded w-1/6" />
+      </div>
+    ))}
+  </motion.div>
+);
+
 const NoSchedules = ({ message, buttonText }: { message: string; buttonText: string; }) => {
-    const navigate = useNavigate();
-    return (
-        <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="flex flex-col items-center justify-center h-[50vh]"
+  const navigate = useNavigate();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col items-center justify-center h-[50vh]"
+    >
+      <div className="text-center py-6 px-6 bg-white rounded-2xl shadow-xl w-80">
+        <p className="text-gray-600 text-lg mb-4">{message}</p>
+        <motion.button
+          onClick={() => navigate('/eventos')}
+          className="w-full bg-[#FA7014] text-white py-3 rounded-xl font-semibold hover:bg-[#E55F00] transition-all duration-300"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.95 }}
         >
-            <div className="text-center py-6 px-6 bg-white rounded-2xl shadow-xl w-80">
-                <p className="text-gray-600 text-lg mb-4">{message}</p>
-                <motion.button
-                    onClick={() => navigate('/eventos')}
-                    className="w-full bg-[#FA7014] text-white py-3 rounded-xl font-semibold hover:bg-[#E55F00] transition-all duration-300"
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.95 }}
-                >
-                    {buttonText}
-                </motion.button>
-            </div>
-        </motion.div>
-    )
+          {buttonText}
+        </motion.button>
+      </div>
+    </motion.div>
+  )
 };

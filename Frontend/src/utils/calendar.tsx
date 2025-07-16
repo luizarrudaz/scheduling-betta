@@ -2,7 +2,7 @@ import { addMinutes, format, isWithinInterval, startOfDay, endOfDay, max, min } 
 import { Event } from '../types/Event/Event';
 
 export function classNames(...classes: (string | boolean)[]) {
-  return classes.filter(Boolean).join(' ');
+    return classes.filter(Boolean).join(' ');
 }
 
 export function generateSlotsForEvent(event: Event, day: Date): { startTime: string; endTime: string; isBreak: boolean }[] {
@@ -19,7 +19,7 @@ export function generateSlotsForEvent(event: Event, day: Date): { startTime: str
     const effectiveEnd = min([eventEnd, dayEnd]);
 
     if (effectiveStart >= effectiveEnd) return slots;
-    
+
     let currentSlotStart = new Date(day);
     currentSlotStart.setHours(effectiveStart.getHours(), effectiveStart.getMinutes(), 0, 0);
 
@@ -31,7 +31,7 @@ export function generateSlotsForEvent(event: Event, day: Date): { startTime: str
         const breakEnd = event.breakWindow?.breakEnd ? new Date(event.breakWindow.breakEnd) : null;
         let overlapsWithBreak = false;
 
-        if(breakStart && breakEnd && isWithinInterval(day, {start: startOfDay(breakStart), end: endOfDay(breakEnd)})) {
+        if (breakStart && breakEnd && isWithinInterval(day, { start: startOfDay(breakStart), end: endOfDay(breakEnd) })) {
             const breakTimeForDay = {
                 start: new Date(day.getFullYear(), day.getMonth(), day.getDate(), breakStart.getHours(), breakStart.getMinutes()),
                 end: new Date(day.getFullYear(), day.getMonth(), day.getDate(), breakEnd.getHours(), breakEnd.getMinutes())
@@ -47,7 +47,7 @@ export function generateSlotsForEvent(event: Event, day: Date): { startTime: str
             endTime: format(currentSlotEnd, 'HH:mm'),
             isBreak: overlapsWithBreak
         });
-        
+
         currentSlotStart = addMinutes(currentSlotStart, sessionDuration);
     }
 
