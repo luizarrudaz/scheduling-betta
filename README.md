@@ -1,5 +1,7 @@
 # 📄 Scheduling-Betta
 
+📘 [Leia este documento em português](./README.pt-BR.md)
+
 ## Overview
 
 **Scheduling-Betta** is a corporate service scheduling system with centralized authentication via **Active Directory (AD)** and access control by group. Designed for organizational environments, the system allows efficient management of events, bookings, and history, with advanced filtering, sorting, and data export features.
