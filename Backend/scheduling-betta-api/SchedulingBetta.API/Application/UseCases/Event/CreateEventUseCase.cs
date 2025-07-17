@@ -1,4 +1,4 @@
-﻿    using FluentValidation;
+﻿using FluentValidation;
 using SchedulingBetta.API.Application.DTOs.Event;
 using SchedulingBetta.API.Domain.Aggregates;
 using SchedulingBetta.API.Domain.Interfaces;
@@ -40,23 +40,15 @@ public class CreateEventUseCase : ICreateEventUseCase
             command.Title ?? "NULL", command.StartTime, command.EndTime);
 
         await _unitOfWork.BeginTransaction();
-        bool transactionCommitted = false;
 
         try
         {
             await _eventValidator.ValidateAndThrowAsync(command);
-            _logger.LogInformation("EventDto validation succeeded for Title = {Title}", command.Title ?? "NULL");
-
             var sessionDuration = TimeSpan.FromMinutes(command.SessionDuration);
-            _logger.LogInformation("Session duration set to {SessionDuration} minutes for event Title = {Title}",
-                command.SessionDuration, command.Title ?? "NULL");
-
             var availableSlots = _slotCalculator.CalculateSlots(
                 command.StartTime,
                 command.EndTime,
                 sessionDuration);
-
-            _logger.LogInformation("Calculated {SlotCount} available slots for event Title = {Title}", availableSlots, command.Title ?? "NULL");
 
             var eventAggregate = Event.Create(
                 command.Title,
@@ -66,46 +58,36 @@ public class CreateEventUseCase : ICreateEventUseCase
                 DateTimeHelper.ConvertToUtc(command.EndTime),
                 availableSlots);
 
-            _logger.LogInformation("Event aggregate created for Title = {Title}", command.Title ?? "NULL");
-
             if (command.BreakWindow is not null)
             {
                 await _breakWindowValidator.ValidateAndThrowAsync(command.BreakWindow);
-                _logger.LogInformation("BreakWindow validation succeeded for event Title = {Title}", command.Title ?? "NULL");
-
                 eventAggregate.AddBreakWindow(
                     DateTimeHelper.ConvertToUtc(command.BreakWindow.BreakStart),
                     DateTimeHelper.ConvertToUtc(command.BreakWindow.BreakEnd));
-
-                _logger.LogInformation("BreakWindow added to event Title = {Title}, BreakStart = {BreakStart:O}, BreakEnd = {BreakEnd:O}",
-                    command.Title ?? "NULL", command.BreakWindow.BreakStart, command.BreakWindow.BreakEnd);
             }
 
             var eventEntity = await _eventRepository.AddEvent(eventAggregate);
-            _logger.LogInformation("Event persisted with Id {EventId} for Title = {Title}", eventEntity.Id, command.Title ?? "NULL");
-
             await _unitOfWork.Commit();
-            transactionCommitted = true;
-            _logger.LogInformation("UnitOfWork committed for event Id {EventId}", eventEntity.Id);
 
             eventAggregate.SetId(eventEntity.Id);
 
-            _logger.LogInformation("Event creation completed successfully for Id {EventId}, Title = {Title}", eventAggregate.Id, command.Title ?? "NULL");
-
-            await _eventNotificationService.NotifyEventCreated(eventAggregate);
+            try
+            {
+                await _eventNotificationService.NotifyEventCreated(eventAggregate);
+                _logger.LogInformation("Event creation notification sent successfully for Id {EventId}", eventAggregate.Id);
+            }
+            catch (Exception emailEx)
+            {
+                _logger.LogWarning(emailEx, "Event Id {EventId} was created successfully, but the notification email failed to send.", eventAggregate.Id);
+            }
 
             return eventAggregate.Id;
         }
         catch (Exception ex)
         {
-            if (!transactionCommitted)
-            {
-                await _unitOfWork.Rollback();
-                _logger.LogWarning("Transaction rolled back due to error during event creation for Title = {Title}", command.Title ?? "NULL");
-            }
-
-            _logger.LogError(ex, "Slot calculation failed for event Title = {Title}", command.Title ?? "NULL");
-            throw new Exception("Invalid event timing configuration", ex);
+            await _unitOfWork.Rollback();
+            _logger.LogError(ex, "Transaction rolled back during event creation for Title = {Title}", command.Title ?? "NULL");
+            throw;
         }
     }
 }
