@@ -40,10 +40,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
     let finalPages: (string | number)[] = [1, ...pages, totalPages];
 
     if (hasLeftSpill) {
-      finalPages.splice(1, 0, '...');
+      finalPages.splice(1, 0, 'ellipsis-start');
     }
     if (hasRightSpill) {
-      finalPages.splice(finalPages.length - 1, 0, '...');
+      finalPages.splice(finalPages.length - 1, 0, 'ellipsis-end');
     }
     
     if(totalPages > 4) {
@@ -58,8 +58,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
       const showEndEllipsis = end < totalPages;
 
       finalPages = range;
-      if(showStartEllipsis) finalPages.unshift('...');
-      if(showEndEllipsis) finalPages.push('...');
+      if(showStartEllipsis) finalPages.unshift('ellipsis-start');
+      if(showEndEllipsis) finalPages.push('ellipsis-end');
       
       return finalPages;
     }
@@ -80,10 +80,10 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         <ChevronLeftIcon className="w-5 h-5" />
       </button>
 
-      {pages.map((page, index) =>
+      {pages.map((page) =>
         typeof page === 'number' ? (
           <button
-            key={index}
+            key={page}
             onClick={() => onPageChange(page)}
             className={`px-4 py-2 rounded-md text-sm font-medium ${
               currentPage === page
@@ -94,8 +94,8 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
             {page}
           </button>
         ) : (
-          <span key={index} className="px-4 py-2 text-gray-500">
-            {page}
+          <span key={page} className="px-4 py-2 text-gray-500">
+            ...
           </span>
         )
       )}

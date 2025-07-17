@@ -134,15 +134,11 @@ const LoadingSkeleton = () => (
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
   >
-    {[...Array(5)].map((_, i) => (
-      <div key={i} className="flex space-x-4 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
-        <div className="h-6 bg-gray-200 rounded w-1/6" />
-        <div className="h-6 bg-gray-200 rounded w-1/6" />
-      </div>
-    ))}
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
   </motion.div>
 );
 

@@ -42,7 +42,10 @@ const SortableHeader = ({
   sortConfig: UserSchedulesTableProps['sortConfig'];
 }) => {
   const isSorted = sortConfig?.key === sortKey;
-  const sortIcon = isSorted ? (sortConfig?.direction === 'ascending' ? '▲' : '▼') : '';
+  let sortIcon = '';
+  if (isSorted) {
+    sortIcon = sortConfig?.direction === 'ascending' ? '▲' : '▼';
+  }
 
   return (
     <th

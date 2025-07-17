@@ -43,7 +43,7 @@ export default function TimeSlotsPanel({
       .forEach(slot => {
         map.set(format(parseISO(slot.scheduleTime), 'HH:mm'), {
           isMine: slot.userId?.trim().toUpperCase() === sid?.trim().toUpperCase(),
-          scheduleId: slot.scheduleId // Usando o ID do agendamento
+          scheduleId: slot.scheduleId
         });
       });
     return map;
@@ -101,7 +101,7 @@ export default function TimeSlotsPanel({
           <div className="overflow-y-auto pr-2" style={{ maxHeight: '240px' }}>
             {allSlots.length > 0 ? (
                 <div className="grid grid-cols-4 gap-3">
-                {allSlots.map((slot, index) => {
+                {allSlots.map((slot) => {
                     const occupation = occupiedTimeMap.get(slot.startTime);
                     const isOccupied = !!occupation;
                     const isMine = occupation?.isMine ?? false;
@@ -126,7 +126,7 @@ export default function TimeSlotsPanel({
 
                     return (
                     <motion.div
-                        key={index}
+                        key={slot.startTime}
                         className={`p-3 rounded-lg text-center ${bgColor} ${cursor} transition-colors duration-150`}
                         whileHover={{ scale: (isOccupied && !isMine) || isBreak ? 1 : 1.03 }}
                         transition={{ type: "spring", stiffness: 300 }}

@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace SchedulingBetta.API.Migrations
 {
     [DbContext(typeof(SchedulingDbContext))]
-    [Migration("20250522144620_migrationVm")]
-    partial class migrationVm
+    [Migration("20250717130057_Mig0001")]
+    partial class Mig0001
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -7,72 +7,89 @@ import { ScheduledEvent } from "../types/Schedule/Schedule.tsx";
 import { useCancelSchedule } from "../hooks/Schedules/useCancelSchedule.tsx";
 import AppNav from "../components/Nav/AppNav.tsx";
 import { useNavigate } from "react-router-dom";
+import ScheduleModal from "../components/Calendar/ScheduleModal.tsx";
+import { format } from "date-fns";
 
 type SortKey = keyof ScheduledEvent | 'event.title' | 'event.sessionDuration' | 'selectedSlot' | 'createdAt';
 
+const getSortableValue = (obj: ScheduledEvent, key: SortKey): any => {
+  if (key.startsWith('event.')) {
+    const eventKey = key.split('.')[1] as keyof ScheduledEvent['event'];
+    return obj.event?.[eventKey];
+  }
+  return obj[key as keyof ScheduledEvent];
+};
+
+const comparator = (a: any, b: any, isAsc: boolean): number => {
+  if (a === null || a === undefined) return 1;
+  if (b === null || b === undefined) return -1;
+
+  if (a < b) return isAsc ? -1 : 1;
+  if (a > b) return isAsc ? 1 : -1;
+  
+  return 0;
+};
+
 export default function MySchedulesPage() {
   const { schedules, loading, refetch } = useUserSchedules();
-  const { cancelSchedule, isLoading: isCancelling, error: cancelError } = useCancelSchedule();
+  const { cancelSchedule, isLoading: isCancelling, error: cancelError, setError: setCancelError } = useCancelSchedule();
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'selectedSlot', direction: 'ascending' });
+  const [scheduleToCancel, setScheduleToCancel] = useState<ScheduledEvent | null>(null);
 
   useEffect(() => {
     if (cancelError) {
       alert(cancelError);
+      setCancelError(null);
     }
-  }, [cancelError]);
+  }, [cancelError, setCancelError]);
 
-  const handleCancel = async (scheduleId: number) => {
-    if (window.confirm("Tem certeza que deseja cancelar este agendamento?")) {
-      const success = await cancelSchedule(scheduleId);
-      if (success) {
-        refetch();
-      }
+  const handleOpenCancelModal = (scheduleId: number) => {
+    const schedule = sortedSchedules.find(s => s.id === scheduleId);
+    if (schedule) {
+      setScheduleToCancel(schedule);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setScheduleToCancel(null);
+  };
+
+  const handleConfirmCancel = async () => {
+    if (!scheduleToCancel) return;
+
+    const success = await cancelSchedule(scheduleToCancel.id);
+    if (success) {
+      refetch();
+      handleCloseModal();
     }
   };
 
   const sortedSchedules = useMemo(() => {
     const now = new Date();
+    const futureSchedules = schedules.filter(schedule => 
+      schedule.selectedSlot && new Date(schedule.selectedSlot) > now
+    );
 
-    const futureSchedules = schedules.filter(schedule => {
-      if (!schedule.selectedSlot) return false;
-      try {
-        return new Date(schedule.selectedSlot) > now;
-      } catch {
-        return false;
-      }
-    });
-
-    if (sortConfig !== null) {
-      futureSchedules.sort((a, b) => {
-        let aValue: any, bValue: any;
-        const key = sortConfig.key;
-
-        if (key.startsWith('event.')) {
-          const eventKey = key.split('.')[1] as keyof ScheduledEvent['event'];
-          aValue = a.event?.[eventKey];
-          bValue = b.event?.[eventKey];
-        } else {
-          aValue = a[key as keyof ScheduledEvent];
-          bValue = b[key as keyof ScheduledEvent];
-        }
-
-        if (aValue == null) return 1;
-        if (bValue == null) return -1;
-
-        if (key === 'selectedSlot' || key === 'createdAt') {
-          const dateA = new Date(aValue as string);
-          const dateB = new Date(bValue as string);
-          if (dateA < dateB) return sortConfig.direction === 'ascending' ? -1 : 1;
-          if (dateA > dateB) return sortConfig.direction === 'ascending' ? 1 : -1;
-          return 0;
-        }
-
-        if (aValue < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-        if (aValue > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
-
-        return 0;
-      });
+    if (!sortConfig) {
+      return futureSchedules;
     }
+
+    const { key, direction } = sortConfig;
+    const isAsc = direction === 'ascending';
+    const dateKeys: SortKey[] = ['selectedSlot', 'createdAt'];
+
+    futureSchedules.sort((a, b) => {
+      const valA = getSortableValue(a, key);
+      const valB = getSortableValue(b, key);
+
+      if (dateKeys.includes(key)) {
+        const timeA = valA ? new Date(valA).getTime() : null;
+        const timeB = valB ? new Date(valB).getTime() : null;
+        return comparator(timeA, timeB, isAsc);
+      }
+
+      return comparator(valA, valB, isAsc);
+    });
 
     return futureSchedules;
   }, [schedules, sortConfig]);
@@ -85,7 +102,7 @@ export default function MySchedulesPage() {
     setSortConfig({ key, direction });
   };
 
-  const isLoading = loading || isCancelling;
+  const isLoading = loading;
 
   return (
     <div className="h-screen w-screen bg-gray-50 flex flex-col px-6 py-10 relative">
@@ -116,31 +133,39 @@ export default function MySchedulesPage() {
             schedules={sortedSchedules}
             onSort={requestSort}
             sortConfig={sortConfig}
-            onCancel={handleCancel}
+            onCancel={handleOpenCancelModal}
             disabled={isCancelling}
           />
         )}
       </div>
+
+      {scheduleToCancel && (
+        <ScheduleModal
+          isOpen={!!scheduleToCancel}
+          isCancelling={true}
+          selectedTime={format(new Date(scheduleToCancel.selectedSlot), 'dd/MM/yyyy HH:mm')}
+          onClose={handleCloseModal}
+          onSchedule={() => {}}
+          onCancel={handleConfirmCancel}
+          isLoading={isCancelling}
+          error={cancelError}
+        />
+      )}
     </div>
   );
 }
 
 const LoadingSkeleton = () => (
-  <motion.div
-    className="space-y-4 w-full max-w-5xl mx-auto"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.5 }}
-  >
-    {[...Array(3)].map((_, i) => (
-      <div key={i} className="flex space-x-4 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/3" />
-        <div className="h-6 bg-gray-200 rounded w-1/6" />
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
-        <div className="h-6 bg-gray-200 rounded w-1/6" />
-      </div>
-    ))}
-  </motion.div>
+    <motion.div
+        className="space-y-4 w-full max-w-5xl mx-auto"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+    >
+        <div key="skeleton-1" className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/3" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+        <div key="skeleton-2" className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/3" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+        <div key="skeleton-3" className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/3" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    </motion.div>
 );
 
 const NoSchedules = ({ message, buttonText }: { message: string; buttonText: string; }) => {

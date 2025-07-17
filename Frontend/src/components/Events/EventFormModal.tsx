@@ -1,11 +1,9 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useForm } from 'react-hook-form';
-import { Event, EventFormData } from "../../types/Event/Event";
-import { useCreateEvent } from '../../hooks/Events/CreateEvent';
-import { useUpdateEvent } from '../../hooks/Events/UseUpdateEvent';
+import { Event } from '../../types/Event/Event';
+import { useEventForm, getInitialValues } from '../../hooks/Events/UseEventForm';
 
 interface EventFormModalProps {
   isOpen: boolean;
@@ -13,19 +11,6 @@ interface EventFormModalProps {
   event?: Event | null;
   onSuccess: () => void;
 }
-
-const toDateTimeLocalString = (date: Date) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hours = String(date.getHours()).padStart(2, '0');
-  const minutes = String(date.getMinutes()).padStart(2, '0');
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
-};
-
-const formatTime = (date: Date) => {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-};
 
 const modalVariants: Variants = {
   hidden: { scale: 0.95, opacity: 0 },
@@ -40,119 +25,23 @@ const errorShakeVariants: Variants = {
 
 export default function EventFormModal({ isOpen, onClose, event, onSuccess }: EventFormModalProps) {
   const {
-    register,
-    handleSubmit,
-    watch,
-    reset,
-    formState: { errors, isSubmitting },
-    clearErrors,
-    setError
-  } = useForm<EventFormData>();
+    formMethods,
+    isLoading,
+    apiError,
+    hasPause,
+    onSubmit
+  } = useEventForm(event ?? null, onSuccess);
 
-  const { createEvent, isLoading: isCreating, error: createError } = useCreateEvent("/event");
-  const { updateEvent, isLoading: isUpdating, error: updateError } = useUpdateEvent("/event");
-
-  const hasPause = watch('Pause');
-  const apiError = useMemo(() => createError || updateError, [createError, updateError]);
+  const { register, handleSubmit, watch, reset, formState: { errors, isSubmitting }, clearErrors } = formMethods;
   const hasValidationErrors = Object.keys(errors).length > 0;
+  const buttonText = event ? 'Salvar Alterações' : 'Criar Evento';
 
   useEffect(() => {
     if (isOpen) {
-      if (event) {
-        reset({
-          Title: event.title,
-          SessionDuration: event.sessionDuration,
-          Location: event.location,
-          StartTime: toDateTimeLocalString(new Date(event.startTime)),
-          EndTime: toDateTimeLocalString(new Date(event.endTime)),
-          Pause: !!event.breakWindow,
-          BreakStartInput: event.breakWindow ? formatTime(new Date(event.breakWindow.breakStart)) : '',
-          BreakEndInput: event.breakWindow ? formatTime(new Date(event.breakWindow.breakEnd)) : ''
-        });
-      } else {
-        const now = new Date();
-        const defaultStart = new Date(now.getTime() + 30 * 60000); 
-        const defaultEnd = new Date(defaultStart.getTime() + 60 * 60000);
-        reset({
-          Title: '', SessionDuration: 30, Location: '',
-          StartTime: toDateTimeLocalString(defaultStart),
-          EndTime: toDateTimeLocalString(defaultEnd),
-          Pause: false, BreakStartInput: '', BreakEndInput: '' 
-        });
-      }
+      reset(getInitialValues(event ?? null));
       clearErrors();
     }
   }, [isOpen, event, reset, clearErrors]);
-
-  const onSubmit = async (data: EventFormData) => {
-    if (!event && new Date(data.StartTime) < new Date()) {
-        setError('StartTime', { type: 'manual', message: 'O evento não pode começar no passado.' });
-        return;
-    }
-      
-    if (data.Pause) {
-        if (!data.BreakStartInput || !data.BreakEndInput) {
-            if (!data.BreakStartInput) setError('BreakStartInput', { type: 'manual', message: 'Início é obrigatório.' });
-            if (!data.BreakEndInput) setError('BreakEndInput', { type: 'manual', message: 'Fim é obrigatório.' });
-            return;
-        }
-
-        const eventStart = new Date(data.StartTime);
-        const eventEnd = new Date(data.EndTime);
-        
-        const breakStart = new Date(`${formatDate(eventStart)}T${data.BreakStartInput}`);
-        const breakEnd = new Date(`${formatDate(eventStart)}T${data.BreakEndInput}`);
-
-        
-        if (breakStart <= eventStart) {
-            setError('BreakStartInput', { type: 'manual', message: 'Deve ser após o início do evento.' });
-            return;
-        }
-
-        
-        if (breakEnd >= eventEnd) {
-            setError('BreakEndInput', { type: 'manual', message: 'Deve ser antes do fim do evento.' });
-            return;
-        }
-        
-        
-        if (breakEnd <= breakStart) {
-            setError('BreakEndInput', { type: 'manual', message: 'Fim da pausa deve ser após o início.' });
-            return;
-        }
-    }
-
-    const apiPayload = {
-      title: data.Title,
-      sessionDuration: Number(data.SessionDuration),
-      location: data.Location,
-      startTime: new Date(data.StartTime).toISOString(),
-      endTime: new Date(data.EndTime).toISOString(),
-      breakWindow: data.Pause && data.BreakStartInput && data.BreakEndInput ? {
-        breakStart: new Date(new Date(data.StartTime).toDateString() + ' ' + data.BreakStartInput).toISOString(),
-        breakEnd: new Date(new Date(data.StartTime).toDateString() + ' ' + data.BreakEndInput).toISOString()
-      } : null,
-      pause: data.Pause,
-    };
-
-    const result = event 
-      ? await updateEvent(event.id, apiPayload)
-      : await createEvent(apiPayload);
-
-    if (result) {
-      onSuccess();
-      onClose();
-    }
-  };
-    
-  const formatDate = (date: Date) => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-  };
-
-  const isLoading = isCreating || isUpdating;
 
   return (
     <AnimatePresence>
@@ -171,7 +60,6 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
             className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col h-auto max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            
             <div className="flex-shrink-0 flex justify-between items-center p-6">
               <h2 className="text-2xl font-bold text-gray-800">
                 {event ? 'Editar Evento' : 'Novo Evento'}
@@ -188,7 +76,6 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
               </motion.button>
             </div>
             
-            
             <motion.form
               layout
               variants={errorShakeVariants}
@@ -201,8 +88,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
               <div className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-gray-600 mb-2">Nome do Evento *</label>
+                    <label htmlFor="Title" className="block text-sm font-semibold text-gray-600 mb-2">Nome do Evento *</label>
                     <input
+                      id="Title"
                       {...register('Title', { required: 'Campo obrigatório' })}
                       className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Title ? 'border-red-500' : 'border-gray-200'}`}
                     />
@@ -210,8 +98,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-2">Duração (minutos) *</label>
+                    <label htmlFor="SessionDuration" className="block text-sm font-semibold text-gray-600 mb-2">Duração (minutos) *</label>
                     <input
+                      id="SessionDuration"
                       type="number"
                       {...register('SessionDuration', { required: 'Campo obrigatório', min: { value: 1, message: 'Mínimo 1 minuto' } })}
                       className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.SessionDuration ? 'border-red-500' : 'border-gray-200'}`}
@@ -220,8 +109,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                   </div>
 
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-2">Local *</label>
+                    <label htmlFor="Location" className="block text-sm font-semibold text-gray-600 mb-2">Local *</label>
                     <input
+                      id="Location"
                       {...register('Location', { required: 'Campo obrigatório' })}
                       className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Location ? 'border-red-500' : 'border-gray-200'}`}
                     />
@@ -229,8 +119,8 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                   </div>
 
                   <div className="md:col-span-2 flex items-center gap-3">
-                    <input type="checkbox" {...register('Pause')} className="h-5 w-5 text-[#FA7014] rounded focus:ring-[#FA7014]" />
-                    <label className="text-sm text-gray-600">Incluir pausa programada</label>
+                    <input id="Pause" type="checkbox" {...register('Pause')} className="h-5 w-5 text-[#FA7014] rounded focus:ring-[#FA7014]" />
+                    <label htmlFor="Pause" className="text-sm text-gray-600">Incluir pausa programada</label>
                   </div>
                 </div>
 
@@ -244,8 +134,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                       className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
                     >
                       <div>
-                        <label className="block text-sm font-semibold text-gray-600 mb-2">Início da Pausa *</label>
+                        <label htmlFor="BreakStartInput" className="block text-sm font-semibold text-gray-600 mb-2">Início da Pausa *</label>
                         <input
+                          id="BreakStartInput"
                           type="time"
                           {...register('BreakStartInput', { required: hasPause })}
                           className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakStartInput ? 'border-red-500' : 'border-gray-200'}`}
@@ -253,8 +144,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                         {errors.BreakStartInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakStartInput.message}</span>}
                       </div>
                       <div>
-                        <label className="block text-sm font-semibold text-gray-600 mb-2">Fim da Pausa *</label>
+                        <label htmlFor="BreakEndInput" className="block text-sm font-semibold text-gray-600 mb-2">Fim da Pausa *</label>
                         <input
+                          id="BreakEndInput"
                           type="time"
                           {...register('BreakEndInput', { required: hasPause })}
                           className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakEndInput ? 'border-red-500' : 'border-gray-200'}`}
@@ -267,10 +159,11 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-2">Início *</label>
+                    <label htmlFor="StartTime" className="block text-sm font-semibold text-gray-600 mb-2">Início *</label>
                     <input
+                      id="StartTime"
                       type="datetime-local"
-                      {...register('StartTime', { 
+                      {...register('StartTime', {
                         required: 'Campo obrigatório',
                         validate: (value) => !watch('EndTime') || new Date(value) < new Date(watch('EndTime')) || 'Início deve ser antes do fim'
                       })}
@@ -279,10 +172,11 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                     {errors.StartTime && <span className="text-red-500 text-xs block mt-1">{errors.StartTime.message}</span>}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-600 mb-2">Fim *</label>
+                    <label htmlFor="EndTime" className="block text-sm font-semibold text-gray-600 mb-2">Fim *</label>
                     <input
+                      id="EndTime"
                       type="datetime-local"
-                      {...register('EndTime', { 
+                      {...register('EndTime', {
                         required: 'Campo obrigatório',
                         validate: (value) => !watch('StartTime') || new Date(value) > new Date(watch('StartTime')) || 'Fim deve ser após o início'
                       })}
@@ -299,7 +193,6 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                 )}
               </div>
             </motion.form>
-            
             
             <div className="flex-shrink-0 p-6 border-t border-gray-200">
               <motion.button
@@ -321,7 +214,9 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                       </svg>
                       Processando...
                     </div>
-                  ) : (event ? 'Salvar Alterações' : 'Criar Evento')}
+                  ) : (
+                    buttonText
+                  )}
                 </motion.button>
             </div>
           </motion.div>

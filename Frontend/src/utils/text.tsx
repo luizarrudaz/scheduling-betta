@@ -8,11 +8,8 @@ export const formatEventName = (name: string, maxLength: number = 18): string =>
 };
 
 export const formatDisplayName = (fullName: string): string => {
-  if (!fullName || !fullName.trim()) {
-    return '';
-  }
-  const parts = fullName.trim().split(/\s+/);
-  if (parts.length <= 1) {
+  const parts = fullName?.trim().split(/\s+/);
+  if (!parts || parts.length <= 1) {
     return fullName;
   }
   return `${parts[0]} ${parts[parts.length - 1]}`;

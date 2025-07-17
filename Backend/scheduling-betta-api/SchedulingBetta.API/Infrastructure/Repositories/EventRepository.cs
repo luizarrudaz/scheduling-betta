@@ -205,7 +205,7 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
             }
         }
 
-        if (!string.IsNullOrEmpty(request.SortKey))
+        if (!string.IsNullOrEmpty(request.SortKey) && request.SortKey != "displayName" && request.SortKey != "email")
         {
             var isDescending = request.SortDirection?.ToLower() == "descending";
             Expression<Func<EventSchedule, object>> keySelector = request.SortKey.ToLower() switch
@@ -213,8 +213,6 @@ public class EventRepository(SchedulingDbContext dbContext) : IEventRepository
                 "event.title" => s => s.Event.Title,
                 "event.sessionduration" => s => s.Event.SessionDuration,
                 "selectedslot" => s => s.ScheduleTime,
-                "displayname" => s => s.UserId,
-                "email" => s => s.UserId,
                 "createdat" => s => s.CreatedAt,
                 _ => s => s.Id
             };

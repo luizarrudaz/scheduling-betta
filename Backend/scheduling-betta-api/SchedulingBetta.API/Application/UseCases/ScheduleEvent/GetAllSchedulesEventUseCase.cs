@@ -4,6 +4,7 @@ using SchedulingBetta.API.Application.DTOs.ScheduleEvent;
 using SchedulingBetta.API.Domain.Interfaces;
 using SchedulingBetta.API.Domain.Interfaces.IScheduleEventUseCases;
 using SchedulingBetta.API.Domain.ValueObjects;
+using System.Linq.Expressions;
 
 namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
 {
@@ -95,18 +96,40 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
                 }
             }
 
+            var filteredResult = result;
             if (!string.IsNullOrEmpty(request.SearchTerm))
             {
-                _logger.LogInformation("Applying in-memory search filter for term: {SearchTerm}", request.SearchTerm);
                 var term = request.SearchTerm.ToLowerInvariant();
-                return result.Where(dto =>
+                filteredResult = result.Where(dto =>
                     (dto.Event?.Title?.ToLowerInvariant().Contains(term) ?? false) ||
                     (dto.DisplayName?.ToLowerInvariant().Contains(term) ?? false) ||
                     (dto.Email?.ToLowerInvariant().Contains(term) ?? false)
                 ).ToList();
             }
 
-            return result;
+            if (!string.IsNullOrEmpty(request.SortKey))
+            {
+                var isDescending = request.SortDirection?.ToLower() == "descending";
+
+                Expression<Func<GetScheduledEventDto, object>> keySelector = request.SortKey.ToLower() switch
+                {
+                    "event.title" => s => s.Event.Title,
+                    "displayname" => s => s.DisplayName,
+                    "email" => s => s.Email,
+                    "event.sessionduration" => s => s.Event.SessionDuration,
+                    "selectedslot" => s => s.SelectedSlot,
+                    "createdat" => s => s.CreatedAt,
+                    _ => s => s.Id
+                };
+
+                if (isDescending)
+                {
+                    return filteredResult.OrderByDescending(keySelector.Compile()).ToList();
+                }
+                return filteredResult.OrderBy(keySelector.Compile()).ToList();
+            }
+
+            return filteredResult;
         }
     }
 }

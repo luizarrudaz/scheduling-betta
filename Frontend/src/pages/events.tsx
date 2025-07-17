@@ -143,7 +143,7 @@ export default function Calendar() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <div className="min-w-[280px] max-h-[300px]">
+          <div className="min-w-[280px]">
             <CalendarNavigation
               firstDayCurrentMonth={firstDayCurrentMonth}
               onPrevious={handlePreviousMonth}

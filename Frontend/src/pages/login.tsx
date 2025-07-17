@@ -81,12 +81,14 @@ const Login = () => {
               aria-label="Digite sua senha"
               disabled={isLoading}
             />
-            <span
-              className="absolute right-0 top-8 text-black cursor-pointer"
+            <button
+              type="button"
+              className="absolute right-0 top-8 text-black cursor-pointer bg-transparent border-none"
               onClick={() => setShowPassword(!showPassword)}
+              aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
             >
               <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
-            </span>
+            </button>
           </div>
 
           <button

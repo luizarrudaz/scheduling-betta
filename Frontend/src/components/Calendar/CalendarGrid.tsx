@@ -31,7 +31,7 @@ export default function CalendarGrid({
       <div className="grid grid-cols-7 mt-2 text-sm">
         {days.map((day, dayIdx) => (
           <div
-            key={day.toString()}
+            key={day.toISOString()}
             className={classNames(
               dayIdx === 0 && getDay(day) > 0 && `col-start-${getDay(day) + 1}`,
               'py-1.5'

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { Dialog } from '@headlessui/react';
 import useEvents from "../hooks/Events/UseEvents";
 import EventsTable from "../components/Events/EventsTable";
 import EventFormModal from "../components/Events/EventFormModal";
@@ -7,20 +8,22 @@ import { Event } from "../types/Event/Event.tsx";
 import { useDeleteEvent } from "../hooks/Events/UseDeleteEvent.tsx";
 import LogoutButton from "../components/LogoutButton/LogoutButton.tsx";
 import AdminNav from "../components/Nav/AppNav.tsx";
-import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, MagnifyingGlassIcon, ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { usePagination } from "../hooks/usePagination.tsx";
 import Pagination from "../components/Pagination/Pagination.tsx";
 
 type SortKey = 'title' | 'location' | 'startTime' | 'sessionDuration';
 
 export default function AdminEventsPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [eventToDelete, setEventToDelete] = useState<Event | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'startTime', direction: 'ascending' });
 
   const { events, loading, refetch } = useEvents({ filter: 'upcoming', searchTerm, sortConfig });
-  const { deleteEvent } = useDeleteEvent("/event");
+  const { deleteEvent, isDeleting } = useDeleteEvent("/event");
 
   const {
     currentPage,
@@ -29,18 +32,24 @@ export default function AdminEventsPage() {
     setCurrentPage,
   } = usePagination(events, 8);
 
-  const handleDelete = async (eventToDelete: Event) => {
-    if (window.confirm(`Tem certeza que deseja excluir o evento "${eventToDelete.title}"?`)) {
-      const success = await deleteEvent(eventToDelete.id);
-      if (success) {
-        refetch();
-      }
+  const handleOpenDeleteModal = (event: Event) => {
+    setEventToDelete(event);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!eventToDelete) return;
+    const success = await deleteEvent(eventToDelete.id);
+    if (success) {
+      refetch();
+      setIsDeleteModalOpen(false);
+      setEventToDelete(null);
     }
   };
 
-  const handleOpenModal = () => {
-    setSelectedEvent(null);
-    setIsModalOpen(true);
+  const handleOpenFormModal = (event: Event | null = null) => {
+    setSelectedEvent(event);
+    setIsFormModalOpen(true);
   };
 
   const requestSort = (key: SortKey) => {
@@ -83,7 +92,7 @@ export default function AdminEventsPage() {
           </div>
 
           <motion.button
-            onClick={handleOpenModal}
+            onClick={() => handleOpenFormModal()}
             className="ml-4 bg-[#FA7014] text-white p-3 rounded-full font-bold shadow-lg hover:bg-[#E55F00] transition-all"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
@@ -101,17 +110,14 @@ export default function AdminEventsPage() {
               <NoEvents
                 message="Nenhum evento futuro encontrado."
                 buttonText="Criar um Evento"
-                onButtonClick={handleOpenModal}
+                onButtonClick={() => handleOpenFormModal()}
               />
             ) : (
               <>
                 <EventsTable
                   events={paginatedData}
-                  onEdit={(event) => {
-                    setSelectedEvent(event);
-                    setIsModalOpen(true);
-                  }}
-                  onDelete={handleDelete}
+                  onEdit={(event) => handleOpenFormModal(event)}
+                  onDelete={handleOpenDeleteModal}
                   onSort={requestSort}
                   sortConfig={sortConfig}
                 />
@@ -129,18 +135,65 @@ export default function AdminEventsPage() {
       </div>
 
       <EventFormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedEvent(null);
-        }}
+        isOpen={isFormModalOpen}
+        onClose={() => setIsFormModalOpen(false)}
         event={selectedEvent}
         onSuccess={() => {
           refetch();
-          setIsModalOpen(false);
-          setSelectedEvent(null);
+          setIsFormModalOpen(false);
         }}
       />
+
+      <AnimatePresence>
+        {isDeleteModalOpen && eventToDelete && (
+            <Dialog
+                static
+                open={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            >
+                <motion.div
+                    initial={{ scale: 0.95, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.95, opacity: 0 }}
+                    className="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col"
+                >
+                    <div className="p-6 flex items-start space-x-4">
+                        <div className="flex-shrink-0 mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0">
+                            <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
+                        </div>
+                        <div className="flex-grow">
+                            <Dialog.Title as="h3" className="text-lg font-bold text-gray-900">
+                                Confirmar Exclusão
+                            </Dialog.Title>
+                            <div className="mt-2">
+                                <p className="text-sm text-gray-600">
+                                    Tem certeza que deseja excluir o evento "{eventToDelete.title}"? Todos os agendamentos associados também serão removidos.
+                                </p>
+                            </div>
+                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => setIsDeleteModalOpen(false)}
+                            disabled={isDeleting}
+                            className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                        >
+                            <XMarkIcon className="h-6 w-6" />
+                        </motion.button>
+                    </div>
+                    <div className="bg-gray-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 rounded-b-2xl">
+                        <button type="button" disabled={isDeleting} className="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50" onClick={() => setIsDeleteModalOpen(false)}>
+                            Cancelar
+                        </button>
+                        <button type="button" disabled={isDeleting} className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 disabled:bg-red-400" onClick={handleConfirmDelete}>
+                            {isDeleting ? 'Excluindo...' : 'Excluir'}
+                        </button>
+                    </div>
+                </motion.div>
+            </Dialog>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -152,15 +205,11 @@ const LoadingSkeleton = () => (
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
   >
-    {[...Array(5)].map((_, i) => (
-      <div key={i} className="flex space-x-4 animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
-        <div className="h-6 bg-gray-200 rounded w-1/6" />
-        <div className="h-6 bg-gray-200 rounded w-1/6" />
-        <div className="h-6 bg-gray-200 rounded w-1/6" />
-      </div>
-    ))}
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
   </motion.div>
 );
 

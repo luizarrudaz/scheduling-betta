@@ -1,7 +1,6 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useMemo } from "react";
 import { AuthContextType } from "../types/Context/AuthContextType";
 import api from "../services/api";
-import axios from "axios";
 
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
@@ -18,15 +17,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [groups, setGroups] = useState<string[]>([]);
   const [sid, setSid] = useState<string | null>(null);
   
+  const logout = useCallback(() => {
+    sessionStorage.removeItem('jwtToken');
+    setIsAuthenticated(false);
+    setGroups([]);
+    setSid(null);
+  }, []);
+
   const refreshAuth = useCallback(async () => {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('jwtToken');
       if (!token) {
-        setIsAuthenticated(false);
-        setGroups([]);
-        setSid(null);
-        return;
+        throw new Error("No token found");
       }
       const { data } = await api.get("/auth/check-auth");
       
@@ -36,23 +39,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setGroups(normalizedGroups);
 
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        sessionStorage.removeItem('jwtToken');
-      }
-      setIsAuthenticated(false);
-      setGroups([]);
-      setSid(null);
+      logout();
     } finally {
         setLoading(false);
     }
-  }, []);
-
-  const logout = useCallback(() => {
-    sessionStorage.removeItem('jwtToken');
-    setIsAuthenticated(false);
-    setGroups([]);
-    setSid(null);
-  }, []);
+  }, [logout]);
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
@@ -85,17 +76,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [logout]);
 
+  const contextValue = useMemo(() => ({
+    isAuthenticated,
+    loading,
+    groups,
+    sid,
+    logout,
+    refreshAuth
+  }), [isAuthenticated, loading, groups, sid, logout, refreshAuth]);
+
   return (
-    <AuthContext.Provider
-      value={{ 
-        isAuthenticated, 
-        loading, 
-        groups,
-        sid, 
-        logout,
-        refreshAuth
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

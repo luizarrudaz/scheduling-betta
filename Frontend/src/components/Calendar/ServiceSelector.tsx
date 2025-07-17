@@ -26,6 +26,7 @@ export default function ServiceSelector({ services, selectedService, onServiceSe
                 {selectedService.title}
               </span>
               <button
+                type="button"
                 onClick={() => onServiceSelect(null)}
                 className="text-blue-500 hover:text-blue-700"
               >
@@ -36,6 +37,7 @@ export default function ServiceSelector({ services, selectedService, onServiceSe
         </div>
 
         <button
+          type="button"
           onClick={() => setIsOpen(!isOpen)}
           className="w-full text-left px-3 py-2 border-2 border-dashed rounded-lg bg-gray-50 hover:border-blue-500 transition-colors text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
         >
@@ -47,10 +49,11 @@ export default function ServiceSelector({ services, selectedService, onServiceSe
         {isOpen && (
           <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg max-h-48 overflow-y-auto text-sm">
             {services.map(service => (
-              <div
+              <button
+                type="button"
                 key={service.id}
                 onClick={() => toggleService(service)}
-                className={`px-3 py-2 cursor-pointer flex justify-between items-center ${
+                className={`w-full text-left px-3 py-2 cursor-pointer flex justify-between items-center ${
                   selectedService?.id === service.id
                     ? 'bg-blue-50 border-l-2 border-blue-500'
                     : 'hover:bg-gray-50'
@@ -63,7 +66,7 @@ export default function ServiceSelector({ services, selectedService, onServiceSe
                 <span className="text-xs text-gray-500 whitespace-nowrap pl-2">
                   {service.sessionDuration}min
                 </span>
-              </div>
+              </button>
             ))}
              {services.length === 0 && (
               <div className="px-3 py-2 text-center text-gray-500">

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace SchedulingBetta.API.Migrations
 {
     /// <inheritdoc />
-    public partial class migrationVm : Migration
+    public partial class Mig0001 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

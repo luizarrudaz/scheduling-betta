@@ -56,7 +56,11 @@ const SortableHeader = ({ label, sortKey, onSort, sortConfig }: {
   sortConfig: SchedulesTableProps['sortConfig'];
 }) => {
   const isSorted = sortConfig?.key === sortKey;
-  const sortIcon = isSorted ? (sortConfig?.direction === 'ascending' ? '▲' : '▼') : '';
+  let sortIcon = '';
+  if (isSorted) {
+    sortIcon = sortConfig?.direction === 'ascending' ? '▲' : '▼';
+  }
+
   return (
     <th
       className="px-5 py-4 text-left text-sm font-semibold text-gray-600 whitespace-nowrap cursor-pointer select-none"
