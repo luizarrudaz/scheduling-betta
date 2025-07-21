@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuthContext } from '../../context/AuthContext';
+import ThemeToggle from '../ThemeToggle/ThemeToggle';
 
 const baseRoutes = [
   { name: 'Agendar', path: '/eventos'},
@@ -53,16 +54,18 @@ export default function AppNav() {
   }, [isOpen]);
 
   return (
-    <div className="absolute top-4 left-4 z-50" ref={navRef}>
+    <div className="absolute top-4 left-4 z-50 flex items-center gap-4" ref={navRef}>
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 rounded-md text-gray-700 bg-white shadow-md hover:bg-gray-100 transition-colors focus:outline-none"
+        className="p-2 rounded-md text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 shadow-soft hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors focus:outline-none"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Abrir menu de navegação"
       >
         {isOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
       </motion.button>
+      
+      <ThemeToggle />
 
       <AnimatePresence>
         {isOpen && (
@@ -71,7 +74,7 @@ export default function AppNav() {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="absolute top-14 left-0 w-64 bg-white rounded-lg shadow-2xl border border-gray-100 overflow-hidden"
+            className="absolute top-14 left-0 w-64 bg-white dark:bg-neutral-800 rounded-lg shadow-medium border border-neutral-200 dark:border-neutral-700 overflow-hidden"
           >
             <ul className="py-2">
               {navRoutes.map((route) => (
@@ -81,8 +84,8 @@ export default function AppNav() {
                     onClick={() => setIsOpen(false)}
                     className={`block w-full text-left px-4 py-2.5 text-sm font-medium transition-colors focus:outline-none ${
                       location.pathname === route.path
-                        ? 'bg-orange-50 text-[#FA7014]'
-                        : 'text-gray-700 hover:bg-orange-50 hover:text-[#FA7014]'
+                        ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-white'
+                        : 'text-neutral-700 dark:text-neutral-300 hover:bg-primary/5 dark:hover:bg-primary/20 hover:text-primary dark:hover:text-white'
                     }`}
                   >
                     {route.name}

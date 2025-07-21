@@ -112,19 +112,19 @@ export default function Calendar() {
   if (eventsLoading || schedulesLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FA7014]"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="w-screen min-h-screen bg-gray-50 flex justify-center items-center p-4">
+    <div className="w-screen min-h-screen flex justify-center items-center p-4">
       {isAuthenticated && <AppNav />}
       <LogoutButton />
 
       <div className="flex flex-col items-center">
         <motion.h1
-          className="text-3xl font-bold text-gray-800"
+          className="text-3xl font-bold text-neutral-800 dark:text-neutral-100"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
@@ -138,7 +138,7 @@ export default function Calendar() {
         />
 
         <motion.div
-          className="bg-white shadow-lg rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 -mt-2"
+          className="bg-white dark:bg-neutral-800 shadow-strong rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row gap-3 -mt-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}

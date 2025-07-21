@@ -105,7 +105,7 @@ export default function MySchedulesPage() {
   const isLoading = loading;
 
   return (
-    <div className="h-screen w-screen bg-gray-50 flex flex-col px-6 py-10 relative">
+    <div className="min-h-screen w-screen flex flex-col px-6 py-10 relative">
       <AppNav />
       <div className="w-full max-w-7xl mx-auto">
         <div className="flex justify-end mb-4">
@@ -116,7 +116,7 @@ export default function MySchedulesPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-extrabold text-gray-800 text-center mb-10"
+          className="text-4xl font-extrabold text-neutral-800 dark:text-neutral-100 text-center mb-10"
         >
           Meus Agendamentos
         </motion.h1>
@@ -162,9 +162,9 @@ const LoadingSkeleton = () => (
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
     >
-        <div key="skeleton-1" className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/3" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-        <div key="skeleton-2" className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/3" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-        <div key="skeleton-3" className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/3" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+        <div key="skeleton-1" className="flex space-x-4 animate-pulse"><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" /></div>
+        <div key="skeleton-2" className="flex space-x-4 animate-pulse"><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" /></div>
+        <div key="skeleton-3" className="flex space-x-4 animate-pulse"><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/3" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" /><div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" /></div>
     </motion.div>
 );
 
@@ -177,11 +177,11 @@ const NoSchedules = ({ message, buttonText }: { message: string; buttonText: str
       transition={{ duration: 0.3 }}
       className="flex flex-col items-center justify-center h-[50vh]"
     >
-      <div className="text-center py-6 px-6 bg-white rounded-2xl shadow-xl w-80">
-        <p className="text-gray-600 text-lg mb-4">{message}</p>
+      <div className="text-center py-6 px-6 bg-white dark:bg-neutral-800 rounded-2xl shadow-medium w-80">
+        <p className="text-neutral-600 dark:text-neutral-300 text-lg mb-4">{message}</p>
         <motion.button
           onClick={() => navigate('/eventos')}
-          className="w-full bg-[#FA7014] text-white py-3 rounded-xl font-semibold hover:bg-[#E55F00] transition-all duration-300"
+          className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all duration-300"
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.95 }}
         >

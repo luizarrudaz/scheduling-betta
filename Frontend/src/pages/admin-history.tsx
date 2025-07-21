@@ -74,7 +74,7 @@ export default function AdminHistoryPage() {
   };
 
   return (
-    <div className="h-screen w-screen bg-gray-50 flex flex-col px-6 py-10 relative">
+    <div className="min-h-screen w-screen flex flex-col px-6 py-10 relative">
       <AdminNav />
       <div className="w-full max-w-6xl mx-auto">
         <div className="flex justify-end mb-4">
@@ -85,7 +85,7 @@ export default function AdminHistoryPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-extrabold text-gray-800 text-center mb-6"
+          className="text-4xl font-extrabold text-neutral-800 dark:text-neutral-100 text-center mb-6"
         >
           Histórico de Agendamentos
         </motion.h1>
@@ -93,12 +93,12 @@ export default function AdminHistoryPage() {
         <div className="mb-6 flex flex-col md:flex-row justify-center items-center gap-4">
           <div className="relative flex-grow w-full md:w-auto md:max-w-lg">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+              <MagnifyingGlassIcon className="w-5 h-5 text-neutral-400" />
             </span>
             <input
               type="text"
               placeholder="Buscar por evento, nome ou e-mail..."
-              className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2 pl-10 pr-4 bg-transparent"
+              className="w-full border-b-2 border-neutral-300 dark:border-neutral-700 focus:outline-none focus:border-primary py-2 pl-10 pr-4 bg-transparent text-neutral-800 dark:text-neutral-200"
               value={searchTerm}
               onChange={handleSearchTermChange}
             />
@@ -144,11 +144,15 @@ const LoadingSkeleton = () => (
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
   >
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    {[...Array(5)].map((_, i) => (
+      <div key={i} className="flex space-x-4 animate-pulse">
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" />
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" />
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" />
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" />
+        <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" />
+      </div>
+    ))}
   </motion.div>
 );
 
@@ -159,8 +163,8 @@ const NoSchedules = ({ message }: { message: string }) => (
     transition={{ duration: 0.3 }}
     className="flex flex-col items-center justify-center h-[40vh]"
   >
-    <div className="text-center py-6 px-6 bg-white rounded-2xl shadow-xl w-80">
-      <p className="text-gray-600 text-lg">{message}</p>
+    <div className="text-center py-6 px-6 bg-white dark:bg-neutral-800 rounded-2xl shadow-medium w-80">
+      <p className="text-neutral-600 dark:text-neutral-300 text-lg">{message}</p>
     </div>
   </motion.div>
 );

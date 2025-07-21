@@ -12,7 +12,7 @@ export default function DownloadButton({ onCsvDownload, onXlsxDownload }: Downlo
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
-        <Menu.Button className="flex items-center rounded-md bg-white p-2 text-gray-700 shadow-md hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FA7014]">
+        <Menu.Button className="flex items-center rounded-md bg-white dark:bg-neutral-800 p-2 text-neutral-700 dark:text-neutral-200 shadow-soft hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
           <span className="sr-only">Opções de download</span>
           <ArrowDownTrayIcon className="w-5 h-5" aria-hidden="true" />
         </Menu.Button>
@@ -32,7 +32,7 @@ export default function DownloadButton({ onCsvDownload, onXlsxDownload }: Downlo
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white shadow-2xl border border-gray-100 overflow-hidden focus:outline-none"
+          className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-lg bg-white dark:bg-neutral-800 shadow-medium border border-neutral-200 dark:border-neutral-700 overflow-hidden focus:outline-none"
         >
           <div className="py-1">
             <Menu.Item>
@@ -40,11 +40,11 @@ export default function DownloadButton({ onCsvDownload, onXlsxDownload }: Downlo
                 <button
                   onClick={onCsvDownload}
                   className={`${
-                    active ? 'bg-orange-50 text-[#FA7014]' : 'text-gray-700'
+                    active ? 'bg-primary-light/10 text-primary' : 'text-neutral-700 dark:text-neutral-200'
                   } group flex w-full items-center px-4 py-2 text-sm transition-colors focus:outline-none`}
                 >
                   <DocumentTextIcon
-                    className="mr-3 h-5 w-5 text-gray-500 group-hover:text-[#FA7014] transition-colors"
+                    className="mr-3 h-5 w-5 text-neutral-500 group-hover:text-primary transition-colors"
                     aria-hidden="true"
                   />
                   Exportar para .CSV
@@ -56,11 +56,11 @@ export default function DownloadButton({ onCsvDownload, onXlsxDownload }: Downlo
                 <button
                   onClick={onXlsxDownload}
                   className={`${
-                    active ? 'bg-orange-50 text-[#FA7014]' : 'text-gray-700'
+                    active ? 'bg-primary-light/10 text-primary' : 'text-neutral-700 dark:text-neutral-200'
                   } group flex w-full items-center px-4 py-2 text-sm transition-colors focus:outline-none`}
                 >
                   <TableCellsIcon
-                    className="mr-3 h-5 w-5 text-gray-500 group-hover:text-[#FA7014] transition-colors"
+                    className="mr-3 h-5 w-5 text-neutral-500 group-hover:text-primary transition-colors"
                     aria-hidden="true"
                   />
                   Exportar para .XLSX

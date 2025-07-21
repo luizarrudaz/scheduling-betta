@@ -2,7 +2,7 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #213547;
+  color: #0f172a;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -13,22 +13,25 @@ body, html {
   margin: 0;
   padding: 0;
   width: 100%;
-  background-color: #f8f9fa;
+  @apply bg-neutral-100 dark:bg-neutral-900 text-neutral-800 dark:text-neutral-100 transition-colors duration-300;
 }
 
-input,
-textarea,
-select {
-  background-color: white !important;
-  color: #1a1a1a !important;
-}
+
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0 1000px white inset !important;
-  -webkit-text-fill-color: #1a1a1a !important;
+  -webkit-text-fill-color: #1e293b !important;
 }
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px #1e293b inset !important;
+    -webkit-text-fill-color: #f1f5f9 !important;
+}
+
 
 @tailwind base;
 @tailwind components;
@@ -40,29 +43,14 @@ input:-webkit-autofill:focus {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  @apply bg-neutral-200 dark:bg-neutral-800;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  @apply bg-neutral-400 dark:bg-neutral-600;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
-}
-
-.input-field {
-  @apply w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FA7014] focus:ring-0 transition-colors bg-white text-gray-800;
-}
-
-.input-error {
-  @apply border-red-500 focus:border-red-500;
-}
-
-[role="menuitem"]:focus,
-[role="menuitem"]:focus-visible {
-  outline: none !important;
-  border: none !important;
-  box-shadow: none !important;
+  @apply bg-neutral-500 dark:bg-neutral-500;
 }

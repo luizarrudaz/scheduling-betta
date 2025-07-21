@@ -38,8 +38,8 @@ const DateFilterSelector = ({ availableYears, onFilterChange }: DateFilterSelect
           onClick={() => handleFilterClick(filter.key)}
           className={`px-4 py-2 text-sm font-medium rounded-full transition-colors duration-200 ${
             activeFilter === filter.key
-              ? 'bg-[#FA7014] text-white shadow-md'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              ? 'bg-primary text-white shadow-soft'
+              : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600'
           }`}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}

@@ -22,7 +22,7 @@ export default function CalendarGrid({
 
   return (
     <>
-      <div className="grid grid-cols-7 mt-4 text-xs leading-6 text-center text-gray-500">
+      <div className="grid grid-cols-7 mt-4 text-xs leading-6 text-center text-neutral-500 dark:text-neutral-400">
         {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((day, i) => (
           <div key={i}>{day}</div>
         ))}
