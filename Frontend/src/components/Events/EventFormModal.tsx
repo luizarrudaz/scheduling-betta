@@ -92,7 +92,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                     <input
                       id="Title"
                       {...register('Title', { required: 'Campo obrigatório' })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent ${errors.Title ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-neutral-100 ${errors.Title ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.Title && <span className="text-red-500 text-xs block mt-1">{errors.Title.message}</span>}
                   </div>
@@ -103,7 +103,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                       id="SessionDuration"
                       type="number"
                       {...register('SessionDuration', { required: 'Campo obrigatório', min: { value: 1, message: 'Mínimo 1 minuto' } })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent ${errors.SessionDuration ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-neutral-100 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${errors.SessionDuration ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.SessionDuration && <span className="text-red-500 text-xs block mt-1">{errors.SessionDuration.message}</span>}
                   </div>
@@ -113,7 +113,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                     <input
                       id="Location"
                       {...register('Location', { required: 'Campo obrigatório' })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent ${errors.Location ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-neutral-100 ${errors.Location ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.Location && <span className="text-red-500 text-xs block mt-1">{errors.Location.message}</span>}
                   </div>
@@ -139,7 +139,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                           id="BreakStartInput"
                           type="time"
                           {...register('BreakStartInput', { required: hasPause })}
-                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent ${errors.BreakStartInput ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
+                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.BreakStartInput ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                         />
                         {errors.BreakStartInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakStartInput.message}</span>}
                       </div>
@@ -149,7 +149,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                           id="BreakEndInput"
                           type="time"
                           {...register('BreakEndInput', { required: hasPause })}
-                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent ${errors.BreakEndInput ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
+                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.BreakEndInput ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                         />
                         {errors.BreakEndInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakEndInput.message}</span>}
                       </div>
@@ -167,7 +167,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                         required: 'Campo obrigatório',
                         validate: (value) => !watch('EndTime') || new Date(value) < new Date(watch('EndTime')) || 'Início deve ser antes do fim'
                       })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent ${errors.StartTime ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.StartTime ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.StartTime && <span className="text-red-500 text-xs block mt-1">{errors.StartTime.message}</span>}
                   </div>
@@ -180,7 +180,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                         required: 'Campo obrigatório',
                         validate: (value) => !watch('StartTime') || new Date(value) > new Date(watch('StartTime')) || 'Fim deve ser após o início'
                       })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent ${errors.EndTime ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.EndTime ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.EndTime && <span className="text-red-500 text-xs block mt-1">{errors.EndTime.message}</span>}
                   </div>
@@ -196,28 +196,28 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
             
             <div className="flex-shrink-0 p-6 border-t border-neutral-200 dark:border-neutral-700">
               <motion.button
-                  type="submit"
-                  form="eventForm"
-                  disabled={isLoading}
-                  whileHover={!isLoading ? { scale: 1.03 } : {}}
-                  whileTap={!isLoading ? { scale: 0.98 } : {}}
-                  className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-soft ${isLoading
-                      ? 'bg-neutral-400 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-400 cursor-not-allowed'
-                      : 'bg-primary text-white hover:bg-primary-dark'
-                    }`}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Processando...
-                    </div>
-                  ) : (
-                    buttonText
-                  )}
-                </motion.button>
+                type="submit"
+                form="eventForm"
+                disabled={isLoading}
+                whileHover={!isLoading ? { scale: 1.03 } : {}}
+                whileTap={!isLoading ? { scale: 0.98 } : {}}
+                className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-soft ${isLoading
+                  ? 'bg-neutral-400 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-400 cursor-not-allowed'
+                  : 'bg-primary text-white hover:bg-primary-dark'
+                }`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Processando...
+                  </div>
+                ) : (
+                  buttonText
+                )}
+              </motion.button>
             </div>
           </motion.div>
         </Dialog>
