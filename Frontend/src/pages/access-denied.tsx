@@ -10,16 +10,16 @@ const AccessDenied = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-200 dark:from-neutral-900 dark:to-neutral-800 flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center"
+        className="bg-white dark:bg-neutral-800 rounded-2xl shadow-strong p-8 max-w-md w-full text-center"
       >
         <div className="flex justify-center mb-6">
-          <div className="bg-orange-100 p-4 rounded-full">
+          <div className="bg-primary-light/10 p-4 rounded-full">
             <svg
-              className="w-12 h-12 text-[#FA7014]"
+              className="w-12 h-12 text-primary"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -35,11 +35,11 @@ const AccessDenied = () => {
           </div>
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+        <h1 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-4">
           Acesso Restrito
         </h1>
 
-        <p className="text-gray-600 mb-6">
+        <p className="text-neutral-600 dark:text-neutral-300 mb-6">
           Você não possui as permissões necessárias para acessar este conteúdo.
         </p>
 
@@ -48,10 +48,10 @@ const AccessDenied = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleNavigation}
-            className="bg-[#FA7014] text-white px-6 py-3 rounded-lg font-medium
-              hover:bg-[#E55F00] transition-colors duration-200 w-full
+            className="bg-primary text-white px-6 py-3 rounded-lg font-medium
+              hover:bg-primary-dark transition-colors duration-200 w-full
               flex items-center justify-center gap-2 focus:outline-none focus:ring-2
-              focus:ring-[#FA7014] focus:ring-offset-2"
+              focus:ring-primary focus:ring-offset-2"
           >
             <ArrowLeftIcon className="w-5 h-5" />
             {window.history.length > 1 ? "Voltar" : "Ir para página inicial"}

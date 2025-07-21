@@ -15,7 +15,7 @@ export default function LogoutButton() {
   return (
     <button 
       onClick={handleLogout}
-      className="absolute top-4 right-4 p-2 text-gray-600 hover:text-red-500 transition-colors"
+      className="absolute top-4 right-4 p-2 text-neutral-600 dark:text-neutral-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
       title="Sair"
     >
       <FontAwesomeIcon icon={faArrowRightFromBracket} className="w-5 h-5" />

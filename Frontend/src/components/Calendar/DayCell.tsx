@@ -20,14 +20,15 @@ export default function DayCell({
 }: DayCellProps) {
   const textColorClasses = () => {
     if (isSelected) return 'text-white';
-    if (isToday) return 'text-red-500';
-    if (!isSameMonth) return 'text-gray-400';
-    return 'text-gray-900';
+    if (isToday) return 'text-primary dark:text-secondary-light font-semibold';
+    if (!isSameMonth) return 'text-neutral-400 dark:text-neutral-500';
+    return 'text-neutral-900 dark:text-neutral-100';
   };
 
   const bgColorClasses = () => {
-    if (isSelected) return isToday ? 'bg-red-500' : 'bg-gray-900';
-    return '';
+    if (isSelected) return isToday ? 'bg-primary dark:bg-primary-dark' : 'bg-neutral-800 dark:bg-neutral-600';
+    if (isToday) return 'bg-primary-light/10 dark:bg-secondary/20';
+    return 'hover:bg-primary-light/10 dark:hover:bg-neutral-700';
   };
 
   return (

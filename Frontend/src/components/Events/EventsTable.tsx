@@ -45,7 +45,7 @@ const SortableHeader = ({
   
     return (
       <th
-        className="px-5 py-4 text-left text-sm font-semibold text-gray-600 whitespace-nowrap cursor-pointer select-none"
+        className="px-5 py-4 text-left text-sm font-semibold text-neutral-600 dark:text-neutral-300 whitespace-nowrap cursor-pointer select-none"
         onClick={() => onSort(sortKey)}
       >
         {label} {sortIcon}
@@ -63,25 +63,25 @@ export default function EventsTable({
 }: EventsTableProps) {
   return (
     <motion.div
-      className="bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100"
+      className="bg-white dark:bg-neutral-800 rounded-xl shadow-medium overflow-hidden border border-neutral-200 dark:border-neutral-700"
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
     >
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-neutral-50 dark:bg-neutral-900/50">
             <tr>
                 <SortableHeader label="Evento" sortKey="title" onSort={onSort} sortConfig={sortConfig} />
                 <SortableHeader label="Local" sortKey="location" onSort={onSort} sortConfig={sortConfig} />
                 <SortableHeader label="Data" sortKey="startTime" onSort={onSort} sortConfig={sortConfig} />
                 <SortableHeader label="Duração" sortKey="sessionDuration" onSort={onSort} sortConfig={sortConfig} />
-                <th className="px-5 py-4 text-left text-sm font-semibold text-gray-600 whitespace-nowrap">
+                <th className="px-5 py-4 text-left text-sm font-semibold text-neutral-600 dark:text-neutral-300 whitespace-nowrap">
                     Ações
                 </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-neutral-200 dark:divide-neutral-700">
             <AnimatePresence>
               {events.map((event) => (
                 <motion.tr
@@ -91,15 +91,15 @@ export default function EventsTable({
                   animate="visible"
                   exit="exit"
                   transition={{ duration: 0.25 }}
-                  className="hover:bg-gray-50 transition-colors"
+                  className="hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
                 >
-                  <td className="px-5 py-4 text-gray-800 max-w-xs truncate font-medium">{event.title}</td>
-                  <td className="px-5 py-4 text-gray-600">{event.location}</td>
-                  <td className="px-5 py-4 text-sm text-gray-700">
+                  <td className="px-5 py-4 text-neutral-800 dark:text-neutral-100 max-w-xs truncate font-medium">{event.title}</td>
+                  <td className="px-5 py-4 text-neutral-600 dark:text-neutral-300">{event.location}</td>
+                  <td className="px-5 py-4 text-sm text-neutral-700 dark:text-neutral-200">
                     {safeFormat(event.startTime, 'dd/MM/yyyy HH:mm')}
                   </td>
                   <td className="px-5 py-4">
-                    <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-xs font-medium">
+                    <span className="bg-neutral-100 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 px-2 py-1 rounded-full text-xs font-medium">
                       {event.sessionDuration} min
                     </span>
                   </td>
@@ -108,7 +108,7 @@ export default function EventsTable({
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => onEdit(event)}
-                      className="p-2 rounded-full text-gray-500 hover:bg-gray-100 transition-colors"
+                      className="p-2 rounded-full text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-600 transition-colors"
                       title="Editar Evento"
                     >
                       <PencilIcon className="w-5 h-5" />
@@ -117,7 +117,7 @@ export default function EventsTable({
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => onDelete(event)}
-                      className="p-2 rounded-full text-red-500 hover:bg-red-50 transition-colors"
+                      className="p-2 rounded-full text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
                       title="Excluir Evento"
                     >
                       <TrashIcon className="w-5 h-5" />

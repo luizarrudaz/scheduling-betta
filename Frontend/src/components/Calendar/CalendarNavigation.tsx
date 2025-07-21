@@ -15,19 +15,19 @@ export default function CalendarNavigation({
 }: CalendarNavigationProps) {
   return (
     <div className="flex items-center">
-      <h2 className="flex-auto font-semibold text-gray-900">
+      <h2 className="flex-auto font-semibold text-neutral-900 dark:text-neutral-100">
         {format(firstDayCurrentMonth, 'MMMM yyyy', { locale: ptBR })
           .replace(/^./, (firstChar) => firstChar.toUpperCase())}
       </h2>
       <button
         onClick={onPrevious}
-        className="-my-1.5 p-1.5 text-gray-400 hover:text-gray-500"
+        className="-my-1.5 p-1.5 text-neutral-400 hover:text-neutral-500 dark:text-neutral-500 dark:hover:text-neutral-300"
       >
         <ChevronLeftIcon className="w-5 h-5" />
       </button>
       <button
         onClick={onNext}
-        className="-my-1.5 -mr-1.5 ml-2 p-1.5 text-gray-400 hover:text-gray-500"
+        className="-my-1.5 -mr-1.5 ml-2 p-1.5 text-neutral-400 hover:text-neutral-500 dark:text-neutral-500 dark:hover:text-neutral-300"
       >
         <ChevronRightIcon className="w-5 h-5" />
       </button>

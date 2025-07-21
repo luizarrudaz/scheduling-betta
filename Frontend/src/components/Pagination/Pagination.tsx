@@ -75,7 +75,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50 transition-colors"
+        className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
       >
         <ChevronLeftIcon className="w-5 h-5" />
       </button>
@@ -85,16 +85,16 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
           <button
             key={page}
             onClick={() => onPageChange(page)}
-            className={`px-4 py-2 rounded-md text-sm font-medium ${
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               currentPage === page
-                ? 'bg-[#FA7014] text-white shadow-md'
-                : 'text-gray-700 hover:bg-orange-50'
-            } transition-colors`}
+                ? 'bg-primary text-white shadow-soft'
+                : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700'
+            }`}
           >
             {page}
           </button>
         ) : (
-          <span key={page} className="px-4 py-2 text-gray-500">
+          <span key={page} className="px-4 py-2 text-neutral-500">
             ...
           </span>
         )
@@ -103,7 +103,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-50 transition-colors"
+        className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
       >
         <ChevronRightIcon className="w-5 h-5" />
       </button>

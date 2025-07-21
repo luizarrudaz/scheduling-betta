@@ -61,7 +61,7 @@ export default function AdminEventsPage() {
   };
 
   return (
-    <div className="h-screen w-screen bg-gray-50 flex flex-col px-6 py-10 relative">
+    <div className="min-h-screen w-screen flex flex-col px-6 py-10 relative">
       <AdminNav />
       <div className="w-full max-w-7xl mx-auto">
         <div className="flex justify-end mb-4">
@@ -72,7 +72,7 @@ export default function AdminEventsPage() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="text-4xl font-extrabold text-gray-800 text-center mb-10"
+          className="text-4xl font-extrabold text-neutral-800 dark:text-neutral-100 text-center mb-10"
         >
           Gerenciar Eventos
         </motion.h1>
@@ -80,12 +80,12 @@ export default function AdminEventsPage() {
         <div className="flex items-center justify-center mb-8 w-full max-w-5xl mx-auto px-4">
           <div className="relative flex-grow max-w-xl">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <MagnifyingGlassIcon className="w-5 h-5 text-gray-400" />
+              <MagnifyingGlassIcon className="w-5 h-5 text-neutral-400" />
             </span>
             <input
               type="text"
               placeholder="Buscar por nome ou local do evento..."
-              className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2 pl-10 pr-4 bg-transparent"
+              className="w-full border-b-2 border-neutral-300 dark:border-neutral-700 focus:outline-none focus:border-primary py-2 pl-10 pr-4 bg-transparent text-neutral-800 dark:text-neutral-200"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -93,7 +93,7 @@ export default function AdminEventsPage() {
 
           <motion.button
             onClick={() => handleOpenFormModal()}
-            className="ml-4 bg-[#FA7014] text-white p-3 rounded-full font-bold shadow-lg hover:bg-[#E55F00] transition-all"
+            className="ml-4 bg-primary text-white p-3 rounded-full font-bold shadow-lg hover:bg-primary-dark transition-all"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
             title="Criar Novo Evento"
@@ -156,18 +156,18 @@ export default function AdminEventsPage() {
                     initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     exit={{ scale: 0.95, opacity: 0 }}
-                    className="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col"
+                    className="bg-white dark:bg-neutral-800 rounded-2xl shadow-strong w-full max-w-md flex flex-col"
                 >
                     <div className="p-6 flex items-start space-x-4">
                         <div className="flex-shrink-0 mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0">
                             <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
                         </div>
                         <div className="flex-grow">
-                            <Dialog.Title as="h3" className="text-lg font-bold text-gray-900">
+                            <Dialog.Title as="h3" className="text-lg font-bold text-neutral-900 dark:text-neutral-100">
                                 Confirmar Exclusão
                             </Dialog.Title>
                             <div className="mt-2">
-                                <p className="text-sm text-gray-600">
+                                <p className="text-sm text-neutral-600 dark:text-neutral-300">
                                     Tem certeza que deseja excluir o evento "{eventToDelete.title}"? Todos os agendamentos associados também serão removidos.
                                 </p>
                             </div>
@@ -177,13 +177,13 @@ export default function AdminEventsPage() {
                             whileTap={{ scale: 0.9 }}
                             onClick={() => setIsDeleteModalOpen(false)}
                             disabled={isDeleting}
-                            className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                            className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 disabled:opacity-50"
                         >
                             <XMarkIcon className="h-6 w-6" />
                         </motion.button>
                     </div>
-                    <div className="bg-gray-50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 rounded-b-2xl">
-                        <button type="button" disabled={isDeleting} className="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50" onClick={() => setIsDeleteModalOpen(false)}>
+                    <div className="bg-neutral-50 dark:bg-neutral-900/50 px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-3 rounded-b-2xl">
+                        <button type="button" disabled={isDeleting} className="mt-3 sm:mt-0 w-full inline-flex justify-center rounded-lg border border-neutral-300 dark:border-neutral-600 shadow-sm px-4 py-2 bg-white dark:bg-neutral-700 text-base font-medium text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 disabled:opacity-50" onClick={() => setIsDeleteModalOpen(false)}>
                             Cancelar
                         </button>
                         <button type="button" disabled={isDeleting} className="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 disabled:bg-red-400" onClick={handleConfirmDelete}>
@@ -205,11 +205,15 @@ const LoadingSkeleton = () => (
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
   >
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
-    <div className="flex space-x-4 animate-pulse"><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/4" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /><div className="h-6 bg-gray-200 rounded w-1/6" /></div>
+    {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex space-x-4 animate-pulse">
+            <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" />
+            <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/4" />
+            <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" />
+            <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" />
+            <div className="h-6 bg-neutral-200 dark:bg-neutral-700 rounded w-1/6" />
+        </div>
+    ))}
   </motion.div>
 );
 
@@ -228,11 +232,11 @@ const NoEvents = ({
     transition={{ duration: 0.3 }}
     className="flex flex-col items-center justify-center h-[50vh]"
   >
-    <div className="text-center py-6 px-6 bg-white rounded-2xl shadow-2xl w-80">
-      <p className="text-gray-600 mb-4 text-lg">{message}</p>
+    <div className="text-center py-6 px-6 bg-white dark:bg-neutral-800 rounded-2xl shadow-medium w-80">
+      <p className="text-neutral-600 dark:text-neutral-300 mb-4 text-lg">{message}</p>
       <motion.button
         onClick={onButtonClick}
-        className="w-full bg-[#FA7014] text-white py-3 rounded-xl font-semibold hover:bg-[#E55F00] transition-all duration-300"
+        className="w-full bg-primary text-white py-3 rounded-xl font-semibold hover:bg-primary-dark transition-all duration-300"
         whileHover={{ scale: 1.03 }}
         whileTap={{ scale: 0.95 }}
       >

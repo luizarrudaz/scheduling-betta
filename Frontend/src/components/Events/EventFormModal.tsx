@@ -57,11 +57,11 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col h-auto max-h-[90vh]"
+            className="bg-white dark:bg-neutral-800 rounded-2xl shadow-strong w-full max-w-2xl flex flex-col h-auto max-h-[90vh]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex-shrink-0 flex justify-between items-center p-6">
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-2xl font-bold text-neutral-800 dark:text-neutral-100">
                 {event ? 'Editar Evento' : 'Novo Evento'}
               </h2>
               <motion.button
@@ -69,7 +69,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                 whileTap={{ scale: 0.9 }}
                 onClick={onClose}
                 disabled={isLoading}
-                className="text-gray-500 hover:text-gray-700 disabled:opacity-50"
+                className="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 disabled:opacity-50"
                 aria-label="Fechar modal"
               >
                 <XMarkIcon className="h-7 w-7" />
@@ -88,39 +88,39 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
               <div className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                   <div className="md:col-span-2">
-                    <label htmlFor="Title" className="block text-sm font-semibold text-gray-600 mb-2">Nome do Evento *</label>
+                    <label htmlFor="Title" className="block text-sm font-semibold text-neutral-600 dark:text-neutral-300 mb-2">Nome do Evento *</label>
                     <input
                       id="Title"
                       {...register('Title', { required: 'Campo obrigatório' })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Title ? 'border-red-500' : 'border-gray-200'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-neutral-100 ${errors.Title ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.Title && <span className="text-red-500 text-xs block mt-1">{errors.Title.message}</span>}
                   </div>
 
                   <div>
-                    <label htmlFor="SessionDuration" className="block text-sm font-semibold text-gray-600 mb-2">Duração (minutos) *</label>
+                    <label htmlFor="SessionDuration" className="block text-sm font-semibold text-neutral-600 dark:text-neutral-300 mb-2">Duração (minutos) *</label>
                     <input
                       id="SessionDuration"
                       type="number"
                       {...register('SessionDuration', { required: 'Campo obrigatório', min: { value: 1, message: 'Mínimo 1 minuto' } })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.SessionDuration ? 'border-red-500' : 'border-gray-200'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-neutral-100 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${errors.SessionDuration ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.SessionDuration && <span className="text-red-500 text-xs block mt-1">{errors.SessionDuration.message}</span>}
                   </div>
 
                   <div>
-                    <label htmlFor="Location" className="block text-sm font-semibold text-gray-600 mb-2">Local *</label>
+                    <label htmlFor="Location" className="block text-sm font-semibold text-neutral-600 dark:text-neutral-300 mb-2">Local *</label>
                     <input
                       id="Location"
                       {...register('Location', { required: 'Campo obrigatório' })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.Location ? 'border-red-500' : 'border-gray-200'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-neutral-100 ${errors.Location ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.Location && <span className="text-red-500 text-xs block mt-1">{errors.Location.message}</span>}
                   </div>
 
                   <div className="md:col-span-2 flex items-center gap-3">
-                    <input id="Pause" type="checkbox" {...register('Pause')} className="h-5 w-5 text-[#FA7014] rounded focus:ring-[#FA7014]" />
-                    <label htmlFor="Pause" className="text-sm text-gray-600">Incluir pausa programada</label>
+                    <input id="Pause" type="checkbox" {...register('Pause')} className="h-5 w-5 text-primary rounded focus:ring-primary" />
+                    <label htmlFor="Pause" className="text-sm text-neutral-600 dark:text-neutral-300">Incluir pausa programada</label>
                   </div>
                 </div>
 
@@ -134,22 +134,22 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                       className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5"
                     >
                       <div>
-                        <label htmlFor="BreakStartInput" className="block text-sm font-semibold text-gray-600 mb-2">Início da Pausa *</label>
+                        <label htmlFor="BreakStartInput" className="block text-sm font-semibold text-neutral-600 dark:text-neutral-300 mb-2">Início da Pausa *</label>
                         <input
                           id="BreakStartInput"
                           type="time"
                           {...register('BreakStartInput', { required: hasPause })}
-                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakStartInput ? 'border-red-500' : 'border-gray-200'}`}
+                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.BreakStartInput ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                         />
                         {errors.BreakStartInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakStartInput.message}</span>}
                       </div>
                       <div>
-                        <label htmlFor="BreakEndInput" className="block text-sm font-semibold text-gray-600 mb-2">Fim da Pausa *</label>
+                        <label htmlFor="BreakEndInput" className="block text-sm font-semibold text-neutral-600 dark:text-neutral-300 mb-2">Fim da Pausa *</label>
                         <input
                           id="BreakEndInput"
                           type="time"
                           {...register('BreakEndInput', { required: hasPause })}
-                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.BreakEndInput ? 'border-red-500' : 'border-gray-200'}`}
+                          className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.BreakEndInput ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                         />
                         {errors.BreakEndInput && <span className="text-red-500 text-xs block mt-1">{errors.BreakEndInput.message}</span>}
                       </div>
@@ -159,7 +159,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
                   <div>
-                    <label htmlFor="StartTime" className="block text-sm font-semibold text-gray-600 mb-2">Início *</label>
+                    <label htmlFor="StartTime" className="block text-sm font-semibold text-neutral-600 dark:text-neutral-300 mb-2">Início *</label>
                     <input
                       id="StartTime"
                       type="datetime-local"
@@ -167,12 +167,12 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                         required: 'Campo obrigatório',
                         validate: (value) => !watch('EndTime') || new Date(value) < new Date(watch('EndTime')) || 'Início deve ser antes do fim'
                       })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.StartTime ? 'border-red-500' : 'border-gray-200'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.StartTime ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.StartTime && <span className="text-red-500 text-xs block mt-1">{errors.StartTime.message}</span>}
                   </div>
                   <div>
-                    <label htmlFor="EndTime" className="block text-sm font-semibold text-gray-600 mb-2">Fim *</label>
+                    <label htmlFor="EndTime" className="block text-sm font-semibold text-neutral-600 dark:text-neutral-300 mb-2">Fim *</label>
                     <input
                       id="EndTime"
                       type="datetime-local"
@@ -180,7 +180,7 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
                         required: 'Campo obrigatório',
                         validate: (value) => !watch('StartTime') || new Date(value) > new Date(watch('StartTime')) || 'Fim deve ser após o início'
                       })}
-                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-[#FA7014] transition-colors ${errors.EndTime ? 'border-red-500' : 'border-gray-200'}`}
+                      className={`w-full border-b-2 py-2 focus:outline-none focus:border-primary transition-colors bg-transparent text-neutral-800 dark:text-white dark:[color-scheme:dark] ${errors.EndTime ? 'border-red-500' : 'border-neutral-200 dark:border-neutral-600'}`}
                     />
                     {errors.EndTime && <span className="text-red-500 text-xs block mt-1">{errors.EndTime.message}</span>}
                   </div>
@@ -194,30 +194,30 @@ export default function EventFormModal({ isOpen, onClose, event, onSuccess }: Ev
               </div>
             </motion.form>
             
-            <div className="flex-shrink-0 p-6 border-t border-gray-200">
+            <div className="flex-shrink-0 p-6 border-t border-neutral-200 dark:border-neutral-700">
               <motion.button
-                  type="submit"
-                  form="eventForm"
-                  disabled={isLoading}
-                  whileHover={!isLoading ? { scale: 1.03 } : {}}
-                  whileTap={!isLoading ? { scale: 0.98 } : {}}
-                  className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-md ${isLoading
-                      ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                      : 'bg-[#FA7014] text-white hover:bg-[#E55F00]'
-                    }`}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center">
-                      <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                      </svg>
-                      Processando...
-                    </div>
-                  ) : (
-                    buttonText
-                  )}
-                </motion.button>
+                type="submit"
+                form="eventForm"
+                disabled={isLoading}
+                whileHover={!isLoading ? { scale: 1.03 } : {}}
+                whileTap={!isLoading ? { scale: 0.98 } : {}}
+                className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 shadow-soft ${isLoading
+                  ? 'bg-neutral-400 dark:bg-neutral-600 text-neutral-600 dark:text-neutral-400 cursor-not-allowed'
+                  : 'bg-primary text-white hover:bg-primary-dark'
+                }`}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center">
+                    <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Processando...
+                  </div>
+                ) : (
+                  buttonText
+                )}
+              </motion.button>
             </div>
           </motion.div>
         </Dialog>

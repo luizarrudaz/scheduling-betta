@@ -88,14 +88,14 @@ export default function TimeSlotsPanel({
     <AnimatePresence>
       {isExpanded && selectedEvent && (
         <motion.div
-          className="border-l border-gray-200 pl-6 flex-1"
+          className="border-l border-neutral-200 dark:border-neutral-700 pl-6 flex-1"
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
           transition={{ duration: 0.2 }}
         >
-          <h2 className="font-semibold text-gray-900 mb-4">
-            Horários para <span className='text-[#FA7014]'>{selectedEvent.title}</span> em {format(selectedDay, 'dd/MM/yyyy')}
+          <h2 className="font-semibold text-neutral-900 dark:text-neutral-100 mb-4">
+            Horários para <span className='text-primary dark:text-primary-lighter'>{selectedEvent.title}</span> em {format(selectedDay, 'dd/MM/yyyy')}
           </h2>
 
           <div className="overflow-y-auto pr-2" style={{ maxHeight: '240px' }}>
@@ -107,20 +107,20 @@ export default function TimeSlotsPanel({
                     const isMine = occupation?.isMine ?? false;
                     const isBreak = slot.isBreak;
 
-                    let bgColor = 'bg-gray-50 hover:bg-gray-100 cursor-pointer';
-                    let textColor = 'text-gray-900';
+                    let bgColor = 'bg-neutral-50 dark:bg-neutral-700/50 hover:bg-neutral-100 dark:hover:bg-neutral-700 cursor-pointer';
+                    let textColor = 'text-neutral-900 dark:text-neutral-100';
                     let cursor = 'cursor-pointer';
 
                     if (isBreak) {
-                        bgColor = 'bg-gray-200';
-                        textColor = 'text-gray-500';
+                        bgColor = 'bg-neutral-200 dark:bg-neutral-600';
+                        textColor = 'text-neutral-500 dark:text-neutral-400';
                         cursor = 'cursor-not-allowed';
                     } else if (isMine) {
-                      bgColor = 'bg-green-100 hover:bg-green-200';
-                      textColor = 'text-green-800';
+                      bgColor = 'bg-green-100 dark:bg-green-900/50 hover:bg-green-200 dark:hover:bg-green-900';
+                      textColor = 'text-green-800 dark:text-green-300';
                     } else if (isOccupied) {
-                      bgColor = 'bg-red-100';
-                      textColor = 'text-red-500';
+                      bgColor = 'bg-red-100 dark:bg-red-900/40';
+                      textColor = 'text-red-500 dark:text-red-400';
                       cursor = 'cursor-not-allowed';
                     }
 
@@ -140,7 +140,7 @@ export default function TimeSlotsPanel({
                 })}
                 </div>
             ) : (
-                <div className="text-center text-gray-500 py-10">
+                <div className="text-center text-neutral-500 dark:text-neutral-400 py-10">
                     Nenhum horário disponível para este dia.
                 </div>
             )}
