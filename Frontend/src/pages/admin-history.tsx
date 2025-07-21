@@ -21,6 +21,20 @@ export default function AdminHistoryPage() {
   const [dateFilter, setDateFilter] = useState('last3months');
   const [availableYears, setAvailableYears] = useState<number[]>([]);
 
+  const { schedules, loading } = useAllSchedules({
+    searchTerm,
+    sortConfig,
+    timeFilter: 'past',
+    dateRangeFilter: dateFilter
+  });
+
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    setCurrentPage,
+  } = usePagination(schedules, 8);
+
   useEffect(() => {
     const fetchYears = async () => {
         try {
@@ -33,26 +47,22 @@ export default function AdminHistoryPage() {
     fetchYears();
   }, []);
 
-  const { schedules, loading } = useAllSchedules({ 
-    searchTerm, 
-    sortConfig,
-    timeFilter: 'past',
-    dateRangeFilter: dateFilter
-  });
-  
-  const {
-    currentPage,
-    totalPages,
-    paginatedData,
-    setCurrentPage,
-  } = usePagination(schedules, 8);
-
   const requestSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
+  };
+
+  const handleDateFilterChange = (filter: string) => {
+    setDateFilter(filter);
+    setCurrentPage(1);
+  };
+
+  const handleSearchTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1);
   };
 
   const handleCsvDownload = () => {
@@ -90,14 +100,14 @@ export default function AdminHistoryPage() {
               placeholder="Buscar por evento, nome ou e-mail..."
               className="w-full border-b-2 border-gray-200 focus:outline-none focus:border-[#FA7014] py-2 pl-10 pr-4 bg-transparent"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchTermChange}
             />
           </div>
           <DownloadButton onCsvDownload={handleCsvDownload} onXlsxDownload={handleXlsxDownload} />
         </div>
-        
+
         <div className="mb-6">
-            <DateFilterSelector availableYears={availableYears} onFilterChange={setDateFilter} />
+            <DateFilterSelector availableYears={availableYears} onFilterChange={handleDateFilterChange} />
         </div>
 
         {loading ? (

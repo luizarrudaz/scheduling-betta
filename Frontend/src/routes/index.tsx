@@ -5,7 +5,7 @@ import Events from "../pages/events";
 import Schedulings from "../pages/user-schedules";
 import AdminEvents from "../pages/admin-events";
 import AdminSchedules from "../pages/admin-schedules";
-import AdminHistory from "../pages/history-admin";
+import AdminHistory from "../pages/admin-history";
 import AccessDenied from "../pages/access-denied";
 import ProtectedRoute from "./ProtectedRoute";
 
