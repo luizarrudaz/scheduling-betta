@@ -132,6 +132,7 @@ SMTP_ENABLE_SSL=true
 ### 2. Logs (nlog.config)
 
 Crie um arquivo chamado `nlog.config` para definir o comportamento dos logs da aplicação.
+
 ```bash
 <?xml version="1.0" encoding="utf-8" ?>
 <nlog xmlns="[http://www.nlog-project.org/schemas/NLog.xsd](http://www.nlog-project.org/schemas/NLog.xsd)"
