@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { startOfToday, format, parse, add, isSameDay, startOfDay, endOfDay, isWithinInterval, parseISO } from 'date-fns';
+import { startOfToday, format, parse, add, isSameDay, startOfDay, endOfDay, isWithinInterval, parseISO, getDay, getDaysInMonth } from 'date-fns';
 import { motion } from "framer-motion";
 import { Event } from '../types/Event/Event';
 import useEvents from '../hooks/Events/UseEvents';
@@ -39,6 +39,22 @@ export default function Calendar() {
   }, [location.state, events, navigate]);
 
   const firstDayCurrentMonth = parse(currentMonth, 'MMM-yyyy', new Date());
+
+  const calendarRows = useMemo(() => {
+    const firstDayWeekday = getDay(firstDayCurrentMonth);
+    const daysInMonth = getDaysInMonth(firstDayCurrentMonth);
+    return Math.ceil((firstDayWeekday + daysInMonth) / 7);
+  }, [firstDayCurrentMonth]);
+  
+  const timeSlotPanelHeight = useMemo(() => {
+    if (calendarRows === 6) {
+      return '320px';
+    }
+    if (calendarRows === 5) {
+      return '260px';
+    }
+    return '240px';
+  }, [calendarRows]);
 
   const occupiedSlotsForEvent = useMemo(() => {
     if (!selectedEvent) return [];
@@ -163,6 +179,7 @@ export default function Calendar() {
             selectedEvent={selectedEvent}
             occupiedSlots={occupiedSlotsForEvent}
             onScheduleSuccess={refetchSchedules}
+            panelHeight={timeSlotPanelHeight}
           />
         </motion.div>
       </div>
