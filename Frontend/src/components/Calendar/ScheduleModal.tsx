@@ -43,9 +43,19 @@ export default function ScheduleModal({
         : `Você confirma o agendamento para o horário das ${selectedTime}?`;
     const confirmText = isCancelling ? 'Sim, cancelar' : 'Confirmar';
     const Icon = isCancelling ? ExclamationTriangleIcon : CalendarDaysIcon;
-    const iconBgColor = isCancelling ? 'bg-red-100' : 'bg-primary-light/10';
-    const iconTextColor = isCancelling ? 'text-red-600' : 'text-primary';
-    const confirmButtonBgColor = isCancelling ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400' : 'bg-primary hover:bg-primary-dark focus:ring-primary disabled:bg-primary-light';
+
+    const iconBgColor = isCancelling
+        ? 'bg-red-100 dark:bg-red-900/40'
+        : 'bg-primary-light/10 dark:bg-primary-light/20';
+
+    const iconTextColor = isCancelling
+        ? 'text-red-600 dark:text-red-400'
+        : 'text-primary dark:text-primary-lighter';
+
+    const confirmButtonBgColor = isCancelling
+        ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400'
+        : 'bg-primary hover:bg-primary-dark focus:ring-primary disabled:bg-primary-light';
+    
     const confirmAction = isCancelling ? onCancel : onSchedule;
 
     return (
@@ -76,7 +86,7 @@ export default function ScheduleModal({
                                     <p className="text-sm text-neutral-600 dark:text-neutral-300">{message}</p>
                                 </div>
                                 {error && (
-                                    <div className="mt-3 bg-red-50 text-red-700 p-3 rounded-lg text-sm text-center">
+                                    <div className="mt-3 bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400 p-3 rounded-lg text-sm text-center">
                                         {error}
                                     </div>
                                 )}

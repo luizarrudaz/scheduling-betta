@@ -21,14 +21,14 @@ export default function ServiceSelector({ services, selectedService, onServiceSe
       <div className="relative w-full text-sm">
         <div className="flex flex-wrap gap-2 mb-2 min-h-[32px]">
           {selectedService && (
-            <div className="flex items-center bg-primary-light/10 dark:bg-primary/20 rounded-full px-2.5 py-0.5 border border-primary-light/20 dark:border-primary/30">
+            <div className="flex items-center bg-primary-light/10 dark:bg-primary-lighter/20 rounded-full px-2.5 py-0.5 border border-primary-light/20 dark:border-primary-lighter/30">
               <span className="mr-1.5 text-primary-dark dark:text-neutral-100 font-medium text-sm truncate max-w-[160px]">
                 {selectedService.title}
               </span>
               <button
                 type="button"
                 onClick={() => onServiceSelect(null)}
-                className="text-primary-light hover:text-primary dark:text-primary-light/70 dark:hover:text-primary-light"
+                className="text-primary-light hover:text-primary dark:text-primary-lighter/70 dark:hover:text-primary-lighter"
               >
                 <XMarkIcon className="w-3.5 h-3.5" />
               </button>

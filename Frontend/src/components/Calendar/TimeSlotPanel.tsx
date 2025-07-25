@@ -15,6 +15,7 @@ interface TimeSlotsPanelProps {
   selectedEvent: Event | null;
   occupiedSlots: OccupiedSlot[];
   onScheduleSuccess: () => void;
+  panelHeight: string;
 }
 
 export default function TimeSlotsPanel({
@@ -22,7 +23,8 @@ export default function TimeSlotsPanel({
   selectedDay,
   selectedEvent,
   occupiedSlots,
-  onScheduleSuccess
+  onScheduleSuccess,
+  panelHeight,
 }: TimeSlotsPanelProps) {
 
   const { createSchedule, isLoading: isScheduling, error: scheduleError, setError: setScheduleError } = useCreateSchedule();
@@ -98,7 +100,10 @@ export default function TimeSlotsPanel({
             Horários para <span className='text-primary dark:text-primary-lighter'>{selectedEvent.title}</span> em {format(selectedDay, 'dd/MM/yyyy')}
           </h2>
 
-          <div className="overflow-y-auto pr-2" style={{ maxHeight: '240px' }}>
+          <div 
+            className="overflow-y-auto pr-2 transition-all duration-300 ease-in-out"
+            style={{ maxHeight: panelHeight }}
+          >
             {allSlots.length > 0 ? (
                 <div className="grid grid-cols-4 gap-3">
                 {allSlots.map((slot) => {
@@ -125,17 +130,15 @@ export default function TimeSlotsPanel({
                     }
 
                     return (
-                    <motion.div
+                    <div
                         key={slot.startTime}
                         className={`p-3 rounded-lg text-center ${bgColor} ${cursor} transition-colors duration-150`}
-                        whileHover={{ scale: (isOccupied && !isMine) || isBreak ? 1 : 1.03 }}
-                        transition={{ type: "spring", stiffness: 300 }}
                         onClick={() => (!isOccupied || isMine) && !isBreak ? handleTimeClick(slot.startTime, occupation?.scheduleId) : null}
                     >
                         <span className={`font-medium ${textColor}`}>
                           {slot.startTime}
                         </span>
-                    </motion.div>
+                    </div>
                     );
                 })}
                 </div>

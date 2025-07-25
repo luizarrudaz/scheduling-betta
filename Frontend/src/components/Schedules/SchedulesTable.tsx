@@ -49,11 +49,12 @@ interface SchedulesTableProps {
   disabled?: boolean;
 }
 
-const SortableHeader = ({ label, sortKey, onSort, sortConfig }: {
+const SortableHeader = ({ label, sortKey, onSort, sortConfig, isCentered = false }: {
   label: string;
   sortKey: SortKey;
   onSort: (key: SortKey) => void;
   sortConfig: SchedulesTableProps['sortConfig'];
+  isCentered?: boolean;
 }) => {
   const isSorted = sortConfig?.key === sortKey;
   let sortIcon = '';
@@ -61,9 +62,11 @@ const SortableHeader = ({ label, sortKey, onSort, sortConfig }: {
     sortIcon = sortConfig?.direction === 'ascending' ? '▲' : '▼';
   }
 
+  const alignmentClass = isCentered ? 'text-center' : 'text-left';
+
   return (
     <th
-      className="px-5 py-4 text-left text-sm font-semibold text-neutral-600 dark:text-neutral-300 whitespace-nowrap cursor-pointer select-none"
+      className={`px-5 py-4 ${alignmentClass} text-sm font-semibold text-neutral-600 dark:text-neutral-300 whitespace-nowrap cursor-pointer select-none`}
       onClick={() => onSort(sortKey)}
     >
       {label} {sortIcon}
@@ -93,7 +96,7 @@ export default function SchedulesTable({
               <SortableHeader label="Evento" sortKey="event.title" onSort={onSort} sortConfig={sortConfig} />
               <SortableHeader label="Nome" sortKey="displayName" onSort={onSort} sortConfig={sortConfig} />
               <SortableHeader label="Email" sortKey="email" onSort={onSort} sortConfig={sortConfig} />
-              <SortableHeader label="Duração" sortKey="event.sessionDuration" onSort={onSort} sortConfig={sortConfig} />
+              <SortableHeader label="Duração" sortKey="event.sessionDuration" onSort={onSort} sortConfig={sortConfig} isCentered={true} />
               <SortableHeader label="Data" sortKey="selectedSlot" onSort={onSort} sortConfig={sortConfig} />
               {showActions && (
                 <th className="px-5 py-4 text-center text-sm font-semibold text-neutral-600 dark:text-neutral-300">Ações</th>
