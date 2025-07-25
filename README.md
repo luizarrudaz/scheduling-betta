@@ -91,6 +91,77 @@ The system was refactored to adopt a **Server-Side Processing** architecture. Al
 
 ---
 
+## ⚙️ Configuration
+
+To run the backend project, you need to create two configuration files in the root of the `SchedulingBetta.API` project (at the same level as the `Program.cs` file).
+
+### 1. Environment Variables (`.env`)
+
+Create a file named `.env` and add the following content, filling in the values according to your environment.
+
+```bash
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=your_db_password
+DB_NAME=scheduling-db
+DB_CONNECTION_STRING=Host=${DB_HOST};Port=${DB_PORT};Username=${DB_USERNAME};Password=${DB_PASSWORD};Database=${DB_NAME}
+
+# LDAP Configuration
+LDAP_SERVER=your-domain.local
+LDAP_DOMAIN_DN=DC=your-domain,DC=local
+
+# JWT Configuration
+JWT_SECRET=this-is-an-example-secret-key-with-32-bytes
+JWT_ISSUER=SchedulingBetta.API
+JWT_AUDIENCE=SchedulingBetta.Frontend
+JWT_EXPIRE_HOURS=8
+
+# Application Vars
+# MAX_WAITLIST_CAPACITY=4 / not implemented yet
+
+# SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your-email@gmail.com
+SMTP_PASSWORD=your-gmail-app-password
+SMTP_FROM=your-email@gmail.com
+SMTP_GROUP_EMAIL=company-group@your-domain.com
+SMTP_ENABLE_SSL=true
+```
+
+### 2. Logging (nlog.config)
+
+Create a file named `nlog.config` to define the application's logging behavior.
+
+```bash
+<?xml version="1.0" encoding="utf-8" ?>
+<nlog xmlns="[http://www.nlog-project.org/schemas/NLog.xsd](http://www.nlog-project.org/schemas/NLog.xsd)"
+      xmlns:xsi="[http://www.w3.org/2001/XMLSchema-instance](http://www.w3.org/2001/XMLSchema-instance)"
+      autoReload="true">
+
+  <targets>
+    <target name="logfile" xsi:type="File"
+            fileName="${basedir}/Logs/log-${shortdate}.log"
+            layout="${longdate}|${level:uppercase=true}|${logger}|${message} ${exception:format=tostring}" />
+    
+    <target name="logconsole" xsi:type="Console" 
+            layout="${longdate}|${level:uppercase=true}|${logger}|${message}" />
+  </targets>
+
+  <rules>
+    <logger name="Microsoft.*" minlevel="Trace" maxlevel="Info" final="true" />
+    <logger name="System.Net.Http.*" minlevel="Trace" maxlevel="Info" final="true" />
+
+    <logger name="*" minlevel="Info" writeTo="logconsole" />
+    <logger name="*" minlevel="Debug" writeTo="logfile" />
+  </rules>
+</nlog>
+```
+
+---
+
 ## 🤝 Contributing
 
 1. Fork the repository
