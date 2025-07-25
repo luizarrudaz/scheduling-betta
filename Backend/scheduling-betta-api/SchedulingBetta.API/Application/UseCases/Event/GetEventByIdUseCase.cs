@@ -6,20 +6,25 @@ using SchedulingBetta.API.Domain.ValueObjects;
 public class GetEventByIdUseCase : IGetEventByIdUseCase
 {
     private readonly IEventRepository _eventRepository;
+    private readonly ILogger<GetEventByIdUseCase> _logger;
 
-    public GetEventByIdUseCase(IEventRepository eventRepository)
+    public GetEventByIdUseCase(IEventRepository eventRepository, ILogger<GetEventByIdUseCase> logger)
     {
         _eventRepository = eventRepository;
+        _logger = logger;
     }
 
     public async Task<GetEventDto?> Execute(int id)
     {
+        _logger.LogInformation("GetEventByIdUseCase|Execute :: Buscando evento pelo ID {EventId}", id);
         var eventEntity = await _eventRepository.GetEventById(id);
         if (eventEntity == null)
         {
+            _logger.LogWarning("GetEventByIdUseCase|Execute :: Evento com ID {EventId} não encontrado.", id);
             return null;
         }
 
+        _logger.LogInformation("GetEventByIdUseCase|Execute :: Evento com ID {EventId} encontrado com sucesso.", id);
         return new GetEventDto
         {
             Id = eventEntity.Id,

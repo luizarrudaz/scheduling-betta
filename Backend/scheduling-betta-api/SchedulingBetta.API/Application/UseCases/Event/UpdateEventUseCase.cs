@@ -37,8 +37,13 @@ public class UpdateEventUseCase : IUpdateEventUseCase
 
     public async Task<UpdateEventDto?> Execute(int id, EventDto command)
     {
+        _logger.LogInformation("UpdateEventUseCase|Execute :: Iniciando atualização para o evento ID {EventId}", id);
         var eventToUpdate = await _eventRepository.GetEventById(id);
-        if (eventToUpdate == null) return null;
+        if (eventToUpdate == null)
+        {
+            _logger.LogWarning("UpdateEventUseCase|Execute :: Evento ID {EventId} não encontrado para atualização.", id);
+            return null;
+        }
 
         var existingSchedules = await _eventRepository.GetSchedulesByEventId(id);
 
@@ -67,13 +72,16 @@ public class UpdateEventUseCase : IUpdateEventUseCase
 
         if (existingSchedules.Any())
         {
+            _logger.LogInformation("UpdateEventUseCase|Execute :: Removendo {Count} agendamentos existentes para o evento ID {EventId} devido à atualização.", existingSchedules.Count, id);
             _eventRepository.RemoveScheduleRange(existingSchedules);
         }
 
         await _eventRepository.UpdateEvent(eventToUpdate);
         await _unitOfWork.Commit();
+        _logger.LogInformation("UpdateEventUseCase|Execute :: Evento ID {EventId} atualizado com sucesso no banco de dados.", id);
 
         await _eventNotificationService.NotifyEventUpdated(eventToUpdate);
+        _logger.LogInformation("UpdateEventUseCase|Execute :: Notificação de atualização enviada para o evento ID {EventId}", id);
 
         return new UpdateEventDto
         {

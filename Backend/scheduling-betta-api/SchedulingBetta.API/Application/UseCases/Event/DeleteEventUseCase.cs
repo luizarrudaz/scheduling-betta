@@ -25,20 +25,28 @@ public class DeleteEventUseCase : IDeleteEventUseCase
 
     public async Task<bool> Execute(int id)
     {
+        _logger.LogInformation("DeleteEventUseCase|Execute :: Iniciando exclusão do evento ID {EventId}", id);
         var eventToDelete = await _eventRepository.GetEventById(id);
-        if (eventToDelete == null) return false;
+        if (eventToDelete == null)
+        {
+            _logger.LogWarning("DeleteEventUseCase|Execute :: Evento ID {EventId} não encontrado.", id);
+            return false;
+        }
 
         var existingSchedules = await _eventRepository.GetSchedulesByEventId(id);
 
         if (existingSchedules.Any())
         {
+            _logger.LogInformation("DeleteEventUseCase|Execute :: Removendo {Count} agendamentos associados ao evento ID {EventId}", existingSchedules.Count, id);
             _eventRepository.RemoveScheduleRange(existingSchedules);
         }
 
         await _eventRepository.DeleteEvent(eventToDelete);
         await _unitOfWork.Commit();
+        _logger.LogInformation("DeleteEventUseCase|Execute :: Evento ID {EventId} e agendamentos associados removidos com sucesso.", id);
 
         await _eventNotificationService.NotifyEventCancelled(eventToDelete);
+        _logger.LogInformation("DeleteEventUseCase|Execute :: Notificação de cancelamento de evento enviada para o evento ID {EventId}", id);
 
         return true;
     }

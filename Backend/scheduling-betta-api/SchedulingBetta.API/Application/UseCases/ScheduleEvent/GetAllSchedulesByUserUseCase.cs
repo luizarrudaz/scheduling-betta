@@ -20,7 +20,7 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
 
         public async Task<List<GetScheduledEventDto>> Execute(string userId)
         {
-            _logger.LogInformation("Fetching event schedules for user {UserId}", userId);
+            _logger.LogInformation("GetAllSchedulesByUserUseCase|Execute :: Buscando agendamentos para o usuário {UserId}", userId);
 
             var schedules = await _eventRepository.GetAllSchedulesByUser(userId);
 
@@ -52,6 +52,7 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
                 }
             }).ToList();
 
+            _logger.LogInformation("GetAllSchedulesByUserUseCase|Execute :: {Count} agendamentos encontrados para o usuário {UserId}", result.Count, userId);
             return result;
         }
     }

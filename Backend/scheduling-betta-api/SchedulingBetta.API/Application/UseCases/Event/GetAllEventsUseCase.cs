@@ -8,17 +8,21 @@ namespace SchedulingBetta.API.Application.UseCases.Event;
 public class GetAllEventsUseCase : IGetAllEventsUseCase
 {
     private readonly IEventRepository _eventRepository;
+    private readonly ILogger<GetAllEventsUseCase> _logger;
 
-    public GetAllEventsUseCase(IEventRepository eventRepository)
+    public GetAllEventsUseCase(IEventRepository eventRepository, ILogger<GetAllEventsUseCase> logger)
     {
         _eventRepository = eventRepository;
+        _logger = logger;
     }
 
     public async Task<List<GetEventDto>> Execute(GetAllEventsRequestDto request)
     {
+        _logger.LogInformation("GetAllEventsUseCase|Execute :: Buscando todos os eventos com os filtros: Filter={Filter}, SearchTerm={SearchTerm}", request.Filter, request.SearchTerm);
         var events = await _eventRepository.GetAllEvents(request);
-        if (events == null || events.Count == 0)
+        if (events == null || !events.Any())
         {
+            _logger.LogInformation("GetAllEventsUseCase|Execute :: Nenhum evento encontrado.");
             return new List<GetEventDto>();
         }
 
@@ -38,6 +42,7 @@ public class GetAllEventsUseCase : IGetAllEventsUseCase
             AvailableSlots = e.AvailableSlots
         }).ToList();
 
+        _logger.LogInformation("GetAllEventsUseCase|Execute :: {Count} eventos encontrados.", eventDtos.Count);
         return eventDtos;
     }
 }

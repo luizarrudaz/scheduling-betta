@@ -113,7 +113,6 @@ public class LdapAuthService : ILdapAuthService
 
     public LdapUserInfoDto GetUserInfoBySid(string sid)
     {
-        _logger.LogInformation("GetUserInfoBySid: Buscando usuário pelo SID: '{SID}'", sid);
         try
         {
             using var context = new PrincipalContext(ContextType.Domain, _server, _domainDn);

@@ -28,6 +28,7 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
 
     public async Task<UnscheduleResponseDto> Execute(UnscheduleEventDtoWithUserIdDto unscheduleEventDto)
     {
+        _logger.LogInformation("UnscheduleEventUseCase|Execute :: Usuário {Username} está tentando cancelar o agendamento {ScheduleId}", unscheduleEventDto.UserId, unscheduleEventDto.ScheduleId);
         var loggedInUser = _ldapAuthService.GetUserInfo(unscheduleEventDto.UserId ?? string.Empty);
         Event? eventDetailsForEmail = null;
 
@@ -37,11 +38,13 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
             var schedule = await _eventRepository.GetScheduleById(unscheduleEventDto.ScheduleId);
             if (schedule is null)
             {
+                _logger.LogWarning("UnscheduleEventUseCase|Execute :: Agendamento {ScheduleId} não encontrado.", unscheduleEventDto.ScheduleId);
                 throw new InvalidOperationException("Agendamento não encontrado.");
             }
 
             if (schedule.UserId != loggedInUser.Sid)
             {
+                _logger.LogWarning("UnscheduleEventUseCase|Execute :: Tentativa não autorizada do usuário {Username} de cancelar o agendamento {ScheduleId} pertencente a {OwnerSid}.", unscheduleEventDto.UserId, unscheduleEventDto.ScheduleId, schedule.UserId);
                 throw new UnauthorizedAccessException("Você não tem permissão para cancelar este agendamento.");
             }
 
@@ -49,11 +52,12 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
 
             await _eventRepository.RemoveUserSchedule(schedule);
             await _unitOfWork.Commit();
+            _logger.LogInformation("UnscheduleEventUseCase|Execute :: Agendamento {ScheduleId} cancelado com sucesso pelo usuário {Username}.", unscheduleEventDto.ScheduleId, unscheduleEventDto.UserId);
         }
         catch (Exception)
         {
             await _unitOfWork.Rollback();
-            _logger.LogError("Failed to cancel schedule {ScheduleId} for user {UserId}.", unscheduleEventDto.ScheduleId, loggedInUser.Sid);
+            _logger.LogError("UnscheduleEventUseCase|Execute :: Falha ao cancelar o agendamento {ScheduleId} para o usuário {UserId}.", unscheduleEventDto.ScheduleId, loggedInUser.Sid);
             throw;
         }
 
@@ -65,11 +69,12 @@ public class UnscheduleEventUseCase : IUnscheduleEventUseCase
                     eventDetailsForEmail,
                     loggedInUser.Email
                 );
+                _logger.LogInformation("UnscheduleEventUseCase|Execute :: E-mail de notificação de cancelamento enviado com sucesso para o usuário {Username}.", unscheduleEventDto.UserId);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Cancellation for schedule {ScheduleId} SUCCEEDED, but notification email FAILED.", unscheduleEventDto.ScheduleId);
+            _logger.LogWarning(ex, "UnscheduleEventUseCase|Execute :: Cancelamento do agendamento {ScheduleId} BEM-SUCEDIDO, mas o e-mail de notificação FALHOU.", unscheduleEventDto.ScheduleId);
         }
 
         return new UnscheduleResponseDto

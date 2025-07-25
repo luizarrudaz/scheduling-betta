@@ -29,21 +29,23 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
 
         public async Task<bool> Execute(int scheduleId)
         {
+            _logger.LogInformation("AdminCancelScheduleUseCase|Execute :: Iniciando cancelamento administrativo para o agendamento ID {ScheduleId}", scheduleId);
             var schedule = await _eventRepository.GetScheduleById(scheduleId);
             if (schedule == null)
             {
-                _logger.LogWarning("Admin cancellation failed: Schedule with ID {ScheduleId} not found.", scheduleId);
+                _logger.LogWarning("AdminCancelScheduleUseCase|Execute :: Agendamento com ID {ScheduleId} não encontrado.", scheduleId);
                 throw new KeyNotFoundException("Agendamento não encontrado.");
             }
 
             if (schedule.Status == ScheduleStatus.Cancelled)
             {
-                _logger.LogInformation("Admin cancellation skipped: Schedule {ScheduleId} is already cancelled.", scheduleId);
+                _logger.LogInformation("AdminCancelScheduleUseCase|Execute :: Agendamento {ScheduleId} já está cancelado.", scheduleId);
                 return true;
             }
 
             _eventRepository.RemoveUserSchedule(schedule);
             await _unitOfWork.Commit();
+            _logger.LogInformation("AdminCancelScheduleUseCase|Execute :: Agendamento {ScheduleId} removido do banco de dados com sucesso.", scheduleId);
 
             try
             {
@@ -52,11 +54,12 @@ namespace SchedulingBetta.API.Application.UseCases.ScheduleEvent
                 if (userInfo != null && eventDetails != null)
                 {
                     await _notificationService.NotifyAdminCancelled(userInfo, eventDetails, schedule.ScheduleTime);
+                    _logger.LogInformation("AdminCancelScheduleUseCase|Execute :: Notificação de cancelamento enviada para o usuário {UserSID}.", schedule.UserId);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Cancellation for schedule {ScheduleId} succeeded, but notification email failed for user SID {UserSID}.", scheduleId, schedule.UserId);
+                _logger.LogError(ex, "AdminCancelScheduleUseCase|Execute :: Cancelamento do agendamento {ScheduleId} bem-sucedido, mas o e-mail de notificação falhou para o usuário SID {UserSID}.", scheduleId, schedule.UserId);
             }
 
             return true;
